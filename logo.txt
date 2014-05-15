@@ -1,0 +1,6 @@
+/*!
+ * tswlib v0.1
+ * https://github.com/fantaclaus/tswlib
+ * Copyright 2014 fantaclaus
+ */
+
