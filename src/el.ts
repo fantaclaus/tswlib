@@ -246,7 +246,7 @@ module tsw.elements
 				}
 				else if (v instanceof tsw.Control)
 				{
-					var subElements = (<tsw.Control> v).internalCreateElement();
+					var subElements = elUtils.createAndAttachControlElements(<tsw.Control> v); // ref to element of v is changed inside
 					this.appendChild(subElements);
 				}
 				else
@@ -399,7 +399,7 @@ module tsw.elements
 			{
 				if (els instanceof tsw.Control)
 				{
-					els = (<tsw.Control>els).internalCreateElement();
+					els = elUtils.createAndAttachControlElements(<tsw.Control> els); // ref to element of els is changed inside
 				}
 
 				var html = elUtils.render(els);
@@ -413,8 +413,10 @@ module tsw.elements
 				jqParent.empty();
 			}
 		}
-		static replaceWithElements(jq: JQuery, elm?: tsw.elements.el): void
+		static replaceWithElements(jq: JQuery, ctl: Control): void
 		{
+			var elm = elUtils.createAndAttachControlElements(ctl); // ref to element is changed inside
+
 			EventManager.removeEventHandlers(jq);
 			EventManager.removeInnerEventHandlers(jq);
 
@@ -430,6 +432,14 @@ module tsw.elements
 			{
 				jq.remove();
 			}
+		}
+		static createAndAttachControlElements(ctl: Control): tsw.elements.el
+		{
+			var elm = ctl.createElement();
+
+			ctl.attachToEl(elm);
+
+			return elm;
 		}
 
 		public static render(els: any): string
