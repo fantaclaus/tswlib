@@ -5,12 +5,12 @@ module tsw
 	{
 		createElement(): tsw.elements.el
 		{
-			return null;
+			return html.div();
 		}
 		update(): void
 		{
 			var $top = this.asJQuery(); // save old jquery wrapper
-			tsw.elements.elUtils.replaceWithElements($top, this);
+			tsw.elements.elUtils.setElements($top, this, true);
 		}
 	}
 }

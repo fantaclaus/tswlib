@@ -1,4 +1,3 @@
-/// <reference path="d.ts/jquery.d.ts" />
 /// <reference path="el.ts" />
 
 module tsw.elRefs
@@ -7,24 +6,27 @@ module tsw.elRefs
 	{
 		private id: string;
 		private jqObj: JQuery;
+		private createChildrenElements: () => any;
 
-		setRefId(id: string): void
+		setRefId(id: string, createChildren?: () => any): void
 		{
 			this.id = id;
 			this.jqObj = null;
+			this.createChildrenElements = createChildren;
 		}
 
-		setRefObj(jqObj: JQuery): void
+		setRefObj(jqObj: JQuery, createChildren?: () => any): void
 		{
 			this.id = null;
 			this.jqObj = jqObj;
+			this.createChildrenElements = createChildren;
 		}
 
-		attachToEl(elm: tsw.elements.el): void
+		attachToEl(elm: tsw.elements.el, createChildren?: () => any): void
 		{
 			var id = elm ? elm.getOrCreateId() : null;
 
-			this.setRefId(id);
+			this.setRefId(id, createChildren);
 		}
 
 		getId(): string
@@ -34,6 +36,15 @@ module tsw.elRefs
 		isAttached(): boolean
 		{
 			return this.id != null;
+		}
+
+		update(): void
+		{
+			if (this.createChildrenElements)
+			{
+				var els = this.createChildrenElements();
+				this.setElements(els);
+			}
 		}
 
 		public asJQuery(): JQuery
@@ -48,11 +59,11 @@ module tsw.elRefs
 			return this.jqObj;
 		}
 
-		public setElements(els?: any): void
+		public setElements(els: any): void
 		{
 			var $this = this.asJQuery();
 
-			tsw.elements.elUtils.setElements($this, els);
+			tsw.elements.elUtils.setElements($this, els, false);
 		}
 
 		public setText(val: any): void

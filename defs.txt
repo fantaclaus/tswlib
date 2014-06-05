@@ -1,0 +1,2 @@
+d.ts\libcore.d.ts
+d.ts\jquery.d.ts

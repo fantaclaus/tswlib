@@ -1,4 +1,3 @@
-/// <reference path="d.ts/jquery.d.ts" />
 /// <reference path="clsref.ts" />
 /// <reference path="control.ts" />
 /// <reference path="elrefs.ts" />
@@ -21,6 +20,12 @@ module tsw.elements
 	interface JQueryEventHandlerMap
 	{
 		[eventName: string]: JQueryEventHandler;
+	}
+
+	interface IHandlerData
+	{
+		el: JQuery;
+		h: JQueryEventHandler;
 	}
 
 	class EventManager
@@ -74,7 +79,7 @@ module tsw.elements
 				EventManager._AttachedDocumentEvents[eventName] = true;
 			}
 		}
-		static findHandler(el: JQuery, eventName: string): { el: JQuery; h: JQueryEventHandler; }
+		private static findHandler(el: JQuery, eventName: string): IHandlerData
 		{
 			while (el && el.length)
 			{
@@ -93,7 +98,7 @@ module tsw.elements
 				el = el.parent();
 			}
 
-			return <any> null;
+			return null;
 		}
 		static removeInnerEventHandlers(jqParent: JQuery): void
 		{
@@ -150,9 +155,15 @@ module tsw.elements
 			return this._attrs ? this._attrs[name] : null;
 		}
 
-		bind(ref: tsw.elRefs.elementRef): el
+		bind(ref: tsw.elRefs.elementRef, createChildren?: () => any): el
 		{
-			ref.attachToEl(this);
+			ref.attachToEl(this, createChildren);
+
+			if (createChildren)
+			{
+				var els = createChildren();
+				this.appendChild(els);
+			}
 
 			return this;
 		}
@@ -233,29 +244,9 @@ module tsw.elements
 
 		private appendChild(v: any): void
 		{
-			if (v != null)
-			{
-				if (v instanceof Array)
-				{
-					for (var i = 0; i < v.length; i++)
-					{
-						var v2 = v[i];
+			if (!this._elements) this._elements = [];
 
-						this.appendChild(v2);
-					}
-				}
-				else if (v instanceof tsw.Control)
-				{
-					var subElements = elUtils.createAndAttachControlElements(<tsw.Control> v); // ref to element of v is changed inside
-					this.appendChild(subElements);
-				}
-				else
-				{
-					if (!this._elements) this._elements = [];
-
-					this._elements.push(v);
-				}
-			}
+			elUtils.addItems(this._elements, v);
 		}
 
 		text(v: any): el
@@ -391,100 +382,112 @@ module tsw.elements
 
 	export class elUtils
 	{
-		static setElements(jqParent: JQuery, els?: any): void
+		static setElements(jqParent: JQuery, els: any, andSelf: boolean): void
 		{
+			if (andSelf) EventManager.removeEventHandlers(jqParent);
 			EventManager.removeInnerEventHandlers(jqParent);
 
 			if (els)
 			{
-				if (els instanceof tsw.Control)
+				var els2 = elUtils.expandChildren(els);
+				var html = elUtils.render(els2);
+
+				if (andSelf)
+					jqParent.replaceWith(html);
+				else
+					jqParent.html(html);
+
+				elUtils.attachEventHandlers(els2);
+			}
+			else
+			{
+				if (andSelf)
+					jqParent.remove();
+				else
+					jqParent.empty();
+			}
+		}
+		private static expandChildren(v: any): any[]
+		{
+			var result = [];
+
+			elUtils.addItems(result, v);
+
+			return result;
+		}
+		static addItems(result: any[], v: any): void
+		{
+			if (v != null)
+			{
+				if (v instanceof Array)
 				{
-					els = elUtils.createAndAttachControlElements(<tsw.Control> els); // ref to element of els is changed inside
+					for (var i = 0; i < v.length; i++)
+					{
+						var v1 = v[i];
+						elUtils.addItems(result, v1);
+					}
 				}
+				else if (v instanceof Function)
+				{
+					var v2 = v();
+					elUtils.addItems(result, v2);
+				}
+				else if (v instanceof tsw.Control)
+				{
+					var ctl = <tsw.Control> v;
+					var elm = ctl.createElement();
+					ctl.attachToEl(elm);
 
-				var html = elUtils.render(els);
-
-				jqParent.html(html);
-
-				elUtils.attachEventHandlers(els);
-			}
-			else
-			{
-				jqParent.empty();
-			}
-		}
-		static replaceWithElements(jq: JQuery, ctl: Control): void
-		{
-			var elm = elUtils.createAndAttachControlElements(ctl); // ref to element is changed inside
-
-			EventManager.removeEventHandlers(jq);
-			EventManager.removeInnerEventHandlers(jq);
-
-			if (elm)
-			{
-				var html = elUtils.render(elm);
-
-				jq.replaceWith(html);
-
-				elUtils.attachEventHandlers(elm);
-			}
-			else
-			{
-				jq.remove();
+					elUtils.addItems(result, elm);
+				}
+				else
+				{
+					result.push(v);
+				}
 			}
 		}
-		static createAndAttachControlElements(ctl: Control): tsw.elements.el
-		{
-			var elm = ctl.createElement();
-
-			ctl.attachToEl(elm);
-
-			return elm;
-		}
-
-		public static render(els: any): string
+		public static render(els: any[]): string
 		{
 			if (!els) return '';
 
-			if (els instanceof Array)
-			{
-				var innerHtml = '';
+			var html = '';
 
-				for (var i = 0; i < els.length; i++)
+			for (var i = 0; i < els.length; i++)
+			{
+				var elm = els[i];
+
+				if (elm)
 				{
-					var child = els[i];
+					var elmHtml: string;
 
-					innerHtml += this.render(child);
+					if (elm instanceof el)
+					{
+						elmHtml = (<el> elm).render();
+					}
+					else
+					{
+						elmHtml = elm.toString();
+					}
+
+					html += elmHtml;
 				}
+			}
 
-				return innerHtml;
-			}
-			else if (els instanceof el)
-			{
-				return (<el> els).render();
-			}
-			else
-			{
-				return els.toString();
-			}
+			return html;
 		}
 
-		public static attachEventHandlers(els: any): void
+		public static attachEventHandlers(els: any[]): void
 		{
 			if (!els) return;
 
-			if (els instanceof Array)
+			for (var i = 0; i < els.length; i++)
 			{
-				for (var i = 0; i < els.length; i++)
-				{
-					var child = els[i];
+				var child = els[i];
 
-					this.attachEventHandlers(child);
+				if (child instanceof el)
+				{
+					(<el> child).attachEventHandlers();
 				}
-			}
-			else if (els instanceof el)
-			{
-				(<el> els).attachEventHandlers();
 			}
 		}
 	}
