@@ -1,9 +1,14 @@
-/// <reference path="el.ts" />
-/// <reference path="htmlelements.ts" />
-
 module tsw.html
 {
-	export function el(tagName?: string): elements.el
+	export function nbsp(): elements.rawHtml
+	{
+		return new elements.rawHtml("&nbsp;");
+	}
+	export function rawHtml(s: string): elements.rawHtml
+	{
+		return new elements.rawHtml(s);
+	}
+	export function el(tagName: string): elements.el
 	{
 		return new elements.el(tagName);
 	}
@@ -61,6 +66,11 @@ module tsw.html
 	export function br(): elements.el
 	{
 		return new elements.el('br');
+	}
+
+	export function hr(): elements.el
+	{
+		return new elements.el('hr');
 	}
 
 	export function button(): elements.button

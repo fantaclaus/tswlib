@@ -30,15 +30,6 @@ module tsw.elements
 
 			return this;
 		}
-		//onclick(handler: JQueryEventHandler): el
-		//{
-		//	return super.onclick(e =>
-		//	{
-		//		e.preventDefault();
-
-		//		handler(e);
-		//	});
-		//}
 	}
 
 	export class img extends el
@@ -85,9 +76,15 @@ module tsw.elements
 			super('label')
 		}
 
-		for_(v: string): label
+//		for_(v: string): label
+//		{
+//			this.attr('for', v);
+//
+//			return this;
+//		}
+		forRef(ref: tsw.elRefs.elementRef): label
 		{
-			this.attr('for', v);
+			this.attr('for', () => ref.getId());
 
 			return this;
 		}

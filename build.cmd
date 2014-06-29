@@ -1,8 +1,6 @@
 @echo off
 
-set tsc=tsc.cmd
-
-call %tsc% @defs.txt @files.txt --noLib  --removeComments -d --out tmp\tswlib.js
+call tsc.cmd @defs.txt @files.txt --noLib  --removeComments -d --out tmp\tswlib.js
 if errorlevel 1 goto err
 
 node makeout.js

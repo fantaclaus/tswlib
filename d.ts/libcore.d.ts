@@ -1,4 +1,4 @@
-/* *****************************************************************************
+﻿/* *****************************************************************************
  Copyright (c) Microsoft Corporation. All rights reserved.
  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  this file except in compliance with the License. You may obtain a copy of the
@@ -14,7 +14,7 @@
  ***************************************************************************** */
 
 /* *****************************************************************************
- this is a copy of lib.d.ts provided with typescript compier
+ this is a copy of lib.d.ts provided with the typescript compiler
  modified by fantaclaus
  all unused definitions were removed to increase the compilation speed
  ***************************************************************************** */
@@ -1154,23 +1154,71 @@ interface Element {
 	tagName: string;
 }
 
-interface HTMLElement {
-
+interface NodeList {
+	length: number;
+	item(index: number): Node;
+	[index: number]: Node;
 }
 
 interface Node {
+	firstChild: Node;
+	lastChild: Node;
+	nextSibling: Node;
+	parentNode: Node;
+	nodeType: number;
+	nodeValue: string;
+	hasChildNodes(): boolean;
+	removeChild(oldChild: Node): Node;
+}
 
+declare var Node: {
+	prototype: Node;
+	new (): Node;
+	ENTITY_REFERENCE_NODE: number;
+	ATTRIBUTE_NODE: number;
+	DOCUMENT_FRAGMENT_NODE: number;
+	TEXT_NODE: number;
+	ELEMENT_NODE: number;
+	COMMENT_NODE: number;
+	DOCUMENT_POSITION_DISCONNECTED: number;
+	DOCUMENT_POSITION_CONTAINED_BY: number;
+	DOCUMENT_POSITION_CONTAINS: number;
+	DOCUMENT_TYPE_NODE: number;
+	DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: number;
+	DOCUMENT_NODE: number;
+	ENTITY_NODE: number;
+	PROCESSING_INSTRUCTION_NODE: number;
+	CDATA_SECTION_NODE: number;
+	NOTATION_NODE: number;
+	DOCUMENT_POSITION_FOLLOWING: number;
+	DOCUMENT_POSITION_PRECEDING: number;
+};
+
+interface HTMLElement extends Node {
+	innerHTML: string;
+	insertBefore(newChild: Node, refChild?: Node): Node;
+	insertAdjacentHTML(where: string, html: string): void;
 }
 
 interface Document {
+	title: string;
 	body: HTMLElement;
+	getElementById(elementId: string): HTMLElement;
+	createElement(tagName: string): HTMLElement;
 }
 
 interface XMLDocument {
 
 }
 
-interface Window {
+interface WindowTimers {
+	clearTimeout(handle: number): void;
+	setTimeout(handler: any, timeout?: any, ...args: any[]): number;
+	clearInterval(handle: number): void;
+	setInterval(handler: any, timeout?: any, ...args: any[]): number;
+}
+
+interface Window extends WindowTimers {
 	console: Console;
 	location: Location;
 }
