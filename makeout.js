@@ -9,18 +9,18 @@ var outFolder = 'out';
 
 	var textLogo = fs.readFileSync('logo.txt').toString();
 
-	copyFile('tswlib.d.ts', textLogo, true);
-	copyFile('tswlib.js', textLogo, false);
+	copyFile('tswlib.d.ts', textLogo, removeRefComments);
+	copyFile('tswlib.js', textLogo);
 
 })();
 
-function copyFile(fileName, textLogo, removeRefCmts)
+function copyFile(fileName, textLogo, processLine)
 {
 	var text = fs.readFileSync(pathCombine(tmpFolder, fileName)).toString();
 
-	if (removeRefCmts)
+	if (processLine)
 	{
-		text = removeRefComments(text);
+		text = processLine(text);
 	}
 
 	var data2 = textLogo + text;
@@ -35,6 +35,11 @@ function removeRefComments(text)
 			{
 				return line.substr(0, 3) !== '///';
 			})
+		.map(function (line)
+		{
+			line = line.replace(/public\s+z_/, 'private z_');
+			return line;
+		})
 		.join('\n');
 }
 
