@@ -26,10 +26,10 @@ module tsw.elRefs
 		{
 			if (!this.jqObj)
 			{
-				if (!this.id) return $(); // empty set of elements; used when Control is not yet rendered
+				if (!this.id) return jQuery(); // empty set of elements; used when Control is not yet rendered
 
 				var element = document.getElementById(this.id);
-				this.jqObj = $(element);
+				this.jqObj = jQuery(element);
 			}
 
 			return this.jqObj;

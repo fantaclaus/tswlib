@@ -67,9 +67,12 @@ module tsw.elements
 
 		addRef(ref: tsw.elRefs.elementRef): el
 		{
-			if (!this.refs) this.refs = [];
-			this.refs.push(ref);
-			return this;
+			if (ref)
+			{
+				if (!this.refs) this.refs = [];
+				this.refs.push(ref);
+				return this;
+			}
 		}
 
 		bind<T>(getter: () => T, setter?: (v: T) => void, eventFn?: () => void): el
@@ -89,7 +92,7 @@ module tsw.elements
 			{
 				this.onEvents(['change', 'input'], e =>
 				{
-					var jqInput = $(e.target);
+					var jqInput = jQuery(e.target);
 					var newValue = isBool ? jqInput.prop('checked') : jqInput.val();
 					if (oldValue != newValue)
 					{

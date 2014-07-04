@@ -25,7 +25,7 @@ module tsw
 		{
 			if (this.topHtmlElement)
 			{
-				$(this.topHtmlElement).off();
+				jQuery(this.topHtmlElement).off();
 				delete this.topHtmlElement;
 			}
 			if (this.attachedDocumentEvents)
@@ -82,7 +82,7 @@ module tsw
 
 			if (!this.attachedDocumentEvents[eventName])
 			{
-				$(this.topHtmlElement).on(eventName, e =>
+				jQuery(this.topHtmlElement).on(eventName, e =>
 				{
 					this.handleEvent(e);
 				});
@@ -92,7 +92,7 @@ module tsw
 		}
 		private handleEvent(e: JQueryEventObject)
 		{
-			var r = this.findHandler($(e.target), e.type);
+			var r = this.findHandler(jQuery(e.target), e.type);
 			if (r)
 			{
 				if (this.preventLinkClickDefaultBehaviour && e.type == 'click' && r.el.get(0).tagName == 'A')
