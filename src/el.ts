@@ -71,8 +71,8 @@ module tsw.elements
 			{
 				if (!this.refs) this.refs = [];
 				this.refs.push(ref);
-				return this;
 			}
+			return this;
 		}
 
 		bind<T>(getter: () => T, setter?: (v: T) => void, eventFn?: () => void): el
