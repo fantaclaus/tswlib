@@ -510,6 +510,9 @@ module tsw
 		{
 			// TODO: remove native event handlers
 
+			// TBODY must be defined explicitly in onRender() of a control
+			// otherwise commented section will not be found, since targetElement would be TABLE
+
 			var COMMENT_NODE = 8; // on IE8 Node is undefined
 
 			var nodeBeginMarker: Node = null;
@@ -594,9 +597,16 @@ module tsw
 						this.tmpDiv = tmpDiv; // cache it
 					}
 
+					// insert html into TABLE doesn't work on IE<10
 					targetElement.insertBefore(tmpDiv, nodeEndMarker);
 					tmpDiv.insertAdjacentHTML('beforeBegin', html);
 					targetElement.removeChild(tmpDiv);
+
+					// doesn't work on IE
+//					var tmp = document.createElement('template');
+//					tmp.innerHTML = html;
+//					targetElement.insertBefore(tmp.content, nodeEndMarker);
+
 				}
 			}
 		}
