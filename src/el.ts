@@ -165,7 +165,7 @@ module tsw.elements
 
 		children(vals: any): el
 		{
-			if (vals)
+			if (!tsw.isNullOrUndefined(vals))
 			{
 				if (!this._elements) this._elements = [];
 

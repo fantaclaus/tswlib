@@ -29,6 +29,11 @@ module tsw
 	{
 		return s ? s.split(delim) : [];
 	}
+
+	export function isNullOrUndefined(v: any): boolean
+	{
+		return v == null;
+	}
 	export class arrayUtils
 	{
 		static addExpanded(target: any[], v: any): void

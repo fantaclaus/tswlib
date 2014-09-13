@@ -417,7 +417,7 @@ module tsw
 		}
 		static renderHtml(c: any): string
 		{
-			if (!c) return '';
+			if (tsw.isNullOrUndefined(c)) return '';
 
 			var elmHtml: string;
 
