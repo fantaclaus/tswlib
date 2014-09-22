@@ -60,7 +60,7 @@ module tsw
 
 			return this;
 		}
-		onRender(): any[]
+		onRender(): any
 		{
 			return this.renderFn && this.renderFn();
 		}
