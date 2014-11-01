@@ -37,7 +37,9 @@ function removeRefComments(text)
 			})
 		.map(function (line)
 		{
-			line = line.replace(/public\s+z_/, 'private z_');
+			line = line
+				.replace(/public\s+z_/, 'private z_')
+				.replace(/^(\s*)z_/, '$1private z_');
 			return line;
 		})
 		.join('\n');
