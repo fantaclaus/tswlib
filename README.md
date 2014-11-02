@@ -32,11 +32,11 @@ The generated HTML of `MyCtl` control looks like this:
 </ul>
 ```
 
-Function `tsw.html.ul()` returns an object of type `tsw.elements.el` which represents a single `UL` element. You can set up any attribute of this element using methods of class `tsw.elements.el` and add child elements with method `children`. In a very simple case the child could be a string, another element or an array of them.
+The function `tsw.html.ul()` returns an object of type `tsw.elements.el` which represents a single `UL` element. You can set up any attribute of this element using methods of the class `tsw.elements.el` and add child elements with the method `children`. In a very simple case the child could be a string, another element or an array of them.
 
-When the tree of nested elements become too large you can extract some nodes into separate functions or methods of the control or even into another controls. This way you can achieve modularity and re-usability of the code blocks. Also you can build your own collection of custom elements to simplify coding and increase the  readability of the code.
+When the tree of nested elements become too large you can extract some nodes into separate functions or methods of the control or even into another control. This way you can achieve modularity and re-usability of the code blocks. Also you can build your own collection of custom elements to simplify the coding and increase the  readability of the code.
 
-If you use Bootstrap framework you can create a function which returns an element with correct `class` attribute or even complete Bootstrap block of HTML elements. For example:
+If you use Bootstrap framework you can create a function which returns an element with the correct `class` attribute or even a complete Bootstrap block of HTML elements. For example:
 
 ```typescript
 function btnToolbar(): tsw.elements.el
@@ -46,7 +46,7 @@ function btnToolbar(): tsw.elements.el
 
 ```
 
-In addition to rendering the library allows to handle events fired by HTML elements. In the next example we create list items with `A` elements. When clicked, it displays a message box with appropriate text:
+In addition to rendering the library allows to handle events fired by HTML elements. In the next example we create a list of items with `A` elements. When clicked, they display a message with the appropriate text:
 
 ```typescript
 class MyCtl extends tsw.Control
