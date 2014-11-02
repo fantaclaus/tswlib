@@ -1,4 +1,4 @@
-﻿/* *****************************************************************************
+﻿/*! *****************************************************************************
  Copyright (c) Microsoft Corporation. All rights reserved.
  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  this file except in compliance with the License. You may obtain a copy of the
@@ -11,12 +11,6 @@
 
  See the Apache Version 2.0 License for specific language governing permissions
  and limitations under the License.
- ***************************************************************************** */
-
-/* *****************************************************************************
- this is a copy of lib.d.ts provided with the typescript compiler
- modified by fantaclaus
- all unused definitions were removed to increase the compilation speed
  ***************************************************************************** */
 
 /// <reference no-default-lib="true"/>
@@ -323,13 +317,13 @@ interface String {
 	 * Matches a string with a regular expression, and returns an array containing the results of that search.
 	 * @param regexp A variable name or string literal containing the regular expression pattern and flags.
 	 */
-	match(regexp: string): string[];
+    match(regexp: string): RegExpMatchArray;
 
 	/**
 	 * Matches a string with a regular expression, and returns an array containing the results of that search.
 	 * @param regexp A regular expression object that contains the regular expression pattern and applicable flags.
 	 */
-	match(regexp: RegExp): string[];
+    match(regexp: RegExp): RegExpMatchArray;
 
 	/**
 	 * Replaces text in a string, using a regular expression or search string.
@@ -796,38 +790,15 @@ declare var Date: {
 	now(): number;
 }
 
-interface RegExpExecArray {
-	[index: number]: string;
-	length: number;
-
-	index: number;
-	input: string;
-
-	toString(): string;
-	toLocaleString(): string;
-	concat(...items: string[][]): string[];
-	join(separator?: string): string;
-	pop(): string;
-	push(...items: string[]): number;
-	reverse(): string[];
-	shift(): string;
-	slice(start?: number, end?: number): string[];
-	sort(compareFn?: (a: string, b: string) => number): string[];
-	splice(start: number): string[];
-	splice(start: number, deleteCount: number, ...items: string[]): string[];
-	unshift(...items: string[]): number;
-
-	indexOf(searchElement: string, fromIndex?: number): number;
-	lastIndexOf(searchElement: string, fromIndex?: number): number;
-	every(callbackfn: (value: string, index: number, array: string[]) => boolean, thisArg?: any): boolean;
-	some(callbackfn: (value: string, index: number, array: string[]) => boolean, thisArg?: any): boolean;
-	forEach(callbackfn: (value: string, index: number, array: string[]) => void, thisArg?: any): void;
-	map(callbackfn: (value: string, index: number, array: string[]) => any, thisArg?: any): any[];
-	filter(callbackfn: (value: string, index: number, array: string[]) => boolean, thisArg?: any): string[];
-	reduce(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: string[]) => any, initialValue?: any): any;
-	reduceRight(callbackfn: (previousValue: any, currentValue: any, currentIndex: number, array: string[]) => any, initialValue?: any): any;
+interface RegExpMatchArray extends Array<string> {
+    index?: number;
+    input?: string;
 }
 
+interface RegExpExecArray extends Array<string> {
+	index: number;
+	input: string;
+}
 
 interface RegExp {
 	/**
@@ -986,11 +957,24 @@ declare var JSON: JSON;
 
 interface Array<T> {
 	/**
+      * Gets or sets the length of the array. This is a number one higher than the highest element defined in an array.
+      */
+    length: number;
+    /**
 	 * Returns a string representation of an array.
 	 */
 	toString(): string;
 	toLocaleString(): string;
 	/**
+      * Appends new elements to an array, and returns the new length of the array.
+      * @param items New elements of the Array.
+      */
+    push(...items: T[]): number;
+    /**
+      * Removes the last element from an array and returns it.
+      */
+    pop(): T;
+    /**
 	 * Combines two or more arrays.
 	 * @param items Additional items to add to the end of array1.
 	 */
@@ -1005,15 +989,6 @@ interface Array<T> {
 	 * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
 	 */
 	join(separator?: string): string;
-	/**
-	 * Removes the last element from an array and returns it.
-	 */
-	pop(): T;
-	/**
-	 * Appends new elements to an array, and returns the new length of the array.
-	 * @param items New elements of the Array.
-	 */
-	push(...items: T[]): number;
 	/**
 	 * Reverses the elements in an Array.
 	 */
@@ -1130,11 +1105,6 @@ interface Array<T> {
 	 */
 	reduceRight<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U, initialValue: U): U;
 
-	/**
-	 * Gets or sets the length of the array. This is a number one higher than the highest element defined in an array.
-	 */
-		length: number;
-
 	[n: number]: T;
 }
 declare var Array: {
@@ -1147,175 +1117,3 @@ declare var Array: {
 	isArray(arg: any): boolean;
 	prototype: Array<any>;
 }
-
-/////////////////////////////////////////
-
-interface Element {
-	tagName: string;
-}
-
-interface NodeList {
-	length: number;
-	item(index: number): Node;
-	[index: number]: Node;
-}
-
-interface Node {
-	firstChild: Node;
-	lastChild: Node;
-	nextSibling: Node;
-	parentNode: Node;
-	nodeType: number;
-	nodeValue: string;
-	hasChildNodes(): boolean;
-	removeChild(oldChild: Node): Node;
-}
-
-declare var Node: {
-	prototype: Node;
-	new (): Node;
-	ENTITY_REFERENCE_NODE: number;
-	ATTRIBUTE_NODE: number;
-	DOCUMENT_FRAGMENT_NODE: number;
-	TEXT_NODE: number;
-	ELEMENT_NODE: number;
-	COMMENT_NODE: number;
-	DOCUMENT_POSITION_DISCONNECTED: number;
-	DOCUMENT_POSITION_CONTAINED_BY: number;
-	DOCUMENT_POSITION_CONTAINS: number;
-	DOCUMENT_TYPE_NODE: number;
-	DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: number;
-	DOCUMENT_NODE: number;
-	ENTITY_NODE: number;
-	PROCESSING_INSTRUCTION_NODE: number;
-	CDATA_SECTION_NODE: number;
-	NOTATION_NODE: number;
-	DOCUMENT_POSITION_FOLLOWING: number;
-	DOCUMENT_POSITION_PRECEDING: number;
-};
-
-interface HTMLElement extends Node {
-	innerHTML: string;
-	insertBefore(newChild: Node, refChild?: Node): Node;
-	insertAdjacentHTML(where: string, html: string): void;
-}
-
-interface Document {
-	title: string;
-	body: HTMLElement;
-	getElementById(elementId: string): HTMLElement;
-	createElement(tagName: string): HTMLElement;
-}
-
-interface XMLDocument {
-
-}
-
-interface WindowTimers {
-	clearTimeout(handle: number): void;
-	setTimeout(handler: any, timeout?: any, ...args: any[]): number;
-	clearInterval(handle: number): void;
-	setInterval(handler: any, timeout?: any, ...args: any[]): number;
-}
-
-interface Window extends WindowTimers {
-	console: Console;
-	location: Location;
-}
-
-interface Location
-{
-	hash: string;
-	protocol: string;
-	search: string;
-	href: string;
-	hostname: string;
-	port: string;
-	pathname: string;
-	host: string;
-	reload(flag?: boolean): void;
-	replace(url: string): void;
-	assign(url: string): void;
-	toString(): string;
-}
-
-interface Console {
-	log(message?: any, ...optionalParams: any[]): void;
-}
-
-interface Event {
-	timeStamp: number;
-	defaultPrevented: boolean;
-	isTrusted: boolean;
-	currentTarget: EventTarget;
-	cancelBubble: boolean;
-	target: EventTarget;
-	eventPhase: number;
-	cancelable: boolean;
-	type: string;
-	srcElement: Element;
-	bubbles: boolean;
-	initEvent(eventTypeArg: string, canBubbleArg: boolean, cancelableArg: boolean): void;
-	stopPropagation(): void;
-	stopImmediatePropagation(): void;
-	preventDefault(): void;
-	CAPTURING_PHASE: number;
-	AT_TARGET: number;
-	BUBBLING_PHASE: number;
-}
-
-interface PopStateEvent extends Event {
-	state: any;
-	initPopStateEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, stateArg: any): void;
-}
-
-interface EventListener {
-	(evt: Event): void;
-}
-
-interface EventTarget {
-	addEventListener(type: string, listener: EventListener, useCapture?: boolean): void;
-	removeEventListener(type: string, listener: EventListener, useCapture?: boolean): void;
-	dispatchEvent(evt: Event): boolean;
-}
-
-interface XMLHttpRequest extends EventTarget {
-	responseBody: any;
-	status: number;
-	readyState: number;
-	responseText: string;
-	responseXML: Document;
-	ontimeout: (ev: Event) => any;
-	statusText: string;
-	onreadystatechange: (ev: Event) => any;
-	timeout: number;
-	onload: (ev: Event) => any;
-	open(method: string, url: string, async?: boolean, user?: string, password?: string): void;
-	create(): XMLHttpRequest;
-	send(data?: any): void;
-	abort(): void;
-	getAllResponseHeaders(): string;
-	setRequestHeader(header: string, value: string): void;
-	getResponseHeader(header: string): string;
-	LOADING: number;
-	DONE: number;
-	UNSENT: number;
-	OPENED: number;
-	HEADERS_RECEIVED: number;
-}
-
-declare var XMLHttpRequest: {
-	prototype: XMLHttpRequest;
-	new (): XMLHttpRequest;
-	LOADING: number;
-	DONE: number;
-	UNSENT: number;
-	OPENED: number;
-	HEADERS_RECEIVED: number;
-}
-
-declare var document: Document;
-declare var window: Window;
-declare var console: Console;
-
-declare function alert(message?: any): void;
