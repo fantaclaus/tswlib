@@ -149,4 +149,4 @@ Usage of this function:
 	}
 ```
 
-TswLib library can be used together with another libraries such as jQuery and use javascript controls implemented in another javascript libraries.
+The library can be used together with another libraries such as jQuery and use javascript controls implemented in another javascript libraries.
