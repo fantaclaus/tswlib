@@ -150,3 +150,11 @@ Usage of this function:
 ```
 
 The library can be used together with another libraries such as jQuery and use javascript controls implemented in another javascript libraries.
+
+To get more detailed information about the library please read the documentation on [wiki](https://github.com/fantaclaus/tswlib/wiki).
+
+# Downloads
+
+The latest release can be downloaded from [latest release](https://github.com/fantaclaus/tswlib/releases/latest) page.
+
+If you need the compiled files you can download `tswlib.js` and `tswlib.d.ts`  from the [latest release](https://github.com/fantaclaus/tswlib/releases/latest) page.
