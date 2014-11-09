@@ -3,7 +3,7 @@ Overview
 
 This library can be used to create client-side web applications. All rendering of HTML is done entirely in the Typescript code. There are no templates, embedded expressions etc. The whole power of Typescript can be used to generate HTML code.
 
-This is an example of very simple control which displays a list of text items:
+This is an example of a very simple control which displays a list of text items:
 
 ```typescript
 class MyCtl extends tsw.Control
