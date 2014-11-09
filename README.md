@@ -91,8 +91,8 @@ or even a complete Bootstrap block of HTML elements. For example, button dropdow
 function btnDropDown<T>(
 	text: string,
 	items: T[],
-	getItemText: (T) => string,
-	getItemHandler: (T) => void): tsw.elements.el
+	getItemText: (item: T) => string,
+	getItemHandler: (item: T) => void): tsw.elements.el
 {
 	var el =
 		btnGroup().children([
