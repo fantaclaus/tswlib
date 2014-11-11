@@ -3,6 +3,8 @@ Overview
 
 This library can be used to create client-side web applications. All rendering of HTML is done entirely in the Typescript code. There are no templates, embedded expressions etc. The whole power of Typescript can be used to generate HTML code.
 
+> Note: `tswlib` is not a collection of ready-made web controls.
+
 This is an example of a very simple control which displays a list of text items:
 
 ```typescript
@@ -124,29 +126,29 @@ function btnDropDown<T>(
 Usage of this function:
 
 ```typescript
-	class MyCtl extends tsw.Control
+class MyCtl extends tsw.Control
+{
+	private items = [
+		{ text: "item 1", id: 1 },
+		{ text: "item 2", id: 2 },
+		{ text: "item 3", id: 3 },
+	];
+
+	onRender(): any
 	{
-		private items = [
-			{ text: "item 1", id: 1 },
-			{ text: "item 2", id: 2 },
-			{ text: "item 3", id: 3 },
-		];
+		var result =
+			btnDropDown(
+				'Choose item',
+				this.items,
+				item => item.text,
+				item =>
+				{
+					alert(item.id);
+				});
 
-		onRender(): any
-		{
-			var result =
-				btnDropDown(
-					'Choose item',
-					this.items,
-					item => item.text,
-					item =>
-					{
-						alert(item.id);
-					});
-
-			return result;
-		}
+		return result;
 	}
+}
 ```
 
 The library can be used together with another libraries such as jQuery and use javascript controls implemented in another javascript libraries.
@@ -157,4 +159,4 @@ To get more detailed information about the library please read the documentation
 
 The latest release can be downloaded from [latest release](https://github.com/fantaclaus/tswlib/releases/latest) page.
 
-If you need the compiled files you can download `tswlib.js` and `tswlib.d.ts`  from the [latest release](https://github.com/fantaclaus/tswlib/releases/latest) page.
+If you need the compiled files you can download `tswlib.js` and `tswlib.d.ts` from the [latest release](https://github.com/fantaclaus/tswlib/releases/latest) page.
