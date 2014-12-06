@@ -41,7 +41,6 @@ module tsw
 		{
 			this.topControl = ctl;
 			this.topControl.z_setDomConnector(this);
-			this.topControl.update();
 		}
 		z_getPrefix(): string
 		{

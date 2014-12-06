@@ -4,7 +4,7 @@ module tsw
 	{
 //		private static nextId: number = 0;
 
-		private renderFn: () => any;
+		private renderFn:  () => any;
 		private beforeRemoveFn: () => void;
 		private afterInsertFn: () => void;
 		private _children: any[]; // temporary holder
@@ -180,7 +180,7 @@ module tsw
 		private _createChildren2()
 		{
 			var childrenRaw = this.onRender();
-			var childrenNew = [];
+			var childrenNew: any[] = [];
 			arrayUtils.addExpanded(childrenNew, childrenRaw);
 			this._children = childrenNew;
 		}

@@ -131,7 +131,7 @@ module tsw.elements
 		{
 			this.classes = this.classes || [];
 
-			var vals = [];
+			var vals: any[] = [];
 			arrayUtils.addExpanded(vals, v);
 
 			vals.forEach(v =>
