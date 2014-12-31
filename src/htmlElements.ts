@@ -1,8 +1,6 @@
-/// <reference path="el.ts" />
-
 module tsw.elements
 {
-	export class button extends el
+	export class button extends elm
 	{
 		constructor()
 		{
@@ -17,7 +15,7 @@ module tsw.elements
 		}
 	}
 
-	export class a extends el
+	export class a extends elm
 	{
 		constructor()
 		{
@@ -32,7 +30,7 @@ module tsw.elements
 		}
 	}
 
-	export class img extends el
+	export class img extends elm
 	{
 		constructor()
 		{
@@ -47,7 +45,7 @@ module tsw.elements
 		}
 	}
 
-	export class input extends el
+	export class input extends elm
 	{
 		constructor()
 		{
@@ -69,7 +67,7 @@ module tsw.elements
 		}
 	}
 
-	export class label extends el
+	export class label extends elm
 	{
 		constructor()
 		{

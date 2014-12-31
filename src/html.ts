@@ -4,53 +4,53 @@ module tsw.html
 	{
 		return new elements.rawHtml("&nbsp;");
 	}
-	export function rawHtml(s: string): elements.rawHtml
+	export function raw(s: string): elements.rawHtml
 	{
 		return new elements.rawHtml(s);
 	}
-	export function el(tagName: string): elements.el
+	export function el(tagName: string): elements.elm
 	{
-		return new elements.el(tagName);
+		return new elements.elm(tagName);
 	}
 
-	export function div(): elements.el
+	export function div(): elements.elm
 	{
-		return new elements.el('div');
+		return new elements.elm('div');
 	}
 
-	export function p(): elements.el
+	export function p(): elements.elm
 	{
-		return new elements.el('p');
+		return new elements.elm('p');
 	}
 
-	export function span(): elements.el
+	export function span(): elements.elm
 	{
-		return new elements.el('span');
+		return new elements.elm('span');
 	}
 
-	export function h1(): elements.el
+	export function h1(): elements.elm
 	{
-		return new elements.el('h1');
+		return new elements.elm('h1');
 	}
 
-	export function h2(): elements.el
+	export function h2(): elements.elm
 	{
-		return new elements.el('h2');
+		return new elements.elm('h2');
 	}
 
-	export function h3(): elements.el
+	export function h3(): elements.elm
 	{
-		return new elements.el('h3');
+		return new elements.elm('h3');
 	}
 
-	export function h4(): elements.el
+	export function h4(): elements.elm
 	{
-		return new elements.el('h4');
+		return new elements.elm('h4');
 	}
 
-	export function small(): elements.el
+	export function small(): elements.elm
 	{
-		return new elements.el('small');
+		return new elements.elm('small');
 	}
 
 	export function a(): elements.a
@@ -58,19 +58,19 @@ module tsw.html
 		return new elements.a();
 	}
 
-	export function nav(): elements.el
+	export function nav(): elements.elm
 	{
-		return new elements.el('nav');
+		return new elements.elm('nav');
 	}
 
-	export function br(): elements.el
+	export function br(): elements.elm
 	{
-		return new elements.el('br');
+		return new elements.elm('br');
 	}
 
-	export function hr(): elements.el
+	export function hr(): elements.elm
 	{
-		return new elements.el('hr');
+		return new elements.elm('hr');
 	}
 
 	export function button(): elements.button
@@ -78,19 +78,19 @@ module tsw.html
 		return new elements.button();
 	}
 
-	export function ul(): elements.el
+	export function ul(): elements.elm
 	{
-		return new elements.el('ul');
+		return new elements.elm('ul');
 	}
 
-	export function li(): elements.el
+	export function li(): elements.elm
 	{
-		return new elements.el('li');
+		return new elements.elm('li');
 	}
 
-	export function i(): elements.el
+	export function i(): elements.elm
 	{
-		return new elements.el('i');
+		return new elements.elm('i');
 	}
 
 	export function img(): elements.img
@@ -98,39 +98,39 @@ module tsw.html
 		return new elements.img();
 	}
 
-	export function form(): elements.el
+	export function form(): elements.elm
 	{
-		return new elements.el('form');
+		return new elements.elm('form');
 	}
 
-	export function table(): elements.el
+	export function table(): elements.elm
 	{
-		return new elements.el('table');
+		return new elements.elm('table');
 	}
 
-	export function thead(): elements.el
+	export function thead(): elements.elm
 	{
-		return new elements.el('thead');
+		return new elements.elm('thead');
 	}
 
-	export function tbody(): elements.el
+	export function tbody(): elements.elm
 	{
-		return new elements.el('tbody');
+		return new elements.elm('tbody');
 	}
 
-	export function tr(): elements.el
+	export function tr(): elements.elm
 	{
-		return new elements.el('tr');
+		return new elements.elm('tr');
 	}
 
-	export function th(): elements.el
+	export function th(): elements.elm
 	{
-		return new elements.el('th');
+		return new elements.elm('th');
 	}
 
-	export function td(): elements.el
+	export function td(): elements.elm
 	{
-		return new elements.el('td');
+		return new elements.elm('td');
 	}
 
 	export function label(): elements.label

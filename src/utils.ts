@@ -48,7 +48,7 @@ module tsw
 						this.addExpanded(target, v1);
 					}
 				}
-				else  if (v instanceof Function)
+				else if (v instanceof Function)
 				{
 					var v2 = v();
 					this.addExpanded(target, v2);
@@ -68,6 +68,27 @@ module tsw
 			}
 
 			return null;
+		}
+	}
+
+	export class arrayUtils2
+	{
+		static addExpanded(target: any[], v: any): void
+		{
+			if (v != null)
+			{
+				if (v instanceof Array)
+				{
+					for (var i = 0; i < v.length; i++)
+					{
+						this.addExpanded(target, v[i]);
+					}
+				}
+				else
+				{
+					target.push(v);
+				}
+			}
 		}
 	}
 }
