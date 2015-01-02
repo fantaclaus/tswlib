@@ -1,5 +1,22 @@
 module tsw.elements
 {
+	export interface JQueryEventHandler
+	{
+		(e: JQueryEventObject): void;
+	}
+
+	export interface JQueryEventHandlerMap
+	{
+		[eventName: string]: JQueryEventHandler;
+	}
+
+	export class rawHtml
+	{
+		constructor(public value: string)
+		{
+		}
+	}
+
 	export interface RendererFn
 	{
 		(): any;
@@ -40,8 +57,6 @@ module tsw.elements
 		style(name: string, val: () => string): elm;
 		style(name: string, val?: any): elm
 		{
-			//this.attr('style', v);
-
 			return this;
 		}
 
@@ -53,7 +68,7 @@ module tsw.elements
 
 			return this;
 		}
-		children(vals: any): elm
+		children(items: any): elm
 		{
 			return this;
 		}

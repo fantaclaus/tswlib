@@ -7,45 +7,118 @@ module tsw
 		}
 	}
 
-	export class RootRenderingNode extends RenderingNode
+	export class Root
 	{
 		private htmlElement: HTMLElement;
-		private renderer: any;
+		private _content: any;
 
 		public attachTo(htmlElement: HTMLElement)
 		{
 			this.htmlElement = htmlElement;
 		}
-		public content(renderer: tsw.elements.Renderer): void;
-		public content(renderer: tsw.elements.RendererFn): void;
-		public content(renderer: any): void
+		public content(c: any): void
 		{
-			this.renderer = renderer;
+			this._content = c;
 		}
 		public update()
 		{
-			var renderFn = RenderUtils.getRenderFn(this.renderer);
-			var els = renderFn();
+			var items = [];
+			RenderUtils.addExpanded(items, this._content);
 
-			var expandedEls = [];
-			arrayUtils2.addExpanded(expandedEls, els);
+			console.log(items);
 
-			console.log(expandedEls);
+			CtxScope.use(new CtxElementChildren(), () =>
+			{
+				var ss = items.map(item => RenderUtils.renderHtml(item));
+				console.log(ss);
 
-			var htm = expandedEls.join(' ');
-			this.htmlElement.innerHTML = htm;
+				var htm = ss
+					//.filter(s => s != '')
+					//.map(s => '>' + s + '<')
+					.join('\r\n');
+				this.htmlElement.innerHTML = '<pre>' + htmlEncode(htm) + '</pre>';
+			});
+		}
+	}
+
+	class Ctx
+	{
+		children: Ctx[] = [];
+	}
+
+	class CtxElementChildren extends Ctx
+	{
+
+	}
+
+	class CtxScope
+	{
+		private static contexts: Ctx[] = [];
+
+		static getCurrent(): Ctx
+		{
+			var contexts = this.contexts;
+			return contexts.length == 0 ? null : contexts[contexts.length - 1];
+		}
+
+		static use(ctx: Ctx, action: () => void)
+		{
+			this.contexts.push(ctx);
+
+			try
+			{
+				action();
+			}
+			finally
+			{
+				this.contexts.pop();
+			}
 		}
 	}
 
 	class RenderUtils
 	{
+		public static renderHtml(item: any): string
+		{
+			if (typeof item == 'boolean') return '';
+
+			if (item instanceof tsw.elements.rawHtml) return (<tsw.elements.rawHtml>item).value;
+
+			if (item instanceof tsw.elements.elm)
+			{
+				var elm = <tsw.elements.elm> item;
+				elmHtml = this.renderElement(elm);
+			}
+
+			var s = item.toString();
+
+			return htmlEncode(s);
+		}
+
 		public static getRenderFn(renderer: any): tsw.elements.RendererFn
 		{
 			if (renderer instanceof Function) return renderer;
 
 			if (renderer.render) return renderer.render;
 
-			throw new Error("argument doesn't implement renderer interface");
+			return null;
+		}
+
+		public static addExpanded(target: any[], v: any): void
+		{
+			if (v == null) return;
+
+			if (v instanceof Array)
+			{
+				for (var i = 0; i < v.length; i++)
+				{
+					this.addExpanded(target, v[i]);
+				}
+			}
+			else
+			{
+				target.push(v);
+			}
 		}
 	}
 }

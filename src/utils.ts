@@ -70,25 +70,4 @@ module tsw
 			return null;
 		}
 	}
-
-	export class arrayUtils2
-	{
-		static addExpanded(target: any[], v: any): void
-		{
-			if (v != null)
-			{
-				if (v instanceof Array)
-				{
-					for (var i = 0; i < v.length; i++)
-					{
-						this.addExpanded(target, v[i]);
-					}
-				}
-				else
-				{
-					target.push(v);
-				}
-			}
-		}
-	}
 }
