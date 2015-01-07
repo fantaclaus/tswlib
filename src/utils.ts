@@ -1,4 +1,4 @@
-module tsw
+module tsw.utils
 {
 	export function format(fmt: string, data: any)
 	{
@@ -25,11 +25,38 @@ module tsw
 
 		return s2;
 	}
+	export function join<T>(items: T[], delim:string, selector: (item: T) => string): string
+	{
+		var resut = '';
+
+		if (items)
+		{
+			for (var i = 0; i < items.length; i++)
+			{
+				var item = items[i];
+				if (item)
+				{
+					var s = selector(item);
+					if (s)
+					{
+						if (delim && resut) resut += delim;
+						resut += s;
+					}
+				}
+			}
+		}
+
+		return resut;
+	}
 	export function splitStr(s: string, delim: string): string[]
 	{
 		return s ? s.split(delim) : [];
 	}
 
+	export function isUndefined(v: any): boolean
+	{
+		return typeof v == 'undefined';
+	}
 	export function isNullOrUndefined(v: any): boolean
 	{
 		return v == null;

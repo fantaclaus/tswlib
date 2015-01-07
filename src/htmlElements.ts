@@ -80,11 +80,13 @@ module tsw.elements
 //
 //			return this;
 //		}
-		forRef(ref: tsw.elRefs.elementRef): label
-		{
-			this.attr('for', () => ref.getId());
 
-			return this;
-		}
+		// TODO: label for
+//		forRef(ref: tsw.elRefs.elementRef): label
+//		{
+//			this.attr('for', () => ref.getId());
+//
+//			return this;
+//		}
 	}
 }

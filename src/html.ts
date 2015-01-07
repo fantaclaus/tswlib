@@ -1,12 +1,12 @@
 module tsw.html
 {
-	export function nbsp(): elements.rawHtml
+	export function nbsp(): tsw.common.rawHtml
 	{
-		return new elements.rawHtml("&nbsp;");
+		return new tsw.common.rawHtml("&nbsp;");
 	}
-	export function raw(s: string): elements.rawHtml
+	export function raw(s: string): tsw.common.rawHtml
 	{
-		return new elements.rawHtml(s);
+		return new tsw.common.rawHtml(s);
 	}
 	export function el(tagName: string): elements.elm
 	{
