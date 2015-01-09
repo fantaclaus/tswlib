@@ -11,6 +11,7 @@ module tsw.render
 	{
 		private htmlElement: HTMLElement;
 		private _content: any;
+		private ctx: CtxRootElement;
 
 		public attachTo(htmlElement: HTMLElement)
 		{
@@ -23,34 +24,159 @@ module tsw.render
 		public update()
 		{
 			var ctx = new CtxRootElement();
+			ctx.htmlElement = this.htmlElement;
+			ctx.id = this.htmlElement.id; // TODO: generate id for root, if not assigned
+			this.ctx = ctx;
+
 			var htm = CtxScope.use(ctx, () => RenderUtils.renderHtml(this._content));
 			console.log('html: [%s]', htm);
+
 			this.htmlElement.innerHTML = htm;
+		}
+		logCtx(): void
+		{
+			//console.log(this.ctx);
+
+			this.ctx.log();
 		}
 	}
 
 	export class Ctx
 	{
-		children: Ctx[] = [];
+		private lastChildId: number;
+		private childCtxs: Ctx[];
+		private parentCtx: Ctx;
+
+		id: string;
+
+		getElmCtx(): CtxElement
+		{
+			var ctx = this;
+
+			while (ctx != null)
+			{
+				if (ctx instanceof CtxElement) return <CtxElement> ctx;
+
+				ctx = ctx.parentCtx;
+			}
+
+			return null;
+		}
+
+		addChildCtx(ctx: Ctx): void
+		{
+			this.childCtxs = this.childCtxs || [];
+			this.childCtxs.push(ctx);
+			ctx.parentCtx = this;
+		}
+		removeChildren(): void
+		{
+			if (this.childCtxs)
+			{
+				this.childCtxs.forEach(ctx =>
+				{
+					ctx.parentCtx = null;
+				});
+
+				this.childCtxs = null;
+			}
+		}
+		log(): void
+		{
+			if (this.childCtxs)
+				console.group('id: %s %o', this.id, this);
+			else
+				console.log('id: %s %o', this.id, this);
+
+			if (this.childCtxs)
+			{
+				this.childCtxs.forEach(ctx =>
+				{
+					ctx.log();
+				});
+			}
+
+			if (this.childCtxs) console.groupEnd();
+		}
+
+		generateNextChildId(): string
+		{
+			this.lastChildId = (this.lastChildId || 0) + 1;
+			return tsw.utils.appendDelimited(this.id, '.', this.lastChildId.toString());
+		}
+		resetNextChildId(): void
+		{
+			this.lastChildId = null;
+		}
+	}
+
+	class CtxElement extends Ctx
+	{
+		getHtmlElement(): HTMLElement
+		{
+			return document.getElementById(this.id);
+		}
+	}
+
+	class CtxRootElement extends CtxElement
+	{
+		htmlElement: HTMLElement;
+
+		getHtmlElement(): HTMLElement
+		{
+			return this.htmlElement;
+		}
+	}
+
+	export class CtxUpdatable extends Ctx
+	{
+		renderer: tsw.common.Renderer;
 
 		update(): void
 		{
 		}
 	}
-
-	class CtxRootElement extends Ctx
+	class CtxUpdatableChild extends CtxUpdatable
 	{
+		update(): void
+		{
+			var htmlElement = this.getElmCtx().getHtmlElement();
+			console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
+			this.resetNextChildId();
+
+			this.removeChildren();
+
+			// TODO: events cleanup
+			// TODO: databinding cleanup
+
+			var innerHtml = CtxScope.use(this, () =>
+			{
+				var content = this.renderer.render();
+				return RenderUtils.renderHtml(content);
+			});
+
+			var marker = new HtmlBlockMarkers(this.id);
+			DOMUtils.updateDOM(innerHtml, htmlElement, marker);
+		}
 	}
-
-	class CtxElement extends Ctx
+	class CtxUpdatableAttr extends CtxUpdatable
 	{
+		attrName: string;
 
-	}
+		update(): void
+		{
+			var htmlElement = this.getElmCtx().getHtmlElement();
+			console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
-	class CtxUpdatableChild extends Ctx
-	{
-		renderer: tsw.common.Renderer;
+			this.removeChildren();
+
+			var v: string = CtxScope.use(this, () => this.renderer.render());
+
+			console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
+
+			jQuery(htmlElement).attr(this.attrName, v);
+		}
 	}
 
 	export class CtxScope
@@ -61,6 +187,11 @@ module tsw.render
 		{
 			var contexts = this.contexts;
 			return contexts.length == 0 ? null : contexts[contexts.length - 1];
+		}
+		static getCurrentUpdatable(): CtxUpdatable
+		{
+			var ctx = this.getCurrent();
+			return ctx instanceof CtxUpdatable ? <CtxUpdatable> ctx : null;
 		}
 
 		static use<T>(ctx: Ctx, action: () => T)
@@ -110,8 +241,14 @@ module tsw.render
 		}
 		private static renderUpdatableChild(renderer: tsw.common.Renderer): string
 		{
+			var ctxParent = CtxScope.getCurrent();
+
 			var ctx = new CtxUpdatableChild();
+			ctxParent.addChildCtx(ctx);
 			ctx.renderer = renderer;
+			ctx.id = ctxParent.generateNextChildId();
+
+			//console.log('getElmCtx: %o', ctx.getElmCtx());
 
 			var innerHtml = CtxScope.use(ctx, () =>
 			{
@@ -119,24 +256,32 @@ module tsw.render
 				return RenderUtils.renderHtml(content);
 			});
 
-			var id = '1';
-			var marker = new HtmlBlockMarkers(id);
+			var marker = new HtmlBlockMarkers(ctx.id);
 			return "<!--" + marker.begin + "-->" + innerHtml + "<!--" + marker.end + "-->";
 		}
 		private static renderElement(elm: tsw.elements.elm): string
 		{
-			//console.log(elm, elm.z_getTagName());
+			var tagName = elm.z_getTagName();
+			//console.log(elm, tagName);
 
 			var children = elm.z_getChildren();
 			//console.log('children: ', children);
 
+			if (!tagName)
+			{
+				var innerHtml = RenderUtils.renderHtml(children);
+				return innerHtml;
+			}
+
 			var ctx = new CtxElement();
+
+			var ctxParent = CtxScope.getCurrent();
+			ctxParent.addChildCtx(ctx);
+			ctx.id = ctxParent.generateNextChildId();
+			elm.z_setId(ctx.id);
+
 			var innerHtml = CtxScope.use(ctx, () => RenderUtils.renderHtml(children));
-
-			var tagName = elm.z_getTagName();
-			if (!tagName) return innerHtml;
-
-			var attrsHtml = this.getElmAttrHtml(elm);
+			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(elm));
 			//console.log('attrsHtml: [%s]', attrsHtml);
 
 			var html = '<' + tagName;
@@ -176,47 +321,63 @@ module tsw.render
 				if (attrs.hasOwnProperty(attrName))
 				{
 					var attrVal = this.getAttrVal(attrs, attrName);
+					//console.log('%s=[%o]', attrName, attrVal);
 
-					var attrHtml = attrName;
-					if (attrVal) attrHtml += '=' + this.quoteAttrVal(attrVal);
+					if (attrVal !== null)
+					{
+						var attrHtml = attrName;
+						if (attrVal) attrHtml += '=' + this.quoteAttrVal(attrVal);
 
-					attrsHtml = tsw.utils.appendDelimited(attrsHtml, ' ', attrHtml);
+						attrsHtml = tsw.utils.appendDelimited(attrsHtml, ' ', attrHtml);
+					}
 				}
 			}
 
 			return attrsHtml;
 		}
-		private static getAttrVal(attrs: { [name: string]: any[] }, attrName:string): string
+		private static getAttrVal(attrs: { [name: string]: any[] }, attrName: string): string
 		{
 			var attrVal = '';
 
 			var attrVals: any[] = attrs[attrName];
+			//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
+
+			var hasRenderer: boolean;
+			var fn: () => any;
 
 			if (attrName == 'class')
 			{
-				attrVal = tsw.utils.join(attrVals, ' ', av => av);
+				hasRenderer = attrVals.some(av => this.canBeRenderer(av));
+				fn = () => tsw.utils.join(attrVals, ' ', av => this.getRenderedValue(av));
 			}
 			else if (attrName == 'style')
 			{
-				attrVal = tsw.utils.join(attrVals, '; ', av =>
-				{
-					var v = '';
-
-					if (av.name && av.value)
-					{
-						v = av.name + ": " + av.value;
-					}
-					else
-					{
-						v = av;
-					}
-
-					return v;
-				});
+				hasRenderer = attrVals.some(av => this.canBeRendererStyle(av));
+				fn = () => tsw.utils.join(attrVals, '; ', av => this.getRenderedStyleValue(av));
 			}
 			else
 			{
-				attrVal = tsw.utils.join(attrVals, ', ', av => av);
+				hasRenderer = attrVals.some(av => this.canBeRenderer(av));
+				fn = () => tsw.utils.join(attrVals, ', ', av => this.getRenderedValue(av));
+			}
+
+			if (hasRenderer)
+			{
+				var renderer = new Renderer();
+				renderer.render = fn;
+
+				var ctxParent = CtxScope.getCurrent();
+
+				var ctx = new CtxUpdatableAttr();
+				ctxParent.addChildCtx(ctx);
+				ctx.attrName = attrName;
+				ctx.renderer = renderer;
+
+				attrVal = CtxScope.use(ctx, fn);
+			}
+			else
+			{
+				attrVal = fn();
 			}
 
 			return attrVal;
@@ -232,7 +393,7 @@ module tsw.render
 				{
 					if (a.value != null)
 					{
-						var attrName = a.name.toLowerCase();
+						var attrName = a.name;
 						var vals: any[] = attrs[attrName];
 						if (!vals)
 						{
@@ -273,7 +434,14 @@ module tsw.render
 			return '"' + encoded + '"';
 		}
 
-		public static getRenderer(item: any): tsw.common.Renderer
+		private static canBeRenderer(item: any): boolean
+		{
+			if (item instanceof Function) return true;
+			if (item.render instanceof Function) return true;
+
+			return false;
+		}
+		private static getRenderer(item: any): tsw.common.Renderer
 		{
 			if (item instanceof Function)
 			{
@@ -286,13 +454,36 @@ module tsw.render
 			{
 				var r = new Renderer();
 				r.render = item.render;
+
+				if (item.beforeRemove instanceof Function) r.beforeRemove = item.beforeRemove;
+				if (item.afterInsert instanceof Function) r.afterInsert = item.afterInsert;
+
 				return r;
 			}
 
 			return null;
 		}
+		private static getRenderedValue(item: any): any
+		{
+			var renderer = this.getRenderer(item);
+			return renderer ? renderer.render() : item;
+		}
+		private static canBeRendererStyle(item: any): boolean
+		{
+			if (!item.name) return this.canBeRenderer(item);
 
-		public static addExpanded(target: any[], v: any): void
+			return this.canBeRenderer(item.value);
+		}
+		private static getRenderedStyleValue(item: any): any
+		{
+			if (!item.name) return this.getRenderedValue(item);
+
+			var v1 = this.getRenderedValue(item.value);
+			if (v1 != null && v1 !== '') return item.name + ": " + v1;
+			return '';
+		}
+
+		private static addExpanded(target: any[], v: any): void
 		{
 			if (v == null) return;
 
@@ -330,6 +521,116 @@ module tsw.render
 		getHtml(innerHtml: string)
 		{
 			return "<!--" + this.begin + "-->" + innerHtml + "<!--" + this.end + "-->";
+		}
+	}
+
+	class DOMUtils
+	{
+		private static tmpDiv: HTMLElement;
+
+		static updateDOM(html: string, targetElement: HTMLElement, markers: HtmlBlockMarkers)
+		{
+			// TODO: remove native event handlers
+
+			// TBODY must be defined explicitly in onRender() of a control
+			// otherwise commented section will not be found, since targetElement would be TABLE
+
+			var COMMENT_NODE = 8; // on IE8 Node is undefined
+
+			var nodeBeginMarker: Node = null;
+			var nodeEndMarker: Node = null;
+			var isFirst = false;
+			var isLast = false;
+
+			if (targetElement.hasChildNodes())
+			{
+				var firstNode = targetElement.firstChild;
+				if (firstNode.nodeType == COMMENT_NODE && firstNode.nodeValue == markers.begin)
+				{
+					nodeBeginMarker = firstNode;
+					isFirst = true;
+				}
+
+				var lastNode = targetElement.lastChild;
+				if (lastNode.nodeType == COMMENT_NODE && lastNode.nodeValue == markers.end)
+				{
+					nodeEndMarker = lastNode;
+					isLast = true;
+				}
+
+				if (!(isFirst && isLast))
+				{
+					var node = firstNode;
+
+					while (node)
+					{
+						if (node.nodeType == COMMENT_NODE)
+						{
+							if (node.nodeValue == markers.begin)
+							{
+								nodeBeginMarker = node;
+							}
+							else if (node.nodeValue == markers.end)
+							{
+								nodeEndMarker = node;
+							}
+						}
+
+						node = node.nextSibling;
+					}
+
+					if (!nodeBeginMarker && nodeEndMarker)
+					{
+						// IE 8 removes all comments in the beginning of innerHTML
+						nodeBeginMarker = firstNode;
+						isFirst = true;
+					}
+				}
+			}
+
+			if ((isFirst && isLast) || (!nodeBeginMarker && !nodeEndMarker))
+			{
+//				utils.log('html: replace complete');
+				targetElement.innerHTML = markers.getHtml(html);
+			}
+			else
+			{
+//				utils.log('html: replace between markers');
+
+				// replace between markers
+
+				if (nodeBeginMarker && nodeEndMarker)
+				{
+					var node = nodeBeginMarker.nextSibling;
+
+					while (node !== nodeEndMarker)
+					{
+						var nodeNext = node.nextSibling;
+
+						targetElement.removeChild(node);
+
+						node = nodeNext;
+					}
+
+					var tmpDiv = this.tmpDiv;
+					if (!tmpDiv)
+					{
+						tmpDiv = document.createElement('div');
+						this.tmpDiv = tmpDiv; // cache it
+					}
+
+					// insert html into TABLE doesn't work on IE<10
+					targetElement.insertBefore(tmpDiv, nodeEndMarker);
+					tmpDiv.insertAdjacentHTML('beforeBegin', html);
+					targetElement.removeChild(tmpDiv);
+
+					// doesn't work on IE
+//					var tmp = document.createElement('template');
+//					tmp.innerHTML = html;
+//					targetElement.insertBefore(tmp.content, nodeEndMarker);
+
+				}
+			}
 		}
 	}
 }

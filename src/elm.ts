@@ -17,14 +17,14 @@ module tsw.elements
 			this.tagName = tagName;
 		}
 
-		attr(name: string, val: string): elm;
-		attr(name: string, val: () => string): elm;
+		attr(name: string, val: any): elm;
+		attr(name: string, val: () => any): elm;
 		attr(name: string, val: any): elm
 		{
 			if (val != null)
 			{
 				this._attrs = this._attrs || [];
-				this._attrs.push({name: name, value: val});
+				this._attrs.push({name: name.toLowerCase(), value: val});
 			}
 			return this;
 		}
@@ -49,7 +49,7 @@ module tsw.elements
 			}
 			else if (val != null)
 			{
-				this.attr('style', <any>{name: name, value: val});
+				this.attr('style', <any>{ name: name, value: val });
 			}
 
 			return this;
@@ -61,6 +61,21 @@ module tsw.elements
 		{
 			this.attr('data-' + name, val);
 
+			return this;
+		}
+
+		checked(val: boolean): elm;
+		checked(val: () => boolean): elm;
+		checked(val: any): elm
+		{
+			if (val === true)
+			{
+				this.attr('checked', '');
+			}
+			else if (val instanceof Function)
+			{
+				this.attr('checked', () => val() ? '' : null);
+			}
 			return this;
 		}
 
@@ -102,6 +117,18 @@ module tsw.elements
 		z_getAttrs(): NameValue[]
 		{
 			return this._attrs;
+		}
+		z_setId(id: string): void
+		{
+			var item = tsw.utils.arrayUtils.find(this._attrs, a => a.name == 'id');
+			if (item)
+			{
+				item.value = id;
+			}
+			else
+			{
+				this.attr('id', id);
+			}
 		}
 	}
 }

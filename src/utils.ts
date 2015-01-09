@@ -27,26 +27,32 @@ module tsw.utils
 	}
 	export function join<T>(items: T[], delim:string, selector: (item: T) => string): string
 	{
-		var resut = '';
+		// if all items are null, return null
+
+		var result: string = null;
 
 		if (items)
 		{
 			for (var i = 0; i < items.length; i++)
 			{
 				var item = items[i];
-				if (item)
+				if (item != null)
 				{
 					var s = selector(item);
-					if (s)
+
+					if (s != null && result == null) result = ''; // if at least one item is converted to non-null, result is not null
+
+					if (s != null && s !== '') // don't add nulls and ampty strings. but zero-number value must be added.
 					{
-						if (delim && resut) resut += delim;
-						resut += s;
+						if (delim && result) result += delim;
+
+						result += s;
 					}
 				}
 			}
 		}
 
-		return resut;
+		return result;
 	}
 	export function splitStr(s: string, delim: string): string[]
 	{
@@ -88,10 +94,13 @@ module tsw.utils
 		}
 		static find<T>(array: T[], predicate: (value: T, index: number) => boolean): T
 		{
-			for (var i = 0, len = array.length; i < len; ++i)
+			if (array)
 			{
-				var item = array[i];
-				if (predicate(item, i)) return item;
+				for (var i = 0, len = array.length; i < len; ++i)
+				{
+					var item = array[i];
+					if (predicate(item, i)) return item;
+				}
 			}
 
 			return null;

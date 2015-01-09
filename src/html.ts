@@ -8,7 +8,7 @@ module tsw.html
 	{
 		return new tsw.common.rawHtml(s);
 	}
-	export function el(tagName: string): elements.elm
+	export function el(tagName: string = ''): elements.elm
 	{
 		return new elements.elm(tagName);
 	}
