@@ -33,10 +33,14 @@ module tsw.render
 
 			this.htmlElement.innerHTML = htm;
 		}
+		public getUpdatableContexts(): CtxUpdatable[]
+		{
+			var list: CtxUpdatable[] = [];
+			tsw.render.Ctx.collectUpdatableCtxs(list, this.ctx);
+			return list;
+		}
 		logCtx(): void
 		{
-			//console.log(this.ctx);
-
 			this.ctx.log();
 		}
 	}
@@ -84,25 +88,38 @@ module tsw.render
 		log(): void
 		{
 			if (this.childCtxs)
-				console.group('id: %s %o', this.id, this);
-			else
-				console.log('id: %s %o', this.id, this);
-
-			if (this.childCtxs)
 			{
+				console.group('id: %s %o', this.id, this);
+
 				this.childCtxs.forEach(ctx =>
 				{
 					ctx.log();
 				});
-			}
 
-			if (this.childCtxs) console.groupEnd();
+				console.groupEnd();
+			}
+			else
+			{
+				console.log('id: %s %o', this.id, this);
+			}
+		}
+		static collectUpdatableCtxs(list: CtxUpdatable[], ctx: Ctx): void
+		{
+			if (ctx instanceof CtxUpdatable) list.push(<CtxUpdatable> ctx);
+
+			if (ctx.childCtxs)
+			{
+				ctx.childCtxs.forEach(ctx2 =>
+				{
+					this.collectUpdatableCtxs(list, ctx2);
+				});
+			}
 		}
 
 		generateNextChildId(): string
 		{
 			this.lastChildId = (this.lastChildId || 0) + 1;
-			return tsw.utils.appendDelimited(this.id, '.', this.lastChildId.toString());
+			return tsw.utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 		}
 		resetNextChildId(): void
 		{
@@ -141,7 +158,7 @@ module tsw.render
 		update(): void
 		{
 			var htmlElement = this.getElmCtx().getHtmlElement();
-			console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
+			//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
 			this.resetNextChildId();
 
@@ -156,8 +173,12 @@ module tsw.render
 				return RenderUtils.renderHtml(content);
 			});
 
-			var marker = new HtmlBlockMarkers(this.id);
-			DOMUtils.updateDOM(innerHtml, htmlElement, marker);
+			var markers = new HtmlBlockMarkers(this.id);
+			DOMUtils.updateDOM(innerHtml, htmlElement, markers);
+		}
+		toString(): string // for DEBUG
+		{
+			return "block " + this.id;
 		}
 	}
 	class CtxUpdatableAttr extends CtxUpdatable
@@ -167,15 +188,32 @@ module tsw.render
 		update(): void
 		{
 			var htmlElement = this.getElmCtx().getHtmlElement();
-			console.log("%o update: %o %s", this, htmlElement, this.attrName);
+			//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
 			this.removeChildren();
 
 			var v: string = CtxScope.use(this, () => this.renderer.render());
 
-			console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
+			//console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
 
-			jQuery(htmlElement).attr(this.attrName, v);
+			var jqElement = jQuery(htmlElement);
+
+			if (this.attrName == 'checked')
+			{
+				jqElement.prop(this.attrName, v != null);
+			}
+			else
+			{
+				if (v == null)
+					jqElement.removeAttr(this.attrName);
+				else
+					jqElement.attr(this.attrName, v);
+			}
+		}
+		toString(): string // for DEBUG
+		{
+			var htmlElement = this.getElmCtx().getHtmlElement();
+			return "#" + htmlElement.id + "[" + this.attrName + "]";
 		}
 	}
 
@@ -225,16 +263,10 @@ module tsw.render
 
 			if (item instanceof tsw.common.rawHtml) return (<tsw.common.rawHtml> item).value;
 
-			if (item instanceof tsw.elements.elm)
-			{
-				return this.renderElement(<tsw.elements.elm> item);
-			}
+			if (item instanceof tsw.elements.elm) return this.renderElement(<tsw.elements.elm> item);
 
 			var renderer = this.getRenderer(item);
-			if (renderer)
-			{
-				return this.renderUpdatableChild(renderer);
-			}
+			if (renderer) return this.renderUpdatableChild(renderer);
 
 			var s = item.toString();
 			return tsw.utils.htmlEncode(s);
@@ -256,8 +288,8 @@ module tsw.render
 				return RenderUtils.renderHtml(content);
 			});
 
-			var marker = new HtmlBlockMarkers(ctx.id);
-			return "<!--" + marker.begin + "-->" + innerHtml + "<!--" + marker.end + "-->";
+			var markers = new HtmlBlockMarkers(ctx.id);
+			return markers.getHtml(innerHtml);
 		}
 		private static renderElement(elm: tsw.elements.elm): string
 		{
@@ -466,7 +498,8 @@ module tsw.render
 		private static getRenderedValue(item: any): any
 		{
 			var renderer = this.getRenderer(item);
-			return renderer ? renderer.render() : item;
+			var v = renderer ? renderer.render() : item;
+			return v === true ? '' : v === false ? null : v;
 		}
 		private static canBeRendererStyle(item: any): boolean
 		{
@@ -520,7 +553,8 @@ module tsw.render
 		}
 		getHtml(innerHtml: string)
 		{
-			return "<!--" + this.begin + "-->" + innerHtml + "<!--" + this.end + "-->";
+			var s = innerHtml || ''; // to avoid: "" + null == "null"
+			return "<!--" + this.begin + "-->" + s + "<!--" + this.end + "-->";
 		}
 	}
 
