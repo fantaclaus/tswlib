@@ -59,6 +59,14 @@ module tsw.elements
 			return this;
 		}
 
+		checked(val: boolean): elm;
+		checked(val: () => boolean): elm;
+		checked(val: any): elm
+		{
+			this.attr('checked', val);
+			return this;
+		}
+
 		placeholder(v: string): input
 		{
 			this.attr('placeholder', v);

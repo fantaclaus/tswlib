@@ -1,50 +1,5 @@
 module tsw.render
 {
-	export class RenderingNode
-	{
-		public update()
-		{
-		}
-	}
-
-	export class Root
-	{
-		private htmlElement: HTMLElement;
-		private _content: any;
-		private ctx: CtxRootElement;
-
-		public attachTo(htmlElement: HTMLElement)
-		{
-			this.htmlElement = htmlElement;
-		}
-		public content(c: any): void
-		{
-			this._content = c;
-		}
-		public update()
-		{
-			var ctx = new CtxRootElement();
-			ctx.htmlElement = this.htmlElement;
-			ctx.id = this.htmlElement.id; // TODO: generate id for root, if not assigned
-			this.ctx = ctx;
-
-			var htm = CtxScope.use(ctx, () => RenderUtils.renderHtml(this._content));
-			console.log('html: [%s]', htm);
-
-			this.htmlElement.innerHTML = htm;
-		}
-		public getUpdatableContexts(): CtxUpdatable[]
-		{
-			var list: CtxUpdatable[] = [];
-			tsw.render.Ctx.collectUpdatableCtxs(list, this.ctx);
-			return list;
-		}
-		logCtx(): void
-		{
-			this.ctx.log();
-		}
-	}
-
 	export class Ctx
 	{
 		private lastChildId: number;
@@ -103,6 +58,12 @@ module tsw.render
 				console.log('id: %s %o', this.id, this);
 			}
 		}
+		public getUpdatableContexts(): CtxUpdatable[]
+		{
+			var list: CtxUpdatable[] = [];
+			tsw.render.Ctx.collectUpdatableCtxs(list, this);
+			return list;
+		}
 		static collectUpdatableCtxs(list: CtxUpdatable[], ctx: Ctx): void
 		{
 			if (ctx instanceof CtxUpdatable) list.push(<CtxUpdatable> ctx);
@@ -135,16 +96,6 @@ module tsw.render
 		}
 	}
 
-	class CtxRootElement extends CtxElement
-	{
-		htmlElement: HTMLElement;
-
-		getHtmlElement(): HTMLElement
-		{
-			return this.htmlElement;
-		}
-	}
-
 	export class CtxUpdatable extends Ctx
 	{
 		renderer: tsw.common.Renderer;
@@ -153,6 +104,31 @@ module tsw.render
 		{
 		}
 	}
+
+	export class CtxRoot extends CtxElement
+	{
+		private htmlElement: HTMLElement;
+
+		getHtmlElement(): HTMLElement
+		{
+			return this.htmlElement;
+		}
+		render(htmlElement: HTMLElement, content: any): void
+		{
+			this.htmlElement = htmlElement;
+			this.id = htmlElement.id;
+
+			var htm = CtxScope.use(this, () => RenderUtils.renderHtml(content));
+			console.log('html: [%s]', htm);
+
+			this.htmlElement.innerHTML = htm;
+		}
+		toString(): string // for DEBUG
+		{
+			return "root";
+		}
+	}
+
 	class CtxUpdatableChild extends CtxUpdatable
 	{
 		update(): void
@@ -202,6 +178,10 @@ module tsw.render
 			{
 				jqElement.prop(this.attrName, v != null);
 			}
+			else if (this.attrName == 'value')
+			{
+				jqElement.prop(this.attrName, v);
+			}
 			else
 			{
 				if (v == null)
@@ -226,11 +206,11 @@ module tsw.render
 			var contexts = this.contexts;
 			return contexts.length == 0 ? null : contexts[contexts.length - 1];
 		}
-		static getCurrentUpdatable(): CtxUpdatable
-		{
-			var ctx = this.getCurrent();
-			return ctx instanceof CtxUpdatable ? <CtxUpdatable> ctx : null;
-		}
+		//static getCurrentUpdatable(): CtxUpdatable
+		//{
+		//	var ctx = this.getCurrent();
+		//	return ctx instanceof CtxUpdatable ? <CtxUpdatable> ctx : null;
+		//}
 
 		static use<T>(ctx: Ctx, action: () => T)
 		{
@@ -247,11 +227,11 @@ module tsw.render
 		}
 	}
 
-	export class RenderUtils
+	class RenderUtils
 	{
 		public static renderHtml(content: any): string
 		{
-			var items = [];
+			var items: any[] = [];
 			RenderUtils.addExpanded(items, content);
 
 			var htm = tsw.utils.join(items, null, item => RenderUtils.renderItem(item));
@@ -305,9 +285,9 @@ module tsw.render
 				return innerHtml;
 			}
 
-			var ctx = new CtxElement();
-
 			var ctxParent = CtxScope.getCurrent();
+
+			var ctx = new CtxElement();
 			ctxParent.addChildCtx(ctx);
 			ctx.id = ctxParent.generateNextChildId();
 			elm.z_setId(ctx.id);
@@ -341,7 +321,7 @@ module tsw.render
 
 			return !needNoClosingTag;
 		}
-		private static getElmAttrHtml(elm): string
+		private static getElmAttrHtml(elm: tsw.elements.elm): string
 		{
 			var attrsHtml = '';
 

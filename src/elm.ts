@@ -64,14 +64,6 @@ module tsw.elements
 			return this;
 		}
 
-		checked(val: boolean): elm;
-		checked(val: () => boolean): elm;
-		checked(val: any): elm
-		{
-			this.attr('checked', val);
-			return this;
-		}
-
 		disabled(val: boolean): elm;
 		disabled(val: () => boolean): elm;
 		disabled(val: any): elm
