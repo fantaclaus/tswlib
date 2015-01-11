@@ -6,6 +6,14 @@ module tsw.elements
 		value: any;
 	}
 
+	export class elementRef
+	{
+		asJQuery(): JQuery
+		{
+			return null;
+		}
+	}
+
 	export class elm
 	{
 		private tagName: string;
@@ -92,10 +100,11 @@ module tsw.elements
 			return this;
 		}
 
-		// TODO: addRef(ref: tsw.elRefs.elementRef): elm
-		//{
-		//
-		//}
+		addRef(ref: elementRef): elm
+		{
+			// TODO: addRef
+			return this;
+		}
 
 		// TODO: bind()
 

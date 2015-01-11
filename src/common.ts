@@ -27,4 +27,9 @@ module tsw.common
 		beforeRemove?: () => void;
 		afterInsert?: () => void;
 	}
+	export interface PropVal<T>
+	{
+		get: () => T;
+		set?: (v: T) => void;
+	}
 }

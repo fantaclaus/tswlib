@@ -232,9 +232,9 @@ module tsw.render
 		public static renderHtml(content: any): string
 		{
 			var items: any[] = [];
-			RenderUtils.addExpanded(items, content);
+			this.addExpanded(items, content);
 
-			var htm = tsw.utils.join(items, null, item => RenderUtils.renderItem(item));
+			var htm = tsw.utils.join(items, null, item => this.renderItem(item));
 			return htm;
 		}
 		private static renderItem(item: any): string
@@ -265,7 +265,7 @@ module tsw.render
 			var innerHtml = CtxScope.use(ctx, () =>
 			{
 				var content = renderer.render();
-				return RenderUtils.renderHtml(content);
+				return this.renderHtml(content);
 			});
 
 			var markers = new HtmlBlockMarkers(ctx.id);
@@ -281,7 +281,7 @@ module tsw.render
 
 			if (!tagName)
 			{
-				var innerHtml = RenderUtils.renderHtml(children);
+				var innerHtml = this.renderHtml(children);
 				return innerHtml;
 			}
 
@@ -292,16 +292,14 @@ module tsw.render
 			ctx.id = ctxParent.generateNextChildId();
 			elm.z_setId(ctx.id);
 
-			var innerHtml = CtxScope.use(ctx, () => RenderUtils.renderHtml(children));
 			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(elm));
 			//console.log('attrsHtml: [%s]', attrsHtml);
 
 			var html = '<' + tagName;
-
 			html = tsw.utils.appendDelimited(html, ' ', attrsHtml);
-
 			html += '>';
 
+			var innerHtml = CtxScope.use(ctx, () => this.renderHtml(children));
 			if (innerHtml) html += innerHtml;
 
 			if (innerHtml || this.elmNeedsCloseTag(tagName))
@@ -325,7 +323,7 @@ module tsw.render
 		{
 			var attrsHtml = '';
 
-			var attrs = RenderUtils.getElmAttrs(elm); // attr names in lower case
+			var attrs = this.getElmAttrs(elm); // attr names in lower case
 			//console.log('attrs: ', attrs);
 
 			for (var attrName in attrs)
@@ -450,6 +448,7 @@ module tsw.render
 		{
 			if (item instanceof Function) return true;
 			if (item.render instanceof Function) return true;
+			if (item.get instanceof Function) return true;
 
 			return false;
 		}
@@ -462,10 +461,10 @@ module tsw.render
 				return r;
 			}
 
-			if (item.render instanceof Function)
+			if (item.render instanceof Function || item.get instanceof Function)
 			{
 				var r = new Renderer();
-				r.render = item.render;
+				r.render = (item.render || item.get).bind(item);
 
 				if (item.beforeRemove instanceof Function) r.beforeRemove = item.beforeRemove;
 				if (item.afterInsert instanceof Function) r.afterInsert = item.afterInsert;

@@ -61,6 +61,7 @@ module tsw.elements
 
 		checked(val: boolean): elm;
 		checked(val: () => boolean): elm;
+		checked(val: tsw.common.PropVal<boolean>): elm;
 		checked(val: any): elm
 		{
 			this.attr('checked', val);
