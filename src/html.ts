@@ -151,8 +151,8 @@ module tsw.html
 	{
 		return new elements.elm('option');
 	}
-	export function textarea(): elements.elm
+	export function textarea(): elements.textarea
 	{
-		return new elements.elm('textarea');
+		return new elements.textarea();
 	}
 }

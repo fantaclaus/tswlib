@@ -17,17 +17,14 @@ module tsw.common
 		}
 	}
 
-	export interface RendererFn
-	{
-		(): any;
-	}
 	export interface Renderer
 	{
-		render: RendererFn;
+		render: () => any;
 		beforeRemove?: () => void;
 		afterInsert?: () => void;
 	}
-	export interface PropVal<T>
+
+	export interface PropDef<T>
 	{
 		get: () => T;
 		set?: (v: T) => void;

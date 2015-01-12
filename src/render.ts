@@ -90,16 +90,19 @@ module tsw.render
 
 	class CtxElement extends Ctx
 	{
+		tagName: string;
+
 		getHtmlElement(): HTMLElement
 		{
-			return document.getElementById(this.id);
+			var htmlElement = document.getElementById(this.id);
+			if (!htmlElement) throw new Error(utils.format("Can not find element by id: ${id}", { id: this.id }));
+
+			return htmlElement;
 		}
 	}
 
 	export class CtxUpdatable extends Ctx
 	{
-		renderer: tsw.common.Renderer;
-
 		update(): void
 		{
 		}
@@ -113,15 +116,24 @@ module tsw.render
 		{
 			return this.htmlElement;
 		}
-		render(htmlElement: HTMLElement, content: any): void
+		setHtmlElement(htmlElement: HTMLElement): void
 		{
 			this.htmlElement = htmlElement;
 			this.id = htmlElement.id;
-
-			var htm = CtxScope.use(this, () => RenderUtils.renderHtml(content));
+		}
+		render(content: any): void
+		{
+			var htm = this.generateHtml(content);
 			console.log('html: [%s]', htm);
 
 			this.htmlElement.innerHTML = htm;
+
+			// TODO:  register and attach event handlers
+			// TODO: call afterInsert
+		}
+		generateHtml(content: any): string // DEBUG
+		{
+			return CtxScope.use(this, () => RenderUtils.renderHtml(content));
 		}
 		toString(): string // for DEBUG
 		{
@@ -131,26 +143,30 @@ module tsw.render
 
 	class CtxUpdatableChild extends CtxUpdatable
 	{
+		content: any;
+
 		update(): void
 		{
-			var htmlElement = this.getElmCtx().getHtmlElement();
+			var ctxElm = this.getElmCtx();
+			var htmlElement = ctxElm.getHtmlElement();
 			//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
 			this.resetNextChildId();
+
+			// TODO: call beforeRemove
 
 			this.removeChildren();
 
 			// TODO: events cleanup
 			// TODO: databinding cleanup
 
-			var innerHtml = CtxScope.use(this, () =>
-			{
-				var content = this.renderer.render();
-				return RenderUtils.renderHtml(content);
-			});
+			var innerHtml = CtxScope.use(this, () => RenderUtils.getRenderedHtml(this.content));
 
 			var markers = new HtmlBlockMarkers(this.id);
 			DOMUtils.updateDOM(innerHtml, htmlElement, markers);
+
+			// TODO:  register event handlers
+			// TODO: call afterInsert
 		}
 		toString(): string // for DEBUG
 		{
@@ -160,15 +176,17 @@ module tsw.render
 	class CtxUpdatableAttr extends CtxUpdatable
 	{
 		attrName: string;
+		renderFn: () => any;
 
 		update(): void
 		{
-			var htmlElement = this.getElmCtx().getHtmlElement();
+			var ctxElm = this.getElmCtx();
+			var htmlElement = ctxElm.getHtmlElement();
 			//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
 			this.removeChildren();
 
-			var v: string = CtxScope.use(this, () => this.renderer.render());
+			var v: string = CtxScope.use(this, () => this.renderFn());
 
 			//console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
 
@@ -192,8 +210,8 @@ module tsw.render
 		}
 		toString(): string // for DEBUG
 		{
-			var htmlElement = this.getElmCtx().getHtmlElement();
-			return "#" + htmlElement.id + "[" + this.attrName + "]";
+			var elmCtx = this.getElmCtx();
+			return "#" + elmCtx.id + "[" + this.attrName + "]";
 		}
 	}
 
@@ -245,28 +263,32 @@ module tsw.render
 
 			if (item instanceof tsw.elements.elm) return this.renderElement(<tsw.elements.elm> item);
 
-			var renderer = this.getRenderer(item);
-			if (renderer) return this.renderUpdatableChild(renderer);
+			// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
+
+			var ctxParent = CtxScope.getCurrent();
+			var ctxElm = ctxParent.getElmCtx();
+			//console.log('ctxElm: ', ctxElm);
+			if (ctxElm.tagName != 'textarea')
+			{
+				var canBeUpdated = this.canBeUpdated(item);
+				if (canBeUpdated) return this.renderUpdatableChild(item);
+			}
 
 			var s = item.toString();
 			return tsw.utils.htmlEncode(s);
 		}
-		private static renderUpdatableChild(renderer: tsw.common.Renderer): string
+		private static renderUpdatableChild(item: any): string
 		{
 			var ctxParent = CtxScope.getCurrent();
 
 			var ctx = new CtxUpdatableChild();
 			ctxParent.addChildCtx(ctx);
-			ctx.renderer = renderer;
+			ctx.content = item;
 			ctx.id = ctxParent.generateNextChildId();
 
 			//console.log('getElmCtx: %o', ctx.getElmCtx());
 
-			var innerHtml = CtxScope.use(ctx, () =>
-			{
-				var content = renderer.render();
-				return this.renderHtml(content);
-			});
+			var innerHtml = CtxScope.use(ctx, () => this.getRenderedHtml(item));
 
 			var markers = new HtmlBlockMarkers(ctx.id);
 			return markers.getHtml(innerHtml);
@@ -290,6 +312,7 @@ module tsw.render
 			var ctx = new CtxElement();
 			ctxParent.addChildCtx(ctx);
 			ctx.id = ctxParent.generateNextChildId();
+			ctx.tagName = tagName;
 			elm.z_setId(ctx.id);
 
 			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(elm));
@@ -347,50 +370,44 @@ module tsw.render
 		}
 		private static getAttrVal(attrs: { [name: string]: any[] }, attrName: string): string
 		{
-			var attrVal = '';
-
 			var attrVals: any[] = attrs[attrName];
 			//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
 
-			var hasRenderer: boolean;
+			var canBeUpdated: boolean;
 			var fn: () => any;
 
 			if (attrName == 'class')
 			{
-				hasRenderer = attrVals.some(av => this.canBeRenderer(av));
-				fn = () => tsw.utils.join(attrVals, ' ', av => this.getRenderedValue(av));
+				canBeUpdated = attrVals.some(av => this.canBeUpdatedAttr(av));
+				fn = () => tsw.utils.join(attrVals, ' ', av => this.getRenderedAttrValue(av));
 			}
 			else if (attrName == 'style')
 			{
-				hasRenderer = attrVals.some(av => this.canBeRendererStyle(av));
+				canBeUpdated = attrVals.some(av => this.canBeUpdatedStyle(av));
 				fn = () => tsw.utils.join(attrVals, '; ', av => this.getRenderedStyleValue(av));
 			}
 			else
 			{
-				hasRenderer = attrVals.some(av => this.canBeRenderer(av));
-				fn = () => tsw.utils.join(attrVals, ', ', av => this.getRenderedValue(av));
+				canBeUpdated = attrVals.some(av => this.canBeUpdatedAttr(av));
+				fn = () => tsw.utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
 			}
 
-			if (hasRenderer)
+			if (canBeUpdated)
 			{
-				var renderer = new Renderer();
-				renderer.render = fn;
-
 				var ctxParent = CtxScope.getCurrent();
 
 				var ctx = new CtxUpdatableAttr();
 				ctxParent.addChildCtx(ctx);
 				ctx.attrName = attrName;
-				ctx.renderer = renderer;
+				ctx.renderFn = fn;
 
-				attrVal = CtxScope.use(ctx, fn);
+				var attrVal = CtxScope.use(ctx, fn);
+				return attrVal;
 			}
 			else
 			{
-				attrVal = fn();
+				return fn();
 			}
-
-			return attrVal;
 		}
 		private static getElmAttrs(elm: tsw.elements.elm): { [name: string]: any[] }
 		{
@@ -444,53 +461,54 @@ module tsw.render
 			return '"' + encoded + '"';
 		}
 
-		private static canBeRenderer(item: any): boolean
+		private static canBeUpdated(item: any): boolean
 		{
 			if (item instanceof Function) return true;
 			if (item.render instanceof Function) return true;
-			if (item.get instanceof Function) return true;
 
 			return false;
 		}
-		private static getRenderer(item: any): tsw.common.Renderer
+		public static getRenderedHtml(item: any): string
 		{
-			if (item instanceof Function)
-			{
-				var r = new Renderer();
-				r.render = item;
-				return r;
-			}
-
-			if (item.render instanceof Function || item.get instanceof Function)
-			{
-				var r = new Renderer();
-				r.render = (item.render || item.get).bind(item);
-
-				if (item.beforeRemove instanceof Function) r.beforeRemove = item.beforeRemove;
-				if (item.afterInsert instanceof Function) r.afterInsert = item.afterInsert;
-
-				return r;
-			}
-
-			return null;
+			var content = this.getRenderedContent(item);
+			return this.renderHtml(content);
 		}
-		private static getRenderedValue(item: any): any
+		private static getRenderedContent(item: any): any
 		{
-			var renderer = this.getRenderer(item);
-			var v = renderer ? renderer.render() : item;
-			return v === true ? '' : v === false ? null : v;
-		}
-		private static canBeRendererStyle(item: any): boolean
-		{
-			if (!item.name) return this.canBeRenderer(item);
+			if (item instanceof Function) return item();
+			if (item.render instanceof Function) return item.render();
 
-			return this.canBeRenderer(item.value);
+			return item;
+		}
+		private static getRenderedAttrValue(item: any): any
+		{
+			var v = this.getRenderedAttrValueRaw(item);
+			if (v === true) return '';
+			if (v === false) return null;
+			return v;
+		}
+		private static canBeUpdatedAttr(item: any): boolean
+		{
+			if (item instanceof Function) return true;
+			return false;
+		}
+		private static getRenderedAttrValueRaw(item: any): any
+		{
+			if (item instanceof Function) return item();
+
+			return item;
+		}
+		private static canBeUpdatedStyle(item: any): boolean
+		{
+			if (!item.name) return this.canBeUpdatedAttr(item);
+
+			return this.canBeUpdatedAttr(item.value);
 		}
 		private static getRenderedStyleValue(item: any): any
 		{
-			if (!item.name) return this.getRenderedValue(item);
+			if (!item.name) return this.getRenderedAttrValue(item);
 
-			var v1 = this.getRenderedValue(item.value);
+			var v1 = this.getRenderedAttrValue(item.value);
 			if (v1 != null && v1 !== '') return item.name + ": " + v1;
 			return '';
 		}
@@ -511,13 +529,6 @@ module tsw.render
 				target.push(v);
 			}
 		}
-	}
-
-	class Renderer implements tsw.common.Renderer
-	{
-		render: tsw.common.RendererFn;
-		beforeRemove: () => void;
-		afterInsert: () => void;
 	}
 
 	class HtmlBlockMarkers

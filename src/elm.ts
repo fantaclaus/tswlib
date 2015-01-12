@@ -22,7 +22,7 @@ module tsw.elements
 
 		constructor(tagName: string)
 		{
-			this.tagName = tagName;
+			this.tagName = tagName.toLowerCase();
 		}
 
 		attr(name: string, val: any): elm;

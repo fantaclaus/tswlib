@@ -45,7 +45,14 @@ module tsw.elements
 		}
 	}
 
-	export class input extends elm
+	class elmWithValue extends elm
+	{
+		value<T>(propDef: tsw.common.PropDef<T>): elm
+		{
+			return this;
+		}
+	}
+	export class input extends elmWithValue
 	{
 		constructor()
 		{
@@ -59,9 +66,9 @@ module tsw.elements
 			return this;
 		}
 
+		// todo: may be remove this. replace with value
 		checked(val: boolean): elm;
 		checked(val: () => boolean): elm;
-		checked(val: tsw.common.PropVal<boolean>): elm;
 		checked(val: any): elm
 		{
 			this.attr('checked', val);
@@ -73,6 +80,13 @@ module tsw.elements
 			this.attr('placeholder', v);
 
 			return this;
+		}
+	}
+	export class textarea extends elmWithValue
+	{
+		constructor()
+		{
+			super('textarea')
 		}
 	}
 
