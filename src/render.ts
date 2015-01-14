@@ -101,13 +101,6 @@ module tsw.render
 		}
 	}
 
-	export class CtxUpdatable extends Ctx
-	{
-		update(): void
-		{
-		}
-	}
-
 	export class CtxRoot extends CtxElement
 	{
 		private htmlElement: HTMLElement;
@@ -141,6 +134,16 @@ module tsw.render
 		}
 	}
 
+	export class CtxUpdatable extends Ctx
+	{
+		// TODO: extract getting value into connon method
+		// TODO: move to this class: renderFn: () => any;
+
+		update(): void
+		{
+		}
+	}
+
 	class CtxUpdatableChild extends CtxUpdatable
 	{
 		content: any;
@@ -170,7 +173,7 @@ module tsw.render
 		}
 		toString(): string // for DEBUG
 		{
-			return "block " + this.id;
+			return "block: " + this.id;
 		}
 	}
 	class CtxUpdatableAttr extends CtxUpdatable
@@ -211,7 +214,56 @@ module tsw.render
 		toString(): string // for DEBUG
 		{
 			var elmCtx = this.getElmCtx();
-			return "#" + elmCtx.id + "[" + this.attrName + "]";
+			return utils.format("attr: #${id}[${attrName}]",  {
+				id: elmCtx.id,
+				attrName: this.attrName,
+			});
+		}
+	}
+	class CtxUpdatableValue extends CtxUpdatable
+	{
+		tagName: string;
+		propName: string;
+		renderFn: () => any;
+
+		update(): void
+		{
+			var ctxElm = this.getElmCtx();
+			var htmlElement = ctxElm.getHtmlElement();
+
+			this.removeChildren();
+
+			var val = CtxScope.use(this, () => this.renderFn());
+			console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
+
+			//console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
+
+			var jqElement = jQuery(htmlElement);
+
+			if (this.tagName == 'textarea')
+			{
+				jqElement.val(val);
+			}
+			else
+			{
+				if (this.propName == 'checked')
+				{
+					jqElement.prop(this.propName, val);
+				}
+				else if (this.propName == 'value')
+				{
+					jqElement.val(val);
+				}
+			}
+		}
+		toString(): string // for DEBUG
+		{
+			var elmCtx = this.getElmCtx();
+			return utils.format("value: ${tagName}#${id}[${propName}]",  {
+				tagName: this.tagName,
+				id: elmCtx.id,
+				propName: this.propName,
+			});
 		}
 	}
 
@@ -243,6 +295,11 @@ module tsw.render
 				this.contexts.pop();
 			}
 		}
+	}
+
+	interface MapStringToArray
+	{
+		[name: string]: any[];
 	}
 
 	class RenderUtils
@@ -298,11 +355,11 @@ module tsw.render
 			var tagName = elm.z_getTagName();
 			//console.log(elm, tagName);
 
-			var children = elm.z_getChildren();
-			//console.log('children: ', children);
-
 			if (!tagName)
 			{
+				var children = elm.z_getChildren();
+				//console.log('children: ', children);
+
 				var innerHtml = this.renderHtml(children);
 				return innerHtml;
 			}
@@ -315,14 +372,70 @@ module tsw.render
 			ctx.tagName = tagName;
 			elm.z_setId(ctx.id);
 
-			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(elm));
+			//this.logElmAttrs(elm);
+
+			var attrs = this.getElmAttrs(elm); // attr names in lower case
+			//console.log('attrs: ', attrs);
+
+			var propDef = this.getValuePropDef(elm);
+			var val: any;
+			var valAttrName: string = null;
+			var valPropName: string = null;
+
+			var useVal = propDef && propDef.get instanceof Function;
+
+			if (useVal)
+			{
+				if (tagName == 'input')
+				{
+					var inputType = attrs['type'][0];
+					if (inputType == 'checkbox' || inputType == 'radio')
+					{
+						valAttrName = 'checked';
+						valPropName = 'checked';
+					}
+					else
+					{
+						valAttrName = 'value';
+						valPropName = 'value';
+					}
+				}
+				// TODO: if (tagName == 'select')
+
+				val = CtxScope.use(ctx, () => this.getValue(propDef, tagName, valPropName));
+			}
+
+			// remove attributes overriden by value propdef (checked or value)
+			if (useVal)
+			{
+				if (tagName == 'input')
+				{
+					delete attrs['checked'];
+					delete attrs['value'];
+
+					attrs[valAttrName] = [ val ];
+				}
+			}
+
+			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
 			//console.log('attrsHtml: [%s]', attrsHtml);
 
 			var html = '<' + tagName;
 			html = tsw.utils.appendDelimited(html, ' ', attrsHtml);
 			html += '>';
 
-			var innerHtml = CtxScope.use(ctx, () => this.renderHtml(children));
+			var innerHtml: string = null;
+
+			if (useVal && tagName == 'textarea')
+			{
+				innerHtml = utils.htmlEncode(val);
+			}
+			else
+			{
+				var children = elm.z_getChildren();
+				innerHtml = CtxScope.use(ctx, () => this.renderHtml(children));
+			}
+
 			if (innerHtml) html += innerHtml;
 
 			if (innerHtml || this.elmNeedsCloseTag(tagName))
@@ -332,6 +445,17 @@ module tsw.render
 
 			return html;
 		}
+
+		//private static logElmAttrs(elm)
+		//{
+		//	var elmAttrs = elm.z_getAttrs();
+		//	var ss = elmAttrs.reduce((s, ea) =>
+		//	{
+		//		return tsw.utils.appendDelimited(s, ', ', utils.format('{${name}=${value}}', ea));
+		//	}, '');
+		//	console.log('attrs: ', ss);
+		//}
+
 		private static elmNeedsCloseTag(tagName: string):boolean
 		{
 			var tagNameUpper = tagName.toUpperCase();
@@ -342,33 +466,26 @@ module tsw.render
 
 			return !needNoClosingTag;
 		}
-		private static getElmAttrHtml(elm: tsw.elements.elm): string
+		private static getElmAttrHtml(attrs: MapStringToArray): string
 		{
-			var attrsHtml = '';
-
-			var attrs = this.getElmAttrs(elm); // attr names in lower case
-			//console.log('attrs: ', attrs);
-
-			for (var attrName in attrs)
-			{
-				if (attrs.hasOwnProperty(attrName))
+			var attrsHtml = Object.keys(attrs)
+				.map(attrName => ({
+					attrName: attrName,
+					attrVal: this.getAttrVal(attrs, attrName)
+				}))
+				.filter(a => a.attrVal !== null)
+				.reduce((attrsHtml, a) =>
 				{
-					var attrVal = this.getAttrVal(attrs, attrName);
-					//console.log('%s=[%o]', attrName, attrVal);
+					var attrHtml = a.attrName;
+					if (a.attrVal) attrHtml += '=' + this.quoteAttrVal(a.attrVal);
 
-					if (attrVal !== null)
-					{
-						var attrHtml = attrName;
-						if (attrVal) attrHtml += '=' + this.quoteAttrVal(attrVal);
-
-						attrsHtml = tsw.utils.appendDelimited(attrsHtml, ' ', attrHtml);
-					}
-				}
-			}
+					return tsw.utils.appendDelimited(attrsHtml, ' ', attrHtml);
+				},
+				'');
 
 			return attrsHtml;
 		}
-		private static getAttrVal(attrs: { [name: string]: any[] }, attrName: string): string
+		private static getAttrVal(attrs: MapStringToArray, attrName: string): string
 		{
 			var attrVals: any[] = attrs[attrName];
 			//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
@@ -409,9 +526,9 @@ module tsw.render
 				return fn();
 			}
 		}
-		private static getElmAttrs(elm: tsw.elements.elm): { [name: string]: any[] }
+		private static getElmAttrs(elm: tsw.elements.elm): MapStringToArray
 		{
-			var attrs: { [name: string]: any[] } = {};
+			var attrs: MapStringToArray = {};
 
 			var elmAttrs = elm.z_getAttrs();
 			if (elmAttrs)
@@ -511,6 +628,28 @@ module tsw.render
 			var v1 = this.getRenderedAttrValue(item.value);
 			if (v1 != null && v1 !== '') return item.name + ": " + v1;
 			return '';
+		}
+		private static getValuePropDef(elm: tsw.elements.elm): tsw.common.PropDef<any>
+		{
+			if (elm instanceof tsw.elements.elmWithValue)
+			{
+				var elmV = <tsw.elements.elmWithValue> elm;
+				return elmV.z_getValuePropDef();
+			}
+
+			return null;
+		}
+		private static getValue(propDef: tsw.common.PropDef<any>, tagName: string, valPropName: string): any
+		{
+			var ctxParent = CtxScope.getCurrent();
+
+			var ctx = new CtxUpdatableValue();
+			ctxParent.addChildCtx(ctx);
+			ctx.tagName = tagName;
+			ctx.propName = valPropName;
+			ctx.renderFn = () => propDef.get();
+
+			return CtxScope.use(ctx, ctx.renderFn);
 		}
 
 		private static addExpanded(target: any[], v: any): void

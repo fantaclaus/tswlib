@@ -45,11 +45,20 @@ module tsw.elements
 		}
 	}
 
-	class elmWithValue extends elm
+	export class elmWithValue extends elm
 	{
+		private _valuePropDef: tsw.common.PropDef<any>;
+
 		value<T>(propDef: tsw.common.PropDef<T>): elm
 		{
+			this._valuePropDef = propDef;
+
 			return this;
+		}
+
+		z_getValuePropDef(): tsw.common.PropDef<any>
+		{
+			return this._valuePropDef;
 		}
 	}
 	export class input extends elmWithValue
