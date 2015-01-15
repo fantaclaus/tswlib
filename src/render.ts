@@ -366,6 +366,8 @@ module tsw.render
 
 			var ctxParent = CtxScope.getCurrent();
 
+			// TODO: if elm already has id, just use it
+
 			var ctx = new CtxElement();
 			ctxParent.addChildCtx(ctx);
 			ctx.id = ctxParent.generateNextChildId();
@@ -634,7 +636,8 @@ module tsw.render
 			if (elm instanceof tsw.elements.elmWithValue)
 			{
 				var elmV = <tsw.elements.elmWithValue> elm;
-				return elmV.z_getValuePropDef();
+				var pd = elmV.z_getValuePropDef();
+				return pd;
 			}
 
 			return null;

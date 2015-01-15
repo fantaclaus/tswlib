@@ -19,6 +19,7 @@ module tsw.elements
 		private tagName: string;
 		private _attrs: NameValue[];
 		private _children: NameValue[];
+		private eventHandlers: tsw.common.JQueryEventHandlerMap;
 
 		constructor(tagName: string)
 		{
@@ -97,6 +98,15 @@ module tsw.elements
 		}
 		on(eventName: string, handler: tsw.common.JQueryEventHandler): elm
 		{
+			this.eventHandlers = this.eventHandlers || {};
+
+			if (this.eventHandlers[eventName])
+			{
+				throw new Error(tsw.utils.format('Event handler "${eventName}" is already installed.', {eventName: eventName}));
+			}
+
+			this.eventHandlers[eventName] = handler;
+
 			return this;
 		}
 
@@ -131,6 +141,10 @@ module tsw.elements
 			{
 				this.attr('id', id);
 			}
+		}
+		z_getEventHandlers(): tsw.common.JQueryEventHandlerMap
+		{
+			return this.eventHandlers;
 		}
 	}
 }
