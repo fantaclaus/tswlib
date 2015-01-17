@@ -1,8 +1,6 @@
-src\clsRef.ts
-src\control.ts
-src\el.ts
-src\elRefs.ts
+src\common.ts
+src\elm.ts
 src\html.ts
-src\htmlElements.ts
+src\htmlelements.ts
 src\utils.ts
-src\domconn.ts
+src\render.ts

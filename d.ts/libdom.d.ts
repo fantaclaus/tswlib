@@ -4,17 +4,13 @@
  all unused definitions were removed to increase the compilation speed
  ***************************************************************************** */
 
-interface Element {
-	tagName: string;
-}
-
 interface NodeList {
 	length: number;
 	item(index: number): Node;
 	[index: number]: Node;
 }
 
-interface Node {
+interface Node extends EventTarget {
 	firstChild: Node;
 	lastChild: Node;
 	nextSibling: Node;
@@ -48,13 +44,23 @@ declare var Node: {
 	DOCUMENT_POSITION_PRECEDING: number;
 };
 
-interface HTMLElement extends Node {
+interface Element extends Node, NodeSelector {
+	tagName: string;
+}
+
+interface HTMLElement extends Element {
+	id: string;
 	innerHTML: string;
 	insertBefore(newChild: Node, refChild?: Node): Node;
 	insertAdjacentHTML(where: string, html: string): void;
 }
 
-interface Document {
+interface NodeSelector {
+	querySelectorAll(selectors: string): NodeList;
+	querySelector(selectors: string): Element;
+}
+
+interface Document extends NodeSelector {
 	title: string;
 	body: HTMLElement;
 	getElementById(elementId: string): HTMLElement;
@@ -95,6 +101,15 @@ interface Location
 
 interface Console {
 	log(message?: any, ...optionalParams: any[]): void;
+	info(message?: any, ...optionalParams: any[]): void;
+	error(message?: any, ...optionalParams: any[]): void;
+	warn(message?: any, ...optionalParams: any[]): void;
+	debug(message?: any, ...optionalParams: any[]): void;
+	trace(...optionalParams: any[]): void;
+	dir(value: any): void;
+	group(message: any, ...optionalParams: any[]): void;
+	groupCollapsed(message: any, ...optionalParams: any[]): void;
+	groupEnd(): void;
 }
 
 interface Event {

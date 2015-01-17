@@ -106,7 +106,7 @@ module tsw.render
 		}
 	}
 
-	class CtxElement extends Ctx
+	export class CtxElement extends Ctx
 	{
 		tagName: string;
 
