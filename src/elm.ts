@@ -98,14 +98,17 @@ module tsw.elements
 		}
 		on(eventName: string, handler: tsw.common.JQueryEventHandler): elm
 		{
-			this.eventHandlers = this.eventHandlers || {};
-
-			if (this.eventHandlers[eventName])
+			if (eventName && handler instanceof Function)
 			{
-				throw new Error(tsw.utils.format('Event handler "${eventName}" is already installed.', {eventName: eventName}));
-			}
+				this.eventHandlers = this.eventHandlers || {};
 
-			this.eventHandlers[eventName] = handler;
+				if (this.eventHandlers[eventName])
+				{
+					throw new Error(tsw.utils.format('Event handler "${eventName}" is already installed.', {eventName: eventName}));
+				}
+
+				this.eventHandlers[eventName] = handler;
+			}
 
 			return this;
 		}

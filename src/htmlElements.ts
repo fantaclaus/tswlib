@@ -7,9 +7,11 @@ module tsw.elements
 			super('button')
 		}
 
-		type(v: string): button
+		type(val: string): button;
+		type(val: () => string): button;
+		type(val: any): button
 		{
-			this.attr('type', v);
+			this.attr('type', val);
 
 			return this;
 		}
@@ -22,9 +24,11 @@ module tsw.elements
 			super('a')
 		}
 
-		href(v: string): a
+		href(val: string): a;
+		href(val: () => string): a;
+		href(val: any): a
 		{
-			this.attr('href', v);
+			this.attr('href', val);
 
 			return this;
 		}
@@ -37,9 +41,11 @@ module tsw.elements
 			super('img')
 		}
 
-		src(v: string): img
+		src(val: string): img;
+		src(val: () => string): img;
+		src(val: any): img
 		{
-			this.attr('src', v);
+			this.attr('src', val);
 
 			return this;
 		}
@@ -68,9 +74,11 @@ module tsw.elements
 			super('input')
 		}
 
-		type(v: string): input
+		type(val: string): input;
+		type(val: () => string): input;
+		type(val: any): input
 		{
-			this.attr('type', v);
+			this.attr('type', val);
 
 			return this;
 		}

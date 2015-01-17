@@ -10,11 +10,19 @@ module tsw.render
 
 		getElmCtx(): CtxElement
 		{
+			return <CtxElement> this.findParentCtx(ctx => ctx instanceof CtxElement);
+		}
+		getRootCtx(): CtxRoot
+		{
+			return <CtxRoot> this.findParentCtx(ctx => ctx instanceof CtxRoot);
+		}
+		private findParentCtx(predicate: (ctx: Ctx) => boolean): Ctx
+		{
 			var ctx = this;
 
 			while (ctx != null)
 			{
-				if (ctx instanceof CtxElement) return <CtxElement> ctx;
+				if (predicate(ctx)) return ctx;
 
 				ctx = ctx.parentCtx;
 			}
@@ -38,6 +46,16 @@ module tsw.render
 				});
 
 				this.childCtxs = null;
+			}
+		}
+		unregisterEventHandlers(ctxRoot: CtxRoot): void
+		{
+			if (this.childCtxs)
+			{
+				this.childCtxs.forEach(ctx =>
+				{
+					ctx.unregisterEventHandlers(ctxRoot);
+				});
 			}
 		}
 		log(): void
@@ -99,11 +117,19 @@ module tsw.render
 
 			return htmlElement;
 		}
+		unregisterEventHandlers(ctxRoot: CtxRoot): void
+		{
+			ctxRoot.detachElmEventHandlers(this.id);
+
+			super.unregisterEventHandlers(ctxRoot);
+		}
 	}
 
 	export class CtxRoot extends CtxElement
 	{
 		private htmlElement: HTMLElement;
+		private attachedEventNames: { [eventName: string]: boolean };
+		private eventHandlers: { [elmId: string]: tsw.common.JQueryEventHandlerMap };
 
 		getHtmlElement(): HTMLElement
 		{
@@ -121,7 +147,6 @@ module tsw.render
 
 			this.htmlElement.innerHTML = htm;
 
-			// TODO:  register and attach event handlers
 			// TODO: call afterInsert
 		}
 		generateHtml(content: any): string // DEBUG
@@ -132,13 +157,106 @@ module tsw.render
 		{
 			return "root";
 		}
+
+		attachElmEventHandlers(elmId: string, eventHandlers: tsw.common.JQueryEventHandlerMap): void
+		{
+			console.group('attached events for: %s: %o', elmId, eventHandlers);
+
+			this.eventHandlers = this.eventHandlers || {};
+			this.eventHandlers[elmId] = eventHandlers;
+
+			this.updateEventSubscriptions();
+
+			console.groupEnd();
+		}
+		detachElmEventHandlers(elmId: string): void
+		{
+			if (this.eventHandlers)
+			{
+				console.group('detachElmEventHandlers: %s', elmId);
+
+				var eventHandlers = this.eventHandlers[elmId];  // DEBUG
+				if (eventHandlers) console.log('detached events for: %s: %o', elmId, eventHandlers);  // DEBUG
+
+				delete this.eventHandlers[elmId];
+
+				this.updateEventSubscriptions();
+				console.groupEnd();
+			}
+		}
+		private updateEventSubscriptions(): void
+		{
+			var jqElm = jQuery(this.htmlElement);
+
+			var currentEventNames: { [eventName: string]: boolean } = {};
+			var currentEventNamesCount = 0;
+
+			if (this.eventHandlers)
+			{
+				utils.objUtils.forEachKey(this.eventHandlers, elmId =>
+				{
+					var elmEventHandlers = this.eventHandlers[elmId];
+					utils.objUtils.forEachKey(elmEventHandlers, eventName =>
+					{
+						currentEventNames[eventName] = true;
+						currentEventNamesCount++;
+					});
+				});
+			}
+
+			if (this.attachedEventNames)
+			{
+				utils.objUtils.forEachKey(this.attachedEventNames, eventName =>
+				{
+					if (!(eventName in currentEventNames))
+					{
+						console.log("unsubscribe from event: %s", eventName);
+						jqElm.off(eventName);
+					}
+				});
+			}
+
+			utils.objUtils.forEachKey(currentEventNames, eventName =>
+			{
+				if (!this.attachedEventNames || !(eventName in this.attachedEventNames))
+				{
+					//console.log("subscribe to event: %s", eventName);
+
+					jqElm.on(eventName, e =>
+					{
+						this.handleEvent(e);
+					});
+				}
+			});
+
+			this.attachedEventNames = currentEventNamesCount == 0 ? null : currentEventNames;
+		}
+		private handleEvent(e: JQueryEventObject)
+		{
+			var htmlElm = <HTMLElement> e.target;
+			var elmId = htmlElm.id;
+			var elmEventHandlers = this.eventHandlers[elmId];
+
+			if (elmEventHandlers)
+			{
+				var eventHandler = elmEventHandlers[e.type];
+				if (eventHandler)
+				{
+					//console.log('on event: %o for: %o id: %s; %s', e.type, e.target, elmId, htmlElm.tagName);
+
+					if (e.type == 'click' && htmlElm.tagName.toLowerCase() == 'a') //  && jQuery(htmlElm).attr('href') == "#"
+					{
+						e.preventDefault();
+					}
+
+					eventHandler(e);
+				}
+			}
+		}
 	}
 
 	export class CtxUpdatable extends Ctx
 	{
-		// TODO: extract getting value into connon method
-		// TODO: move to this class: renderFn: () => any;
-
 		update(): void
 		{
 		}
@@ -158,17 +276,17 @@ module tsw.render
 
 			// TODO: call beforeRemove
 
-			this.removeChildren();
-
-			// TODO: events cleanup
 			// TODO: databinding cleanup
+
+			var ctxRoot = this.getRootCtx();
+			this.unregisterEventHandlers(ctxRoot);
+			this.removeChildren();
 
 			var innerHtml = CtxScope.use(this, () => RenderUtils.getRenderedHtml(this.content));
 
 			var markers = new HtmlBlockMarkers(this.id);
 			DOMUtils.updateDOM(innerHtml, htmlElement, markers);
 
-			// TODO:  register event handlers
 			// TODO: call afterInsert
 		}
 		toString(): string // for DEBUG
@@ -314,16 +432,15 @@ module tsw.render
 		}
 		private static renderItem(item: any): string
 		{
-			if (typeof item == 'boolean') return '';
+			if (item === true || item === false) return '';
 
 			if (item instanceof tsw.common.rawHtml) return (<tsw.common.rawHtml> item).value;
 
 			if (item instanceof tsw.elements.elm) return this.renderElement(<tsw.elements.elm> item);
 
 			// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
-
-			var ctxParent = CtxScope.getCurrent();
-			var ctxElm = ctxParent.getElmCtx();
+ 			var ctxCurrent = CtxScope.getCurrent();
+			var ctxElm = ctxCurrent.getElmCtx();
 			//console.log('ctxElm: ', ctxElm);
 			if (ctxElm.tagName != 'textarea')
 			{
@@ -336,12 +453,12 @@ module tsw.render
 		}
 		private static renderUpdatableChild(item: any): string
 		{
-			var ctxParent = CtxScope.getCurrent();
+			var ctxCurrent = CtxScope.getCurrent();
 
 			var ctx = new CtxUpdatableChild();
-			ctxParent.addChildCtx(ctx);
+			ctxCurrent.addChildCtx(ctx);
 			ctx.content = item;
-			ctx.id = ctxParent.generateNextChildId();
+			ctx.id = ctxCurrent.generateNextChildId();
 
 			//console.log('getElmCtx: %o', ctx.getElmCtx());
 
@@ -364,13 +481,13 @@ module tsw.render
 				return innerHtml;
 			}
 
-			var ctxParent = CtxScope.getCurrent();
+			var ctxCurrent = CtxScope.getCurrent();
 
 			// TODO: if elm already has id, just use it
 
 			var ctx = new CtxElement();
-			ctxParent.addChildCtx(ctx);
-			ctx.id = ctxParent.generateNextChildId();
+			ctxCurrent.addChildCtx(ctx);
+			ctx.id = ctxCurrent.generateNextChildId();
 			ctx.tagName = tagName;
 			elm.z_setId(ctx.id);
 
@@ -381,43 +498,10 @@ module tsw.render
 
 			var propDef = this.getValuePropDef(elm);
 			var val: any;
-			var valAttrName: string = null;
-			var valPropName: string = null;
 
 			var useVal = propDef && propDef.get instanceof Function;
 
-			if (useVal)
-			{
-				if (tagName == 'input')
-				{
-					var inputType = attrs['type'][0];
-					if (inputType == 'checkbox' || inputType == 'radio')
-					{
-						valAttrName = 'checked';
-						valPropName = 'checked';
-					}
-					else
-					{
-						valAttrName = 'value';
-						valPropName = 'value';
-					}
-				}
-				// TODO: if (tagName == 'select')
-
-				val = CtxScope.use(ctx, () => this.getValue(propDef, tagName, valPropName));
-			}
-
-			// remove attributes overriden by value propdef (checked or value)
-			if (useVal)
-			{
-				if (tagName == 'input')
-				{
-					delete attrs['checked'];
-					delete attrs['value'];
-
-					attrs[valAttrName] = [ val ];
-				}
-			}
+			if (useVal) val = this.getValueAndUpdateAttrs(tagName, attrs, ctx, propDef);
 
 			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
 			//console.log('attrsHtml: [%s]', attrsHtml);
@@ -426,7 +510,7 @@ module tsw.render
 			html = tsw.utils.appendDelimited(html, ' ', attrsHtml);
 			html += '>';
 
-			var innerHtml: string = null;
+			var innerHtml: string;
 
 			if (useVal && tagName == 'textarea')
 			{
@@ -445,7 +529,49 @@ module tsw.render
 				html += '</' + tagName + '>';
 			}
 
+			var eventHanders = elm.z_getEventHandlers();
+			if (eventHanders)
+			{
+				var ctxRoot = ctxCurrent.getRootCtx();
+				ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
+			}
+
 			return html;
+		}
+		private static getValueAndUpdateAttrs(tagName: string, attrs: MapStringToArray,  ctx: Ctx, propDef: tsw.common.PropDef<any>): any
+		{
+			var valAttrName: string;
+			var valPropName: string;
+
+			if (tagName == 'input')
+			{
+				var attrType = attrs['type'];
+				var inputType = attrType ? attrType[0] : null;
+				if (inputType == 'checkbox' || inputType == 'radio')
+				{
+					valAttrName = 'checked';
+					valPropName = 'checked';
+				}
+				else
+				{
+					valAttrName = 'value';
+					valPropName = 'value';
+				}
+			}
+
+			var val = CtxScope.use(ctx, () => this.getValue(propDef, tagName, valPropName));
+
+			// replace attributes with value of propdef (checked or value)
+
+			if (tagName == 'input')
+			{
+				delete attrs['checked'];
+				delete attrs['value'];
+
+				attrs[valAttrName] = [val];
+			}
+
+			return val;
 		}
 
 		//private static logElmAttrs(elm)
@@ -513,10 +639,10 @@ module tsw.render
 
 			if (canBeUpdated)
 			{
-				var ctxParent = CtxScope.getCurrent();
+				var ctxCurrent = CtxScope.getCurrent();
 
 				var ctx = new CtxUpdatableAttr();
-				ctxParent.addChildCtx(ctx);
+				ctxCurrent.addChildCtx(ctx);
 				ctx.attrName = attrName;
 				ctx.renderFn = fn;
 
@@ -644,10 +770,10 @@ module tsw.render
 		}
 		private static getValue(propDef: tsw.common.PropDef<any>, tagName: string, valPropName: string): any
 		{
-			var ctxParent = CtxScope.getCurrent();
+			var ctxCurrent = CtxScope.getCurrent();
 
 			var ctx = new CtxUpdatableValue();
-			ctxParent.addChildCtx(ctx);
+			ctxCurrent.addChildCtx(ctx);
 			ctx.tagName = tagName;
 			ctx.propName = valPropName;
 			ctx.renderFn = () => propDef.get();

@@ -106,4 +106,20 @@ module tsw.utils
 			return null;
 		}
 	}
+	export class objUtils
+	{
+		static forEachKey(obj: any, action: (key: string) => void): void
+		{
+			if (obj)
+			{
+				for (var key in obj)
+				{
+					if (obj.hasOwnProperty(key))
+					{
+						action(key);
+					}
+				}
+			}
+		}
+	}
 }
