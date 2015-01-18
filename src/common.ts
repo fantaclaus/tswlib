@@ -29,4 +29,10 @@ module tsw.common
 		get: () => T;
 		set?: (v: T) => void;
 	}
+
+	export interface PropDefInternal
+	{
+		unbindCtx(ctx: tsw.render.CtxUpdatable): void;
+		getName(): string;
+	}
 }

@@ -58,11 +58,21 @@ module tsw.render
 				});
 			}
 		}
+		unbindPropDefs(): void
+		{
+			if (this.childCtxs)
+			{
+				this.childCtxs.forEach(ctx =>
+				{
+					ctx.unbindPropDefs();
+				});
+			}
+		}
 		log(): void
 		{
 			if (this.childCtxs)
 			{
-				console.group('id: %s %o', this.id, this);
+				console.group.apply(console, this.getDbgArgs());
 
 				this.childCtxs.forEach(ctx =>
 				{
@@ -73,7 +83,7 @@ module tsw.render
 			}
 			else
 			{
-				console.log('id: %s %o', this.id, this);
+				console.log.apply(console, this.getDbgArgs());
 			}
 		}
 		public getUpdatableContexts(): CtxUpdatable[]
@@ -104,6 +114,10 @@ module tsw.render
 		{
 			this.lastChildId = null;
 		}
+		getDbgArgs(): any[]
+		{
+			return ['%o #%s', this, this.id];
+		}
 	}
 
 	export class CtxElement extends Ctx
@@ -122,6 +136,11 @@ module tsw.render
 			ctxRoot.detachElmEventHandlers(this.id);
 
 			super.unregisterEventHandlers(ctxRoot);
+		}
+		getDbgArgs(): any[]
+		{
+			var htmlElement = document.getElementById(this.id);
+			return ['%o %s#%s %o', this, this.tagName, this.id, htmlElement];
 		}
 	}
 
@@ -253,12 +272,46 @@ module tsw.render
 				}
 			}
 		}
+		getDbgArgs(): any[]
+		{
+			return ['%o', this];
+		}
 	}
 
 	export class CtxUpdatable extends Ctx
 	{
+		private propDefs: tsw.common.PropDefInternal[];
+
 		update(): void
 		{
+			// TODO: delay update with queque
+		}
+
+		attachPropDef(propDef: tsw.common.PropDefInternal): void
+		{
+			this.propDefs = this.propDefs || [];
+
+			if (this.propDefs.indexOf(propDef) < 0)
+			{
+				this.propDefs.push(propDef);
+				var dbgArgs = this.getDbgArgs();
+				dbgArgs[0] = utils.appendDelimited(dbgArgs[0], ': ', 'attached propDef %s');
+				dbgArgs = dbgArgs.concat([propDef.getName()]);
+
+				console.log.apply(console, dbgArgs);
+			}
+		}
+		unbindPropDefs(): void
+		{
+			if (this.propDefs)
+			{
+				console.group('ctx %o: unbindPropDefs', this);
+				this.propDefs.forEach(propDef => propDef.unbindCtx(this));
+				this.propDefs = null;
+				console.groupEnd();
+			}
+
+			super.unbindPropDefs();
 		}
 	}
 
@@ -270,13 +323,13 @@ module tsw.render
 		{
 			var ctxElm = this.getElmCtx();
 			var htmlElement = ctxElm.getHtmlElement();
-			//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
+			console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
 			this.resetNextChildId();
 
 			// TODO: call beforeRemove
 
-			// TODO: databinding cleanup
+			this.unbindPropDefs();
 
 			var ctxRoot = this.getRootCtx();
 			this.unregisterEventHandlers(ctxRoot);
@@ -293,6 +346,10 @@ module tsw.render
 		{
 			return "block: " + this.id;
 		}
+		getDbgArgs(): any[]
+		{
+			return ['%o #%s', this, this.id];
+		}
 	}
 	class CtxUpdatableAttr extends CtxUpdatable
 	{
@@ -303,9 +360,7 @@ module tsw.render
 		{
 			var ctxElm = this.getElmCtx();
 			var htmlElement = ctxElm.getHtmlElement();
-			//console.log("%o update: %o %s", this, htmlElement, this.attrName);
-
-			this.removeChildren();
+			console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
 			var v: string = CtxScope.use(this, () => this.renderFn());
 
@@ -329,6 +384,10 @@ module tsw.render
 					jqElement.attr(this.attrName, v);
 			}
 		}
+		addChildCtx(ctx: Ctx): void
+		{
+			throw new Error("this subtype of Ctx can not have children");
+		}
 		toString(): string // for DEBUG
 		{
 			var elmCtx = this.getElmCtx();
@@ -336,6 +395,10 @@ module tsw.render
 				id: elmCtx.id,
 				attrName: this.attrName,
 			});
+		}
+		getDbgArgs(): any[]
+		{
+			return ['%o #%s[%s]', this, this.id, this.attrName];
 		}
 	}
 	class CtxUpdatableValue extends CtxUpdatable
@@ -349,12 +412,8 @@ module tsw.render
 			var ctxElm = this.getElmCtx();
 			var htmlElement = ctxElm.getHtmlElement();
 
-			this.removeChildren();
-
 			var val = CtxScope.use(this, () => this.renderFn());
 			console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
-
-			//console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
 
 			var jqElement = jQuery(htmlElement);
 
@@ -374,6 +433,10 @@ module tsw.render
 				}
 			}
 		}
+		addChildCtx(ctx: Ctx): void
+		{
+			throw new Error("this subtype of Ctx can not have children");
+		}
 		toString(): string // for DEBUG
 		{
 			var elmCtx = this.getElmCtx();
@@ -382,6 +445,10 @@ module tsw.render
 				id: elmCtx.id,
 				propName: this.propName,
 			});
+		}
+		getDbgArgs(): any[]
+		{
+			return ['%o prop:[%s]', this, this.propName];
 		}
 	}
 
@@ -427,8 +494,7 @@ module tsw.render
 			var items: any[] = [];
 			this.addExpanded(items, content);
 
-			var htm = tsw.utils.join(items, null, item => this.renderItem(item));
-			return htm;
+			return tsw.utils.join(items, null, item => this.renderItem(item));
 		}
 		private static renderItem(item: any): string
 		{
@@ -477,8 +543,7 @@ module tsw.render
 				var children = elm.z_getChildren();
 				//console.log('children: ', children);
 
-				var innerHtml = this.renderHtml(children);
-				return innerHtml;
+				return this.renderHtml(children);
 			}
 
 			var ctxCurrent = CtxScope.getCurrent();
@@ -646,8 +711,7 @@ module tsw.render
 				ctx.attrName = attrName;
 				ctx.renderFn = fn;
 
-				var attrVal = CtxScope.use(ctx, fn);
-				return attrVal;
+				return CtxScope.use(ctx, fn);
 			}
 			else
 			{
@@ -762,8 +826,7 @@ module tsw.render
 			if (elm instanceof tsw.elements.elmWithValue)
 			{
 				var elmV = <tsw.elements.elmWithValue> elm;
-				var pd = elmV.z_getValuePropDef();
-				return pd;
+				return elmV.z_getValuePropDef();
 			}
 
 			return null;
