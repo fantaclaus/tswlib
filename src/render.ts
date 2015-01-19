@@ -1,5 +1,30 @@
 module tsw.render
 {
+	export class CtxUtils
+	{
+		public static getCurrentCtx(): CtxUpdatable
+		{
+			var ctx = CtxScope.getCurrent();
+			if (ctx instanceof CtxUpdatable) return <CtxUpdatable> ctx;
+			return null;
+		}
+		public static update(contexts: CtxUpdatable[]): void
+		{
+			var contexts2 = contexts.slice(); // make a copy, because the original array will be changed during the process of recreation of contexts
+			contexts2.forEach(ctx =>
+			{
+				ctx.status = CtxStatus.toBeUpdated;
+				ctx.markChildrenForDelete();
+			});
+		}
+	}
+
+	enum CtxStatus
+	{
+		toBeRendered,
+		toBeUpdated,
+		toBeDeleted,
+	}
 	export class Ctx
 	{
 		private lastChildId: number;
@@ -68,7 +93,7 @@ module tsw.render
 				});
 			}
 		}
-		log(): void
+		dump(): void
 		{
 			if (this.childCtxs)
 			{
@@ -76,7 +101,7 @@ module tsw.render
 
 				this.childCtxs.forEach(ctx =>
 				{
-					ctx.log();
+					ctx.dump();
 				});
 
 				console.groupEnd();
@@ -89,7 +114,7 @@ module tsw.render
 		public getUpdatableContexts(): CtxUpdatable[]
 		{
 			var list: CtxUpdatable[] = [];
-			tsw.render.Ctx.collectUpdatableCtxs(list, this);
+			Ctx.collectUpdatableCtxs(list, this);
 			return list;
 		}
 		static collectUpdatableCtxs(list: CtxUpdatable[], ctx: Ctx): void
@@ -117,6 +142,13 @@ module tsw.render
 		getDbgArgs(): any[]
 		{
 			return ['%o #%s', this, this.id];
+		}
+		log(fmt: string, ...args: any[]): void
+		{
+			var dbgArgs = this.getDbgArgs();
+			dbgArgs[0] = utils.appendDelimited(dbgArgs[0], ': ', fmt);
+			dbgArgs = dbgArgs.concat(args);
+			console.log.apply(console, dbgArgs);
 		}
 	}
 
@@ -281,10 +313,10 @@ module tsw.render
 	export class CtxUpdatable extends Ctx
 	{
 		private propDefs: tsw.common.PropDefInternal[];
+		status: CtxStatus = CtxStatus.toBeRendered;
 
 		update(): void
 		{
-			// TODO: delay update with queque
 		}
 
 		attachPropDef(propDef: tsw.common.PropDefInternal): void
@@ -294,13 +326,17 @@ module tsw.render
 			if (this.propDefs.indexOf(propDef) < 0)
 			{
 				this.propDefs.push(propDef);
-				var dbgArgs = this.getDbgArgs();
-				dbgArgs[0] = utils.appendDelimited(dbgArgs[0], ': ', 'attached propDef %s');
-				dbgArgs = dbgArgs.concat([propDef.getName()]);
 
-				console.log.apply(console, dbgArgs);
+				var propName = this.getPropDefName(propDef);
+				this.log('attached propDef %s', propName);
 			}
 		}
+		private getPropDefName(propDef: tsw.common.PropDefInternal): string
+		{
+			var pdDbg = <tsw.common.PropDefDebug> propDef;
+			return pdDbg.getName ? pdDbg.getName() : '(no name)';
+		}
+
 		unbindPropDefs(): void
 		{
 			if (this.propDefs)

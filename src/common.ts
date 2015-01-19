@@ -33,6 +33,9 @@ module tsw.common
 	export interface PropDefInternal
 	{
 		unbindCtx(ctx: tsw.render.CtxUpdatable): void;
+	}
+	export interface PropDefDebug
+	{
 		getName(): string;
 	}
 }
