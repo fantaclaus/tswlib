@@ -2,29 +2,66 @@ module tsw.render
 {
 	export class CtxUtils
 	{
+		private static ctxUpdateQueue: CtxUpdatable[];
+		private static timerId: number;
+
 		public static getCurrentCtx(): CtxUpdatable
 		{
 			var ctx = CtxScope.getCurrent();
-			if (ctx instanceof CtxUpdatable) return <CtxUpdatable> ctx;
-			return null;
+			return ctx ? ctx.getParentUpdatableCtx() : null;
 		}
 		public static update(contexts: CtxUpdatable[]): void
 		{
-			var contexts2 = contexts.slice(); // make a copy, because the original array will be changed during the process of recreation of contexts
-			contexts2.forEach(ctx =>
+			if (!contexts || contexts.length == 0) return;
+
+			this.ctxUpdateQueue = this.ctxUpdateQueue || [];
+
+			contexts.forEach(ctx =>
 			{
-				ctx.status = CtxStatus.toBeUpdated;
-				ctx.markChildrenForDelete();
+				if (!utils.arrayUtils.contains(this.ctxUpdateQueue, ctx))
+				{
+					this.ctxUpdateQueue.push(ctx);
+				}
 			});
+
+			if (!this.timerId)
+			{
+				this.timerId = window.setTimeout(() => this.processQueue(), 0);
+			}
+		}
+		private static processQueue(): void
+		{
+			var contexts = this.ctxUpdateQueue;
+
+			this.timerId = null;
+			this.ctxUpdateQueue = null;
+
+			var contextsToUpdate = contexts.filter(ctx => !this.isAnyParentInList(ctx, contexts)); // do it before ctx.update(), since parents will be set to null
+
+			contextsToUpdate.forEach(ctx =>
+			{
+				console.group('update: %o %s', ctx, ctx.id);
+
+				ctx.update();
+
+				console.groupEnd();
+			});
+		}
+		private static isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[]): boolean
+		{
+			if (!ctx) return false;
+
+			while (true)
+			{
+				ctx = ctx.getParent();
+
+				if (!ctx) return false;
+
+				if (utils.arrayUtils.contains(contexts, ctx)) return true;
+			}
 		}
 	}
 
-	enum CtxStatus
-	{
-		toBeRendered,
-		toBeUpdated,
-		toBeDeleted,
-	}
 	export class Ctx
 	{
 		private lastChildId: number;
@@ -33,15 +70,23 @@ module tsw.render
 
 		id: string;
 
-		getElmCtx(): CtxElement
+		getParent(): Ctx
 		{
-			return <CtxElement> this.findParentCtx(ctx => ctx instanceof CtxElement);
+			return this.parentCtx;
 		}
-		getRootCtx(): CtxRoot
+		getParentElmCtx(): CtxWithHtmlElement
 		{
-			return <CtxRoot> this.findParentCtx(ctx => ctx instanceof CtxRoot);
+			return <CtxWithHtmlElement> this.findSelfOrParent(ctx => ctx instanceof CtxWithHtmlElement);
 		}
-		private findParentCtx(predicate: (ctx: Ctx) => boolean): Ctx
+		getParentUpdatableCtx(): CtxUpdatable
+		{
+			return <CtxUpdatable> this.findSelfOrParent(ctx => ctx instanceof CtxUpdatable);
+		}
+		getParentRootCtx(): CtxRoot
+		{
+			return <CtxRoot> this.findSelfOrParent(ctx => ctx instanceof CtxRoot);
+		}
+		private findSelfOrParent(predicate: (ctx: Ctx) => boolean): Ctx
 		{
 			var ctx = this;
 
@@ -53,6 +98,10 @@ module tsw.render
 			}
 
 			return null;
+		}
+		private forEachChild(action: (ctx: Ctx) => void): void
+		{
+			if (this.childCtxs) this.childCtxs.forEach(ctx => action(ctx));
 		}
 
 		addChildCtx(ctx: Ctx): void
@@ -67,6 +116,8 @@ module tsw.render
 			{
 				this.childCtxs.forEach(ctx =>
 				{
+					ctx.removeChildren();
+
 					ctx.parentCtx = null;
 				});
 
@@ -75,34 +126,29 @@ module tsw.render
 		}
 		unregisterEventHandlers(ctxRoot: CtxRoot): void
 		{
-			if (this.childCtxs)
-			{
-				this.childCtxs.forEach(ctx =>
-				{
-					ctx.unregisterEventHandlers(ctxRoot);
-				});
-			}
+			this.forEachChild(ctx => ctx.unregisterEventHandlers(ctxRoot));
 		}
 		unbindPropDefs(): void
 		{
-			if (this.childCtxs)
-			{
-				this.childCtxs.forEach(ctx =>
-				{
-					ctx.unbindPropDefs();
-				});
-			}
+			this.forEachChild(ctx => ctx.unbindPropDefs());
 		}
+		protected collectUpdatableCtxs(list: CtxUpdatable[]): void
+		{
+			this.forEachChild(ctx => ctx.collectUpdatableCtxs(list));
+		}
+		protected getParentHtmlElement()
+		{
+			var ctxElm = this.getParentElmCtx();
+			return ctxElm.getHtmlElement();
+		}
+
 		dump(): void
 		{
-			if (this.childCtxs)
+			if (this.childCtxs && this.childCtxs.length > 0)
 			{
 				console.group.apply(console, this.getDbgArgs());
 
-				this.childCtxs.forEach(ctx =>
-				{
-					ctx.dump();
-				});
+				this.childCtxs.forEach(ctx => ctx.dump());
 
 				console.groupEnd();
 			}
@@ -114,20 +160,8 @@ module tsw.render
 		public getUpdatableContexts(): CtxUpdatable[]
 		{
 			var list: CtxUpdatable[] = [];
-			Ctx.collectUpdatableCtxs(list, this);
+			this.collectUpdatableCtxs(list);
 			return list;
-		}
-		static collectUpdatableCtxs(list: CtxUpdatable[], ctx: Ctx): void
-		{
-			if (ctx instanceof CtxUpdatable) list.push(<CtxUpdatable> ctx);
-
-			if (ctx.childCtxs)
-			{
-				ctx.childCtxs.forEach(ctx2 =>
-				{
-					this.collectUpdatableCtxs(list, ctx2);
-				});
-			}
 		}
 
 		generateNextChildId(): string
@@ -135,11 +169,11 @@ module tsw.render
 			this.lastChildId = (this.lastChildId || 0) + 1;
 			return tsw.utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 		}
-		resetNextChildId(): void
+		protected resetNextChildId(): void
 		{
 			this.lastChildId = null;
 		}
-		getDbgArgs(): any[]
+		protected getDbgArgs(): any[]
 		{
 			return ['%o #%s', this, this.id];
 		}
@@ -152,10 +186,29 @@ module tsw.render
 		}
 	}
 
-	export class CtxElement extends Ctx
+	export class CtxWithHtmlElement extends Ctx
 	{
-		tagName: string;
+		getHtmlElement(): HTMLElement
+		{
+			return null;
+		}
+		getTagName(): string
+		{
+			return null;
+		}
+	}
 
+	export class CtxElement extends CtxWithHtmlElement
+	{
+		private tagName: string;
+
+		constructor(id: string, tagName: string)
+		{
+			super();
+
+			this.id = id;
+			this.tagName = tagName;
+		}
 		getHtmlElement(): HTMLElement
 		{
 			var htmlElement = document.getElementById(this.id);
@@ -163,6 +216,11 @@ module tsw.render
 
 			return htmlElement;
 		}
+		getTagName(): string
+		{
+			return this.tagName;
+		}
+
 		unregisterEventHandlers(ctxRoot: CtxRoot): void
 		{
 			ctxRoot.detachElmEventHandlers(this.id);
@@ -176,7 +234,7 @@ module tsw.render
 		}
 	}
 
-	export class CtxRoot extends CtxElement
+	export class CtxRoot extends CtxWithHtmlElement
 	{
 		private htmlElement: HTMLElement;
 		private attachedEventNames: { [eventName: string]: boolean };
@@ -232,6 +290,7 @@ module tsw.render
 				delete this.eventHandlers[elmId];
 
 				this.updateEventSubscriptions();
+
 				console.groupEnd();
 			}
 		}
@@ -313,7 +372,6 @@ module tsw.render
 	export class CtxUpdatable extends Ctx
 	{
 		private propDefs: tsw.common.PropDefInternal[];
-		status: CtxStatus = CtxStatus.toBeRendered;
 
 		update(): void
 		{
@@ -331,7 +389,7 @@ module tsw.render
 				this.log('attached propDef %s', propName);
 			}
 		}
-		private getPropDefName(propDef: tsw.common.PropDefInternal): string
+		private getPropDefName(propDef: any): string
 		{
 			var pdDbg = <tsw.common.PropDefDebug> propDef;
 			return pdDbg.getName ? pdDbg.getName() : '(no name)';
@@ -349,27 +407,39 @@ module tsw.render
 
 			super.unbindPropDefs();
 		}
+		collectUpdatableCtxs(list: CtxUpdatable[]): void
+		{
+			list.push(this);
+
+			super.collectUpdatableCtxs(list);
+		}
 	}
 
 	class CtxUpdatableChild extends CtxUpdatable
 	{
 		content: any;
 
+		constructor(id: string, content: any)
+		{
+			super();
+
+			this.id = id;
+			this.content = content;
+		}
 		update(): void
 		{
-			var ctxElm = this.getElmCtx();
-			var htmlElement = ctxElm.getHtmlElement();
+			var htmlElement = this.getParentHtmlElement();
 			console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
-
-			this.resetNextChildId();
 
 			// TODO: call beforeRemove
 
 			this.unbindPropDefs();
 
-			var ctxRoot = this.getRootCtx();
+			var ctxRoot = this.getParentRootCtx();
 			this.unregisterEventHandlers(ctxRoot);
+
 			this.removeChildren();
+			this.resetNextChildId();
 
 			var innerHtml = CtxScope.use(this, () => RenderUtils.getRenderedHtml(this.content));
 
@@ -387,6 +457,7 @@ module tsw.render
 			return ['%o #%s', this, this.id];
 		}
 	}
+
 	class CtxUpdatableAttr extends CtxUpdatable
 	{
 		attrName: string;
@@ -394,8 +465,7 @@ module tsw.render
 
 		update(): void
 		{
-			var ctxElm = this.getElmCtx();
-			var htmlElement = ctxElm.getHtmlElement();
+			var htmlElement = this.getParentHtmlElement();
 			console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
 			var v: string = CtxScope.use(this, () => this.renderFn());
@@ -420,15 +490,11 @@ module tsw.render
 					jqElement.attr(this.attrName, v);
 			}
 		}
-		addChildCtx(ctx: Ctx): void
-		{
-			throw new Error("this subtype of Ctx can not have children");
-		}
 		toString(): string // for DEBUG
 		{
-			var elmCtx = this.getElmCtx();
+			var ctxElm = this.getParentElmCtx();
 			return utils.format("attr: #${id}[${attrName}]",  {
-				id: elmCtx.id,
+				id: ctxElm.id,
 				attrName: this.attrName,
 			});
 		}
@@ -437,6 +503,7 @@ module tsw.render
 			return ['%o #%s[%s]', this, this.id, this.attrName];
 		}
 	}
+
 	class CtxUpdatableValue extends CtxUpdatable
 	{
 		tagName: string;
@@ -445,8 +512,7 @@ module tsw.render
 
 		update(): void
 		{
-			var ctxElm = this.getElmCtx();
-			var htmlElement = ctxElm.getHtmlElement();
+			var htmlElement = this.getParentHtmlElement();
 
 			var val = CtxScope.use(this, () => this.renderFn());
 			console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
@@ -469,16 +535,12 @@ module tsw.render
 				}
 			}
 		}
-		addChildCtx(ctx: Ctx): void
-		{
-			throw new Error("this subtype of Ctx can not have children");
-		}
 		toString(): string // for DEBUG
 		{
-			var elmCtx = this.getElmCtx();
+			var ctxElm = this.getParentElmCtx();
 			return utils.format("value: ${tagName}#${id}[${propName}]",  {
 				tagName: this.tagName,
-				id: elmCtx.id,
+				id: ctxElm.id,
 				propName: this.propName,
 			});
 		}
@@ -497,11 +559,6 @@ module tsw.render
 			var contexts = this.contexts;
 			return contexts.length == 0 ? null : contexts[contexts.length - 1];
 		}
-		//static getCurrentUpdatable(): CtxUpdatable
-		//{
-		//	var ctx = this.getCurrent();
-		//	return ctx instanceof CtxUpdatable ? <CtxUpdatable> ctx : null;
-		//}
 
 		static use<T>(ctx: Ctx, action: () => T)
 		{
@@ -542,9 +599,11 @@ module tsw.render
 
 			// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
  			var ctxCurrent = CtxScope.getCurrent();
-			var ctxElm = ctxCurrent.getElmCtx();
+			var ctxElm = ctxCurrent.getParentElmCtx();
+			var tagName = ctxElm ? ctxElm.getTagName() : null;
+
 			//console.log('ctxElm: ', ctxElm);
-			if (ctxElm.tagName != 'textarea')
+			if (tagName != 'textarea')
 			{
 				var canBeUpdated = this.canBeUpdated(item);
 				if (canBeUpdated) return this.renderUpdatableChild(item);
@@ -557,10 +616,10 @@ module tsw.render
 		{
 			var ctxCurrent = CtxScope.getCurrent();
 
-			var ctx = new CtxUpdatableChild();
+			var id = ctxCurrent.generateNextChildId();
+
+			var ctx = new CtxUpdatableChild(id, item);
 			ctxCurrent.addChildCtx(ctx);
-			ctx.content = item;
-			ctx.id = ctxCurrent.generateNextChildId();
 
 			//console.log('getElmCtx: %o', ctx.getElmCtx());
 
@@ -586,10 +645,10 @@ module tsw.render
 
 			// TODO: if elm already has id, just use it
 
-			var ctx = new CtxElement();
+			var id = ctxCurrent.generateNextChildId();
+
+			var ctx = new CtxElement(id, tagName);
 			ctxCurrent.addChildCtx(ctx);
-			ctx.id = ctxCurrent.generateNextChildId();
-			ctx.tagName = tagName;
 			elm.z_setId(ctx.id);
 
 			//this.logElmAttrs(elm);
@@ -633,7 +692,7 @@ module tsw.render
 			var eventHanders = elm.z_getEventHandlers();
 			if (eventHanders)
 			{
-				var ctxRoot = ctxCurrent.getRootCtx();
+				var ctxRoot = ctxCurrent.getParentRootCtx();
 				ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
 			}
 
@@ -809,7 +868,8 @@ module tsw.render
 		private static canBeUpdated(item: any): boolean
 		{
 			if (item instanceof Function) return true;
-			if (item.render instanceof Function) return true;
+			if (item.render instanceof Function) return true; // macro element
+			if (item.get instanceof Function) return true; // PropVal
 
 			return false;
 		}
@@ -822,6 +882,7 @@ module tsw.render
 		{
 			if (item instanceof Function) return item();
 			if (item.render instanceof Function) return item.render();
+			if (item.get instanceof Function) return item.get();
 
 			return item;
 		}
@@ -835,11 +896,13 @@ module tsw.render
 		private static canBeUpdatedAttr(item: any): boolean
 		{
 			if (item instanceof Function) return true;
+			if (item.get instanceof Function && item.set instanceof Function) return true; // PropVal
 			return false;
 		}
 		private static getRenderedAttrValueRaw(item: any): any
 		{
 			if (item instanceof Function) return item();
+			if (item.get instanceof Function) return item.get();
 
 			return item;
 		}

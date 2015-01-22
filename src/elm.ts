@@ -66,6 +66,7 @@ module tsw.elements
 
 		data(name: string, val: string): elm;
 		data(name: string, val: () => string): elm;
+		data(name: string, val: tsw.common.PropDef<any>): elm;
 		data(name: string, val: any): elm
 		{
 			this.attr('data-' + name, val);

@@ -105,6 +105,10 @@ module tsw.utils
 
 			return null;
 		}
+		static contains(array: any[], item: any): boolean
+		{
+			return array.indexOf(item) >= 0;
+		}
 	}
 	export class objUtils
 	{
