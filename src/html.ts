@@ -28,6 +28,16 @@ module tsw.html
 		return new elements.elm('span');
 	}
 
+	export function b(): elements.elm
+	{
+		return new elements.elm('b');
+	}
+
+	export function i(): elements.elm
+	{
+		return new elements.elm('i');
+	}
+
 	export function h1(): elements.elm
 	{
 		return new elements.elm('h1');
@@ -86,11 +96,6 @@ module tsw.html
 	export function li(): elements.elm
 	{
 		return new elements.elm('li');
-	}
-
-	export function i(): elements.elm
-	{
-		return new elements.elm('i');
 	}
 
 	export function img(): elements.img

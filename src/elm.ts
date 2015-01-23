@@ -134,18 +134,18 @@ module tsw.elements
 		{
 			return this._attrs;
 		}
-		z_setId(id: string): void
-		{
-			var item = tsw.utils.arrayUtils.find(this._attrs, a => a.name == 'id');
-			if (item)
-			{
-				item.value = id;
-			}
-			else
-			{
-				this.attr('id', id);
-			}
-		}
+		//z_setId(id: string): void
+		//{
+		//	var item = tsw.utils.arrayUtils.find(this._attrs, a => a.name == 'id');
+		//	if (item)
+		//	{
+		//		item.value = id;
+		//	}
+		//	else
+		//	{
+		//		this.attr('id', id);
+		//	}
+		//}
 		z_getEventHandlers(): tsw.common.JQueryEventHandlerMap
 		{
 			return this.eventHandlers;

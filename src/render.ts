@@ -40,11 +40,11 @@ module tsw.render
 
 			contextsToUpdate.forEach(ctx =>
 			{
-				console.group('update: %o %s', ctx, ctx.id);
+				//console.group('update: %o %s', ctx, ctx.id);
 
 				ctx.update();
 
-				console.groupEnd();
+				//console.groupEnd();
 			});
 		}
 		private static isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[]): boolean
@@ -124,6 +124,10 @@ module tsw.render
 				this.childCtxs = null;
 			}
 		}
+		hasChildren(): boolean
+		{
+			return this.childCtxs != null && this.childCtxs.length > 0;
+		}
 		unregisterEventHandlers(ctxRoot: CtxRoot): void
 		{
 			this.forEachChild(ctx => ctx.unregisterEventHandlers(ctxRoot));
@@ -142,21 +146,21 @@ module tsw.render
 			return ctxElm.getHtmlElement();
 		}
 
-		dump(): void
-		{
-			if (this.childCtxs && this.childCtxs.length > 0)
-			{
-				console.group.apply(console, this.getDbgArgs());
-
-				this.childCtxs.forEach(ctx => ctx.dump());
-
-				console.groupEnd();
-			}
-			else
-			{
-				console.log.apply(console, this.getDbgArgs());
-			}
-		}
+		//dump(): void
+		//{
+		//	if (this.childCtxs && this.childCtxs.length > 0)
+		//	{
+		//		console.group.apply(console, this.getDbgArgs());
+		//
+		//		this.childCtxs.forEach(ctx => ctx.dump());
+		//
+		//		console.groupEnd();
+		//	}
+		//	else
+		//	{
+		//		console.log.apply(console, this.getDbgArgs());
+		//	}
+		//}
 		public getUpdatableContexts(): CtxUpdatable[]
 		{
 			var list: CtxUpdatable[] = [];
@@ -177,13 +181,13 @@ module tsw.render
 		{
 			return ['%o #%s', this, this.id];
 		}
-		log(fmt: string, ...args: any[]): void
-		{
-			var dbgArgs = this.getDbgArgs();
-			dbgArgs[0] = utils.appendDelimited(dbgArgs[0], ': ', fmt);
-			dbgArgs = dbgArgs.concat(args);
-			console.log.apply(console, dbgArgs);
-		}
+		//log(fmt: string, ...args: any[]): void
+		//{
+		//	var dbgArgs = this.getDbgArgs();
+		//	dbgArgs[0] = utils.appendDelimited(dbgArgs[0], ': ', fmt);
+		//	dbgArgs = dbgArgs.concat(args);
+		//	console.log.apply(console, dbgArgs);
+		//}
 	}
 
 	export class CtxWithHtmlElement extends Ctx
@@ -252,13 +256,13 @@ module tsw.render
 		render(content: any): void
 		{
 			var htm = this.generateHtml(content);
-			console.log('html: [%s]', htm);
+			//console.log('html: [%s]', htm);
 
 			this.htmlElement.innerHTML = htm;
 
 			// TODO: call afterInsert
 		}
-		generateHtml(content: any): string // DEBUG
+		private generateHtml(content: any): string // DEBUG
 		{
 			return CtxScope.use(this, () => RenderUtils.renderHtml(content));
 		}
@@ -269,29 +273,29 @@ module tsw.render
 
 		attachElmEventHandlers(elmId: string, eventHandlers: tsw.common.JQueryEventHandlerMap): void
 		{
-			console.group('attached events for: %s: %o', elmId, eventHandlers);
+			//console.group('attached events for: %s: %o', elmId, eventHandlers);
 
 			this.eventHandlers = this.eventHandlers || {};
 			this.eventHandlers[elmId] = eventHandlers;
 
 			this.updateEventSubscriptions();
 
-			console.groupEnd();
+			//console.groupEnd();
 		}
 		detachElmEventHandlers(elmId: string): void
 		{
 			if (this.eventHandlers)
 			{
-				console.group('detachElmEventHandlers: %s', elmId);
+				//console.group('detachElmEventHandlers: %s', elmId);
 
-				var eventHandlers = this.eventHandlers[elmId];  // DEBUG
-				if (eventHandlers) console.log('detached events for: %s: %o', elmId, eventHandlers);  // DEBUG
+				//var eventHandlers = this.eventHandlers[elmId];  // DEBUG
+				//if (eventHandlers) console.log('detached events for: %s: %o', elmId, eventHandlers);  // DEBUG
 
 				delete this.eventHandlers[elmId];
 
 				this.updateEventSubscriptions();
 
-				console.groupEnd();
+				//console.groupEnd();
 			}
 		}
 		private updateEventSubscriptions(): void
@@ -320,7 +324,7 @@ module tsw.render
 				{
 					if (!(eventName in currentEventNames))
 					{
-						console.log("unsubscribe from event: %s", eventName);
+						//console.log("unsubscribe from event: %s", eventName);
 						jqElm.off(eventName);
 					}
 				});
@@ -344,9 +348,7 @@ module tsw.render
 		private handleEvent(e: JQueryEventObject)
 		{
 			var htmlElm = <HTMLElement> e.target;
-			var elmId = htmlElm.id;
-			var elmEventHandlers = this.eventHandlers[elmId];
-
+			var elmEventHandlers = this.findEventHandlers(htmlElm);
 			if (elmEventHandlers)
 			{
 				var eventHandler = elmEventHandlers[e.type];
@@ -362,6 +364,21 @@ module tsw.render
 					eventHandler(e);
 				}
 			}
+		}
+
+		protected findEventHandlers(htmlElm: HTMLElement): tsw.common.JQueryEventHandlerMap
+		{
+			while (htmlElm && htmlElm != this.htmlElement)
+			{
+				var elmId = htmlElm.id;
+
+				var elmEventHandlers = elmId && this.eventHandlers[elmId];
+				if (elmEventHandlers) return elmEventHandlers;
+
+				htmlElm = htmlElm.parentElement;
+			}
+
+			return null;
 		}
 		getDbgArgs(): any[]
 		{
@@ -386,7 +403,7 @@ module tsw.render
 				this.propDefs.push(propDef);
 
 				var propName = this.getPropDefName(propDef);
-				this.log('attached propDef %s', propName);
+				//this.log('attached propDef %s', propName);
 			}
 		}
 		private getPropDefName(propDef: any): string
@@ -399,10 +416,10 @@ module tsw.render
 		{
 			if (this.propDefs)
 			{
-				console.group('ctx %o: unbindPropDefs', this);
+				//console.group('ctx %o: unbindPropDefs', this);
 				this.propDefs.forEach(propDef => propDef.unbindCtx(this));
 				this.propDefs = null;
-				console.groupEnd();
+				//console.groupEnd();
 			}
 
 			super.unbindPropDefs();
@@ -429,7 +446,7 @@ module tsw.render
 		update(): void
 		{
 			var htmlElement = this.getParentHtmlElement();
-			console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
+			//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
 			// TODO: call beforeRemove
 
@@ -466,7 +483,7 @@ module tsw.render
 		update(): void
 		{
 			var htmlElement = this.getParentHtmlElement();
-			console.log("%o update: %o %s", this, htmlElement, this.attrName);
+			//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
 			var v: string = CtxScope.use(this, () => this.renderFn());
 
@@ -515,7 +532,7 @@ module tsw.render
 			var htmlElement = this.getParentHtmlElement();
 
 			var val = CtxScope.use(this, () => this.renderFn());
-			console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
+			//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
 
 			var jqElement = jQuery(htmlElement);
 
@@ -641,20 +658,21 @@ module tsw.render
 				return this.renderHtml(children);
 			}
 
+			var attrs = this.getElmAttrs(elm); // attr names in lower case
+			//console.log('attrs: ', attrs);
+
 			var ctxCurrent = CtxScope.getCurrent();
 
-			// TODO: if elm already has id, just use it
+			var attrId = this.getRenderedAttrValues(attrs['id']);
+			delete attrs['id'];
 
-			var id = ctxCurrent.generateNextChildId();
+			var id = attrId || ctxCurrent.generateNextChildId();
+			//console.log('id: ', id);
 
 			var ctx = new CtxElement(id, tagName);
 			ctxCurrent.addChildCtx(ctx);
-			elm.z_setId(ctx.id);
 
 			//this.logElmAttrs(elm);
-
-			var attrs = this.getElmAttrs(elm); // attr names in lower case
-			//console.log('attrs: ', attrs);
 
 			var propDef = this.getValuePropDef(elm);
 			var val: any;
@@ -665,10 +683,6 @@ module tsw.render
 
 			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
 			//console.log('attrsHtml: [%s]', attrsHtml);
-
-			var html = '<' + tagName;
-			html = tsw.utils.appendDelimited(html, ' ', attrsHtml);
-			html += '>';
 
 			var innerHtml: string;
 
@@ -682,18 +696,31 @@ module tsw.render
 				innerHtml = CtxScope.use(ctx, () => this.renderHtml(children));
 			}
 
+			var eventHanders = elm.z_getEventHandlers();
+
+			if (eventHanders)
+			{
+				var ctxRoot = ctxCurrent.getParentRootCtx();
+				ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
+			}
+
+			var htmlStartTag = '<' + tagName;
+
+			var isCtxUsed = ctx.hasChildren() || eventHanders != null; // TODO: check presence of element refs
+			if (isCtxUsed) htmlStartTag = tsw.utils.appendDelimited(htmlStartTag, ' ', 'id=' + this.quoteAttrVal(id));
+
+			htmlStartTag = tsw.utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
+			htmlStartTag += '>';
+
+			var html: string;
+
+			html = htmlStartTag;
+
 			if (innerHtml) html += innerHtml;
 
 			if (innerHtml || this.elmNeedsCloseTag(tagName))
 			{
 				html += '</' + tagName + '>';
-			}
-
-			var eventHanders = elm.z_getEventHandlers();
-			if (eventHanders)
-			{
-				var ctxRoot = ctxCurrent.getParentRootCtx();
-				ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
 			}
 
 			return html;
@@ -794,7 +821,7 @@ module tsw.render
 			else
 			{
 				canBeUpdated = attrVals.some(av => this.canBeUpdatedAttr(av));
-				fn = () => tsw.utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
+				fn = () => this.getRenderedAttrValues(attrVals);
 			}
 
 			if (canBeUpdated)
@@ -812,6 +839,10 @@ module tsw.render
 			{
 				return fn();
 			}
+		}
+		protected static getRenderedAttrValues(attrVals: any[]): string
+		{
+			return tsw.utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
 		}
 		private static getElmAttrs(elm: tsw.elements.elm): MapStringToArray
 		{
