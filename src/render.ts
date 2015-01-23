@@ -5,7 +5,7 @@ module tsw.render
 		private static ctxUpdateQueue: CtxUpdatable[];
 		private static timerId: number;
 
-		public static getCurrentCtx(): CtxUpdatable
+		public static getCtx(): CtxUpdatable
 		{
 			var ctx = CtxScope.getCurrent();
 			return ctx ? ctx.getParentUpdatableCtx() : null;
@@ -348,32 +348,35 @@ module tsw.render
 		private handleEvent(e: JQueryEventObject)
 		{
 			var htmlElm = <HTMLElement> e.target;
-			var elmEventHandlers = this.findEventHandlers(htmlElm);
-			if (elmEventHandlers)
+			var r = this.findEventHandlers(htmlElm);
+			if (r)
 			{
-				var eventHandler = elmEventHandlers[e.type];
+				var eventHandler = r.ehMap[e.type];
 				if (eventHandler)
 				{
 					//console.log('on event: %o for: %o id: %s; %s', e.type, e.target, elmId, htmlElm.tagName);
 
-					if (e.type == 'click' && htmlElm.tagName.toLowerCase() == 'a') //  && jQuery(htmlElm).attr('href') == "#"
+					if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a') //  && jQuery(htmlElm).attr('href') == "#"
 					{
 						e.preventDefault();
 					}
 
-					eventHandler(e);
+					eventHandler(e, r.htmlElm);
 				}
 			}
 		}
 
-		protected findEventHandlers(htmlElm: HTMLElement): tsw.common.JQueryEventHandlerMap
+		protected findEventHandlers(htmlElm: HTMLElement): { htmlElm: HTMLElement; ehMap: tsw.common.JQueryEventHandlerMap }
 		{
 			while (htmlElm && htmlElm != this.htmlElement)
 			{
 				var elmId = htmlElm.id;
 
 				var elmEventHandlers = elmId && this.eventHandlers[elmId];
-				if (elmEventHandlers) return elmEventHandlers;
+				if (elmEventHandlers) return ({
+					htmlElm: htmlElm,
+					ehMap: elmEventHandlers,
+				});
 
 				htmlElm = htmlElm.parentElement;
 			}
@@ -398,19 +401,19 @@ module tsw.render
 		{
 			this.propDefs = this.propDefs || [];
 
-			if (this.propDefs.indexOf(propDef) < 0)
+			if (!tsw.utils.arrayUtils.contains(this.propDefs, propDef))
 			{
 				this.propDefs.push(propDef);
 
-				var propName = this.getPropDefName(propDef);
+				//var propName = this.getPropDefName(propDef);
 				//this.log('attached propDef %s', propName);
 			}
 		}
-		private getPropDefName(propDef: any): string
-		{
-			var pdDbg = <tsw.common.PropDefDebug> propDef;
-			return pdDbg.getName ? pdDbg.getName() : '(no name)';
-		}
+		//private getPropDefName(propDef: any): string
+		//{
+		//	var pdDbg = <tsw.common.PropDefDebug> propDef;
+		//	return pdDbg.getName ? pdDbg.getName() : '(no name)';
+		//}
 
 		unbindPropDefs(): void
 		{

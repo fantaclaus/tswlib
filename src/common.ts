@@ -2,7 +2,7 @@ module tsw.common
 {
 	export interface JQueryEventHandler
 	{
-		(e: JQueryEventObject): void;
+		(e: JQueryEventObject, target: HTMLElement): void;
 	}
 
 	export interface JQueryEventHandlerMap
