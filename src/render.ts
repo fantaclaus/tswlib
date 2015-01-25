@@ -2,31 +2,50 @@ module tsw.render
 {
 	export class CtxUtils
 	{
-		private static ctxUpdateQueue: CtxUpdatable[];
-		private static timerId: number;
+		private static ctxUpdateQueue: CtxUpdatable[] = null;
+		private static timerId: number = null;
 
-		public static getCtx(): CtxUpdatable
+		private static getCtx(): CtxUpdatable
 		{
 			var ctx = CtxScope.getCurrent();
 			return ctx ? ctx.getParentUpdatableCtx() : null;
 		}
-		public static update(contexts: CtxUpdatable[]): void
+		public static attachPropDef(propVal: tsw.props.PropValBase): void
 		{
+			var ctx = this.getCtx();
+			if (ctx)
+			{
+				ctx.attachPropVal(propVal);
+				propVal.bindCtx(ctx);
+			}
+		}
+		public static update(propVal: tsw.props.PropValBase): void
+		{
+			var contexts = propVal.getContexts();
 			if (!contexts || contexts.length == 0) return;
 
-			this.ctxUpdateQueue = this.ctxUpdateQueue || [];
+			var currentCtx = this.getCtx(); // context set in event handler for 'change' or 'input' event
+
+			// currentCtx is checked for optimization: don't update context whose value is just set by user action
+
+			var newQueue = this.ctxUpdateQueue || [];
 
 			contexts.forEach(ctx =>
 			{
-				if (!utils.arrayUtils.contains(this.ctxUpdateQueue, ctx))
+				if (ctx !== currentCtx && !utils.arrayUtils.contains(newQueue, ctx))
 				{
-					this.ctxUpdateQueue.push(ctx);
+					newQueue.push(ctx);
 				}
 			});
 
-			if (!this.timerId)
+			if (newQueue.length > 0)
 			{
-				this.timerId = window.setTimeout(() => this.processQueue(), 0);
+				this.ctxUpdateQueue = newQueue;
+
+				if (!this.timerId)
+				{
+					this.timerId = window.setTimeout(() => this.processQueue(), 0);
+				}
 			}
 		}
 		private static processQueue(): void
@@ -36,16 +55,20 @@ module tsw.render
 			this.timerId = null;
 			this.ctxUpdateQueue = null;
 
-			var contextsToUpdate = contexts.filter(ctx => !this.isAnyParentInList(ctx, contexts)); // do it before ctx.update(), since parents will be set to null
-
-			contextsToUpdate.forEach(ctx =>
+			if (contexts)
 			{
-				//console.group('update: %o %s', ctx, ctx.id);
+				var contextsToUpdate = contexts.filter(ctx => !this.isAnyParentInList(ctx, contexts)); // do it before ctx.update(), since parents will be set to null
 
-				ctx.update();
+				contextsToUpdate.forEach(ctx =>
+				{
+					//var c: any = ctx;
+					//console.group('update:', ctx, ctx.id, c.propName);
 
-				//console.groupEnd();
-			});
+					ctx.update();
+
+					//console.groupEnd();
+				});
+			}
 		}
 		private static isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[]): boolean
 		{
@@ -132,41 +155,26 @@ module tsw.render
 		{
 			this.forEachChild(ctx => ctx.unregisterEventHandlers(ctxRoot));
 		}
-		unbindPropDefs(): void
+		detachPropDefs(): void
 		{
-			this.forEachChild(ctx => ctx.unbindPropDefs());
+			this.forEachChild(ctx => ctx.detachPropDefs());
 		}
-		protected collectUpdatableCtxs(list: CtxUpdatable[]): void
-		{
-			this.forEachChild(ctx => ctx.collectUpdatableCtxs(list));
-		}
+		//protected collectUpdatableCtxs(list: CtxUpdatable[]): void
+		//{
+		//	this.forEachChild(ctx => ctx.collectUpdatableCtxs(list));
+		//}
 		protected getParentHtmlElement()
 		{
 			var ctxElm = this.getParentElmCtx();
 			return ctxElm.getHtmlElement();
 		}
 
-		//dump(): void
+		//public getUpdatableContexts(): CtxUpdatable[]
 		//{
-		//	if (this.childCtxs && this.childCtxs.length > 0)
-		//	{
-		//		console.group.apply(console, this.getDbgArgs());
-		//
-		//		this.childCtxs.forEach(ctx => ctx.dump());
-		//
-		//		console.groupEnd();
-		//	}
-		//	else
-		//	{
-		//		console.log.apply(console, this.getDbgArgs());
-		//	}
+		//	var list: CtxUpdatable[] = [];
+		//	this.collectUpdatableCtxs(list);
+		//	return list;
 		//}
-		public getUpdatableContexts(): CtxUpdatable[]
-		{
-			var list: CtxUpdatable[] = [];
-			this.collectUpdatableCtxs(list);
-			return list;
-		}
 
 		generateNextChildId(): string
 		{
@@ -391,48 +399,40 @@ module tsw.render
 
 	export class CtxUpdatable extends Ctx
 	{
-		private propDefs: tsw.common.PropDefInternal[];
+		private propDefs: tsw.props.PropValBase[];
 
 		update(): void
 		{
 		}
 
-		attachPropDef(propDef: tsw.common.PropDefInternal): void
+		attachPropVal(propVal: tsw.props.PropValBase): void
 		{
 			this.propDefs = this.propDefs || [];
 
-			if (!tsw.utils.arrayUtils.contains(this.propDefs, propDef))
+			if (!tsw.utils.arrayUtils.contains(this.propDefs, propVal))
 			{
-				this.propDefs.push(propDef);
-
-				//var propName = this.getPropDefName(propDef);
-				//this.log('attached propDef %s', propName);
+				this.propDefs.push(propVal);
 			}
 		}
-		//private getPropDefName(propDef: any): string
-		//{
-		//	var pdDbg = <tsw.common.PropDefDebug> propDef;
-		//	return pdDbg.getName ? pdDbg.getName() : '(no name)';
-		//}
 
-		unbindPropDefs(): void
+		detachPropVal(): void
 		{
 			if (this.propDefs)
 			{
-				//console.group('ctx %o: unbindPropDefs', this);
-				this.propDefs.forEach(propDef => propDef.unbindCtx(this));
+				//console.group('ctx %o: detachPropDefs', this);
+				this.propDefs.forEach(propVal => propVal.unbindCtx(this));
 				this.propDefs = null;
 				//console.groupEnd();
 			}
 
-			super.unbindPropDefs();
+			super.detachPropDefs();
 		}
-		collectUpdatableCtxs(list: CtxUpdatable[]): void
-		{
-			list.push(this);
-
-			super.collectUpdatableCtxs(list);
-		}
+		//collectUpdatableCtxs(list: CtxUpdatable[]): void
+		//{
+		//	list.push(this);
+		//
+		//	super.collectUpdatableCtxs(list);
+		//}
 	}
 
 	class CtxUpdatableChild extends CtxUpdatable
@@ -453,7 +453,7 @@ module tsw.render
 
 			// TODO: call beforeRemove
 
-			this.unbindPropDefs();
+			this.detachPropVal();
 
 			var ctxRoot = this.getParentRootCtx();
 			this.unregisterEventHandlers(ctxRoot);
@@ -494,13 +494,15 @@ module tsw.render
 
 			var jqElement = jQuery(htmlElement);
 
+			// attributes checked and value can be changed only by $.prop()
+
 			if (this.attrName == 'checked')
 			{
-				jqElement.prop(this.attrName, v != null);
+				jqElement.prop('checked', v != null);
 			}
 			else if (this.attrName == 'value')
 			{
-				jqElement.prop(this.attrName, v);
+				jqElement.prop('value', v);
 			}
 			else
 			{
@@ -526,7 +528,7 @@ module tsw.render
 
 	class CtxUpdatableValue extends CtxUpdatable
 	{
-		tagName: string;
+		//tagName: string;
 		propName: string;
 		renderFn: () => any;
 
@@ -538,28 +540,12 @@ module tsw.render
 			//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
 
 			var jqElement = jQuery(htmlElement);
-
-			if (this.tagName == 'textarea')
-			{
-				jqElement.val(val);
-			}
-			else
-			{
-				if (this.propName == 'checked')
-				{
-					jqElement.prop(this.propName, val);
-				}
-				else if (this.propName == 'value')
-				{
-					jqElement.val(val);
-				}
-			}
+			jqElement.prop(this.propName, val);
 		}
 		toString(): string // for DEBUG
 		{
 			var ctxElm = this.getParentElmCtx();
-			return utils.format("value: ${tagName}#${id}[${propName}]",  {
-				tagName: this.tagName,
+			return utils.format("value: #${id}[${propName}]",  {
 				id: ctxElm.id,
 				propName: this.propName,
 			});
@@ -678,11 +664,12 @@ module tsw.render
 			//this.logElmAttrs(elm);
 
 			var propDef = this.getValuePropDef(elm);
-			var val: any;
 
 			var useVal = propDef && propDef.get instanceof Function;
+			var updateVal = useVal && propDef && propDef.set instanceof Function;
 
-			if (useVal) val = this.getValueAndUpdateAttrs(tagName, attrs, ctx, propDef);
+			var valData: { value: any; ctx: CtxUpdatable; valPropName: string; } = null;
+			if (useVal) valData = this.getValueAndUpdateAttrs(tagName, attrs, ctx, propDef);
 
 			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
 			//console.log('attrsHtml: [%s]', attrsHtml);
@@ -691,7 +678,7 @@ module tsw.render
 
 			if (useVal && tagName == 'textarea')
 			{
-				innerHtml = utils.htmlEncode(val);
+				innerHtml = utils.htmlEncode(valData.value);
 			}
 			else
 			{
@@ -700,6 +687,32 @@ module tsw.render
 			}
 
 			var eventHanders = elm.z_getEventHandlers();
+
+			if (updateVal)
+			{
+				eventHanders = eventHanders || {};
+
+				var savedHandlers: tsw.common.JQueryEventHandlerMap = {};
+				savedHandlers['change'] = eventHanders['change'];
+				savedHandlers['input'] = eventHanders['input'];
+
+				var handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
+				{
+					var v = $(htmlElement).prop(valData.valPropName);
+
+					// pass ctx for optimization: to skip it during update. see CtxUtils.update
+					CtxScope.use(valData.ctx, () =>
+					{
+						propDef.set(v, true);
+					});
+
+					var userHandler = savedHandlers[e.type];
+					if (userHandler) userHandler(e, htmlElement);
+				};
+
+				eventHanders['change'] = handler;
+				eventHanders['input'] = handler;
+			}
 
 			if (eventHanders)
 			{
@@ -728,10 +741,10 @@ module tsw.render
 
 			return html;
 		}
-		private static getValueAndUpdateAttrs(tagName: string, attrs: MapStringToArray,  ctx: Ctx, propDef: tsw.common.PropDef<any>): any
+		private static getValueAndUpdateAttrs(tagName: string, attrs: MapStringToArray,  ctxParent: Ctx, propDef: tsw.props.PropDef<any>): { value: any; ctx: CtxUpdatable; valPropName: string; }
 		{
-			var valAttrName: string;
-			var valPropName: string;
+			var valAttrName: string = null;
+			var valPropName: string = null;
 
 			if (tagName == 'input')
 			{
@@ -748,8 +761,12 @@ module tsw.render
 					valPropName = 'value';
 				}
 			}
+			else if (tagName == 'textarea')
+			{
+				valPropName = 'value';
+			}
 
-			var val = CtxScope.use(ctx, () => this.getValue(propDef, tagName, valPropName));
+			var valueData = CtxScope.use(ctxParent, () => this.getValue(propDef, valPropName));
 
 			// replace attributes with value of propdef (checked or value)
 
@@ -758,10 +775,10 @@ module tsw.render
 				delete attrs['checked'];
 				delete attrs['value'];
 
-				attrs[valAttrName] = [val];
+				attrs[valAttrName] = [valueData.value];
 			}
 
-			return val;
+			return { value: valueData.value, ctx: valueData.ctx, valPropName:  valPropName };
 		}
 
 		//private static logElmAttrs(elm)
@@ -954,7 +971,7 @@ module tsw.render
 			if (v1 != null && v1 !== '') return item.name + ": " + v1;
 			return '';
 		}
-		private static getValuePropDef(elm: tsw.elements.elm): tsw.common.PropDef<any>
+		private static getValuePropDef(elm: tsw.elements.elm): tsw.props.PropDef<any>
 		{
 			if (elm instanceof tsw.elements.elmWithValue)
 			{
@@ -964,17 +981,19 @@ module tsw.render
 
 			return null;
 		}
-		private static getValue(propDef: tsw.common.PropDef<any>, tagName: string, valPropName: string): any
+		private static getValue(propDef: tsw.props.PropDef<any>, valPropName: string): { value: any; ctx: CtxUpdatable }
 		{
 			var ctxCurrent = CtxScope.getCurrent();
 
 			var ctx = new CtxUpdatableValue();
 			ctxCurrent.addChildCtx(ctx);
-			ctx.tagName = tagName;
+			//ctx.tagName = tagName;
 			ctx.propName = valPropName;
 			ctx.renderFn = () => propDef.get();
 
-			return CtxScope.use(ctx, ctx.renderFn);
+			var val = CtxScope.use(ctx, ctx.renderFn);
+
+			return { value: val, ctx: ctx };
 		}
 
 		private static addExpanded(target: any[], v: any): void

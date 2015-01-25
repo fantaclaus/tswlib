@@ -23,19 +23,4 @@ module tsw.common
 		beforeRemove?: () => void;
 		afterInsert?: () => void;
 	}
-
-	export interface PropDef<T>
-	{
-		get: () => T;
-		set?: (v: T) => void;
-	}
-
-	export interface PropDefInternal
-	{
-		unbindCtx(ctx: tsw.render.CtxUpdatable): void;
-	}
-	export interface PropDefDebug
-	{
-		getName(): string;
-	}
 }

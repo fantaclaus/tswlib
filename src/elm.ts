@@ -66,7 +66,7 @@ module tsw.elements
 
 		data(name: string, val: string): elm;
 		data(name: string, val: () => string): elm;
-		data(name: string, val: tsw.common.PropDef<any>): elm;
+		data(name: string, val: tsw.props.PropDef<any>): elm;
 		data(name: string, val: any): elm
 		{
 			this.attr('data-' + name, val);
@@ -119,8 +119,6 @@ module tsw.elements
 			// TODO: addRef
 			return this;
 		}
-
-		// TODO: bind()
 
 		z_getTagName(): string
 		{

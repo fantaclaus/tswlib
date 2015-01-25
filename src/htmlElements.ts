@@ -53,16 +53,16 @@ module tsw.elements
 
 	export class elmWithValue extends elm
 	{
-		private _valuePropDef: tsw.common.PropDef<any>;
+		private _valuePropDef: tsw.props.PropDef<any>;
 
-		value<T>(propDef: tsw.common.PropDef<T>): elm
+		value<T>(propDef: tsw.props.PropDef<T>): elm
 		{
 			this._valuePropDef = propDef;
 
 			return this;
 		}
 
-		z_getValuePropDef(): tsw.common.PropDef<any>
+		z_getValuePropDef(): tsw.props.PropDef<any>
 		{
 			return this._valuePropDef;
 		}
