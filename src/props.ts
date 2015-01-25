@@ -20,6 +20,7 @@ module tsw.props
 
 			if (!tsw.utils.arrayUtils.contains(this.contexts, ctx))
 			{
+				//console.log('propDef %o: bindCtx from ctx %o', this, ctx);
 				this.contexts.push(ctx);
 			}
 		}
@@ -30,7 +31,7 @@ module tsw.props
 				var index = this.contexts.indexOf(ctx);
 				if (index >= 0)
 				{
-					//console.log('propDef %s: unbindCtx from ctx %o; index=%o', this.name, ctx, index);
+					//console.log('propDef %o: unbindCtx from ctx %o; index=%o', this, ctx, index);
 					this.contexts.splice(index, 1);
 				}
 			}
@@ -44,7 +45,7 @@ module tsw.props
 
 		get(): T
 		{
-			tsw.render.CtxUtils.attachPropDef(this);
+			tsw.render.CtxUtils.attach(this);
 
 			return this.val;
 		}

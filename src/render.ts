@@ -10,7 +10,7 @@ module tsw.render
 			var ctx = CtxScope.getCurrent();
 			return ctx ? ctx.getParentUpdatableCtx() : null;
 		}
-		public static attachPropDef(propVal: tsw.props.PropValBase): void
+		public static attach(propVal: tsw.props.PropValBase): void
 		{
 			var ctx = this.getCtx();
 			if (ctx)
@@ -155,9 +155,9 @@ module tsw.render
 		{
 			this.forEachChild(ctx => ctx.unregisterEventHandlers(ctxRoot));
 		}
-		detachPropDefs(): void
+		detachPropVals(): void
 		{
-			this.forEachChild(ctx => ctx.detachPropDefs());
+			this.forEachChild(ctx => ctx.detachPropVals());
 		}
 		//protected collectUpdatableCtxs(list: CtxUpdatable[]): void
 		//{
@@ -399,7 +399,7 @@ module tsw.render
 
 	export class CtxUpdatable extends Ctx
 	{
-		private propDefs: tsw.props.PropValBase[];
+		private propVals: tsw.props.PropValBase[];
 
 		update(): void
 		{
@@ -407,25 +407,25 @@ module tsw.render
 
 		attachPropVal(propVal: tsw.props.PropValBase): void
 		{
-			this.propDefs = this.propDefs || [];
+			this.propVals = this.propVals || [];
 
-			if (!tsw.utils.arrayUtils.contains(this.propDefs, propVal))
+			if (!tsw.utils.arrayUtils.contains(this.propVals, propVal))
 			{
-				this.propDefs.push(propVal);
+				this.propVals.push(propVal);
 			}
 		}
 
-		detachPropVal(): void
+		detachPropVals(): void
 		{
-			if (this.propDefs)
+			if (this.propVals)
 			{
-				//console.group('ctx %o: detachPropDefs', this);
-				this.propDefs.forEach(propVal => propVal.unbindCtx(this));
-				this.propDefs = null;
+				//console.group('ctx %o: detachPropVals', this);
+				this.propVals.forEach(propVal => propVal.unbindCtx(this));
+				this.propVals = null;
 				//console.groupEnd();
 			}
 
-			super.detachPropDefs();
+			super.detachPropVals();
 		}
 		//collectUpdatableCtxs(list: CtxUpdatable[]): void
 		//{
@@ -453,7 +453,7 @@ module tsw.render
 
 			// TODO: call beforeRemove
 
-			this.detachPropVal();
+			this.detachPropVals();
 
 			var ctxRoot = this.getParentRootCtx();
 			this.unregisterEventHandlers(ctxRoot);
@@ -976,7 +976,7 @@ module tsw.render
 			if (elm instanceof tsw.elements.elmWithValue)
 			{
 				var elmV = <tsw.elements.elmWithValue> elm;
-				return elmV.z_getValuePropDef();
+				return elmV.z_getPropDef();
 			}
 
 			return null;

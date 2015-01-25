@@ -6,8 +6,14 @@ module tsw.elements
 		value: any;
 	}
 
-	export class elementRef
+	export class Ref
 	{
+		refId: string;
+
+		getId(): string
+		{
+			return this.refId;
+		}
 		asJQuery(): JQuery
 		{
 			return null;
@@ -114,7 +120,7 @@ module tsw.elements
 			return this;
 		}
 
-		addRef(ref: elementRef): elm
+		addRef(ref: Ref): elm
 		{
 			// TODO: addRef
 			return this;
