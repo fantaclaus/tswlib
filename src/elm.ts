@@ -6,26 +6,41 @@ module tsw.elements
 		value: any;
 	}
 
-	export class Ref
+	export class Ref extends tsw.props.PropValBase implements tsw.props.PropDef<string>
 	{
-		refId: string;
+		private refId: string;
 
-		getId(): string
+		get(): string
 		{
+			tsw.render.CtxUtils.attach(this);
+
 			return this.refId;
 		}
+		set(v: string): void
+		{
+			//console.log('set ref: ', v);
+
+			if (this.refId !== v)
+			{
+				this.refId = v;
+
+				tsw.render.CtxUtils.update(this);
+			}
+		}
+
 		asJQuery(): JQuery
 		{
-			return null;
+			return jQuery('#' + this.refId);
 		}
 	}
 
 	export class elm
 	{
-		private tagName: string;
-		private _attrs: NameValue[];
-		private _children: NameValue[];
-		private eventHandlers: tsw.common.JQueryEventHandlerMap;
+		private tagName: string = null;
+		private _attrs: NameValue[] = null;
+		private _children: NameValue[] = null;
+		private eventHandlers: tsw.common.JQueryEventHandlerMap = null;
+		private _refs: Ref[] = null;
 
 		constructor(tagName: string)
 		{
@@ -122,7 +137,8 @@ module tsw.elements
 
 		addRef(ref: Ref): elm
 		{
-			// TODO: addRef
+			this._refs = this._refs || [];
+			this._refs.push(ref);
 			return this;
 		}
 
@@ -138,21 +154,13 @@ module tsw.elements
 		{
 			return this._attrs;
 		}
-		//z_setId(id: string): void
-		//{
-		//	var item = tsw.utils.arrayUtils.find(this._attrs, a => a.name == 'id');
-		//	if (item)
-		//	{
-		//		item.value = id;
-		//	}
-		//	else
-		//	{
-		//		this.attr('id', id);
-		//	}
-		//}
 		z_getEventHandlers(): tsw.common.JQueryEventHandlerMap
 		{
 			return this.eventHandlers;
+		}
+		z_getRefs(): Ref[]
+		{
+			return this._refs;
 		}
 	}
 }

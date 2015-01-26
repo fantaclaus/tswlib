@@ -54,61 +54,42 @@ module tsw.utils
 
 		return result;
 	}
-	export function splitStr(s: string, delim: string): string[]
-	{
-		return s ? s.split(delim) : [];
-	}
+	//export function splitStr(s: string, delim: string): string[]
+	//{
+	//	return s ? s.split(delim) : [];
+	//}
 
 	export function isUndefined(v: any): boolean
 	{
 		return typeof v == 'undefined';
 	}
-	export function isNullOrUndefined(v: any): boolean
-	{
-		return v == null;
-	}
+	//export function isNullOrUndefined(v: any): boolean
+	//{
+	//	return v == null;
+	//}
 	export class arrayUtils
 	{
-		static addExpanded(target: any[], v: any): void
-		{
-			if (v != null)
-			{
-				if (v instanceof Array)
-				{
-					for (var i = 0; i < v.length; i++)
-					{
-						var v1 = v[i];
-						this.addExpanded(target, v1);
-					}
-				}
-				else if (v instanceof Function)
-				{
-					var v2 = v();
-					this.addExpanded(target, v2);
-				}
-				else
-				{
-					target.push(v);
-				}
-			}
-		}
-		static find<T>(array: T[], predicate: (value: T, index: number) => boolean): T
-		{
-			if (array)
-			{
-				for (var i = 0, len = array.length; i < len; ++i)
-				{
-					var item = array[i];
-					if (predicate(item, i)) return item;
-				}
-			}
-
-			return null;
-		}
+		//static find<T>(array: T[], predicate: (value: T, index: number) => boolean): T
+		//{
+		//	if (array)
+		//	{
+		//		for (var i = 0, len = array.length; i < len; ++i)
+		//		{
+		//			var item = array[i];
+		//			if (predicate(item, i)) return item;
+		//		}
+		//	}
+		//
+		//	return null;
+		//}
 		static contains(array: any[], item: any): boolean
 		{
 			return array.indexOf(item) >= 0;
 		}
+		//static empty(array: any[]): boolean
+		//{
+		//	return array == null || array.length == 0;
+		//}
 	}
 	export class objUtils
 	{

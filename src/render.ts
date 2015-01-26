@@ -61,9 +61,9 @@ module tsw.render
 
 				contextsToUpdate.forEach(ctx =>
 				{
-					//var c: any = ctx;
-					//console.group('update:', ctx, ctx.id, c.propName);
+					//console.group('update:', ctx, ctx.id);
 
+					// TODO: check that ctx is still valid
 					ctx.update();
 
 					//console.groupEnd();
@@ -213,13 +213,15 @@ module tsw.render
 	export class CtxElement extends CtxWithHtmlElement
 	{
 		private tagName: string;
+		private refs: tsw.elements.Ref[];
 
-		constructor(id: string, tagName: string)
+		constructor(id: string, tagName: string, refs: tsw.elements.Ref[])
 		{
 			super();
 
 			this.id = id;
 			this.tagName = tagName;
+			this.refs = refs;
 		}
 		getHtmlElement(): HTMLElement
 		{
@@ -238,6 +240,16 @@ module tsw.render
 			ctxRoot.detachElmEventHandlers(this.id);
 
 			super.unregisterEventHandlers(ctxRoot);
+		}
+		removeChildren(): void
+		{
+			if (this.refs)
+			{
+				this.refs.forEach(r => r.set(null));
+				this.refs = null;
+			}
+
+			super.removeChildren();
 		}
 		getDbgArgs(): any[]
 		{
@@ -650,6 +662,8 @@ module tsw.render
 			var attrs = this.getElmAttrs(elm); // attr names in lower case
 			//console.log('attrs: ', attrs);
 
+			var elmRefs = elm.z_getRefs();
+
 			var ctxCurrent = CtxScope.getCurrent();
 
 			var attrId = this.getRenderedAttrValues(attrs['id']);
@@ -658,7 +672,7 @@ module tsw.render
 			var id = attrId || ctxCurrent.generateNextChildId();
 			//console.log('id: ', id);
 
-			var ctx = new CtxElement(id, tagName);
+			var ctx = new CtxElement(id, tagName, elmRefs);
 			ctxCurrent.addChildCtx(ctx);
 
 			//this.logElmAttrs(elm);
@@ -720,9 +734,17 @@ module tsw.render
 				ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
 			}
 
+			if (elmRefs)
+			{
+				elmRefs.forEach(r =>
+				{
+					r.set(id);
+				});
+			}
+
 			var htmlStartTag = '<' + tagName;
 
-			var isCtxUsed = ctx.hasChildren() || eventHanders != null; // TODO: check presence of element refs
+			var isCtxUsed = ctx.hasChildren() || eventHanders != null || elmRefs != null;
 			if (isCtxUsed) htmlStartTag = tsw.utils.appendDelimited(htmlStartTag, ' ', 'id=' + this.quoteAttrVal(id));
 
 			htmlStartTag = tsw.utils.appendDelimited(htmlStartTag, ' ', attrsHtml);

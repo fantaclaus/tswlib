@@ -114,19 +114,11 @@ module tsw.elements
 			super('label')
 		}
 
-//		for_(v: string): label
-//		{
-//			this.attr('for', v);
-//
-//			return this;
-//		}
+		for(ref: tsw.elements.Ref): label
+		{
+			this.attr('for', ref);
 
-		// TODO: label for
-//		forRef(ref: tsw.elRefs.elementRef): label
-//		{
-//			this.attr('for', () => ref.getId());
-//
-//			return this;
-//		}
+			return this;
+		}
 	}
 }
