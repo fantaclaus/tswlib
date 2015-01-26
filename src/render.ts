@@ -159,22 +159,11 @@ module tsw.render
 		{
 			this.forEachChild(ctx => ctx.detachPropVals());
 		}
-		//protected collectUpdatableCtxs(list: CtxUpdatable[]): void
-		//{
-		//	this.forEachChild(ctx => ctx.collectUpdatableCtxs(list));
-		//}
 		protected getParentHtmlElement()
 		{
 			var ctxElm = this.getParentElmCtx();
 			return ctxElm.getHtmlElement();
 		}
-
-		//public getUpdatableContexts(): CtxUpdatable[]
-		//{
-		//	var list: CtxUpdatable[] = [];
-		//	this.collectUpdatableCtxs(list);
-		//	return list;
-		//}
 
 		generateNextChildId(): string
 		{
@@ -270,11 +259,15 @@ module tsw.render
 		}
 		setHtmlElement(htmlElement: HTMLElement): void
 		{
+			// TODO: if this.htmlElement != htmlElement, remove old stuff and make this.htmlElement empty
+
 			this.htmlElement = htmlElement;
 			this.id = htmlElement.id;
 		}
 		render(content: any): void
 		{
+			// TODO: remove old stuff, call beforeRemove
+
 			var htm = this.generateHtml(content);
 			//console.log('html: [%s]', htm);
 
@@ -386,19 +379,19 @@ module tsw.render
 			}
 		}
 
-		protected findEventHandlers(htmlElm: HTMLElement): { htmlElm: HTMLElement; ehMap: tsw.common.JQueryEventHandlerMap }
+		protected findEventHandlers(htmlElement: HTMLElement): { htmlElm: HTMLElement; ehMap: tsw.common.JQueryEventHandlerMap }
 		{
-			while (htmlElm && htmlElm != this.htmlElement)
+			while (htmlElement && htmlElement != this.htmlElement)
 			{
-				var elmId = htmlElm.id;
+				var elmId = htmlElement.id;
 
 				var elmEventHandlers = elmId && this.eventHandlers[elmId];
 				if (elmEventHandlers) return ({
-					htmlElm: htmlElm,
+					htmlElm: htmlElement,
 					ehMap: elmEventHandlers,
 				});
 
-				htmlElm = htmlElm.parentElement;
+				htmlElement = htmlElement.parentElement;
 			}
 
 			return null;
@@ -439,12 +432,6 @@ module tsw.render
 
 			super.detachPropVals();
 		}
-		//collectUpdatableCtxs(list: CtxUpdatable[]): void
-		//{
-		//	list.push(this);
-		//
-		//	super.collectUpdatableCtxs(list);
-		//}
 	}
 
 	class CtxUpdatableChild extends CtxUpdatable
