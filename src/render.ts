@@ -97,9 +97,9 @@ module tsw.render
 		{
 			return this.parentCtx;
 		}
-		getParentElmCtx(): CtxWithHtmlElement
+		getParentHtmlElmOwnerCtx(): CtxHtmlElementOwner
 		{
-			return <CtxWithHtmlElement> this.findSelfOrParent(ctx => ctx instanceof CtxWithHtmlElement);
+			return <CtxHtmlElementOwner> this.findSelfOrParent(ctx => ctx instanceof CtxHtmlElementOwner);
 		}
 		getParentUpdatableCtx(): CtxUpdatable
 		{
@@ -122,7 +122,7 @@ module tsw.render
 
 			return null;
 		}
-		private forEachChild(action: (ctx: Ctx) => void): void
+		protected forEachChild(action: (ctx: Ctx) => void): void
 		{
 			if (this.childCtxs) this.childCtxs.forEach(ctx => action(ctx));
 		}
@@ -133,7 +133,7 @@ module tsw.render
 			this.childCtxs.push(ctx);
 			ctx.parentCtx = this;
 		}
-		removeChildren(): void
+		protected removeChildren(): void
 		{
 			if (this.childCtxs)
 			{
@@ -151,17 +151,30 @@ module tsw.render
 		{
 			return this.childCtxs != null && this.childCtxs.length > 0;
 		}
-		unregisterEventHandlers(ctxRoot: CtxRoot): void
+		protected unregisterEventHandlers(): void
 		{
-			this.forEachChild(ctx => ctx.unregisterEventHandlers(ctxRoot));
+			var ctxRoot = this.getParentRootCtx();
+			this.unregisterEventHandlersFromRoot(ctxRoot);
 		}
-		detachPropVals(): void
+		unregisterEventHandlersFromRoot(ctxRoot: CtxRoot): void
+		{
+			this.forEachChild(ctx => ctx.unregisterEventHandlersFromRoot(ctxRoot));
+		}
+		protected detachPropVals(): void
 		{
 			this.forEachChild(ctx => ctx.detachPropVals());
 		}
-		protected getParentHtmlElement()
+		protected afterAttach(): void
 		{
-			var ctxElm = this.getParentElmCtx();
+			this.forEachChild(ctx => ctx.afterAttach());
+		}
+		protected beforeDetach(): void
+		{
+			this.forEachChild(ctx => ctx.beforeDetach());
+		}
+		protected getHtmlElement(): HTMLElement
+		{
+			var ctxElm = this.getParentHtmlElmOwnerCtx();
 			return ctxElm.getHtmlElement();
 		}
 
@@ -174,10 +187,40 @@ module tsw.render
 		{
 			this.lastChildId = null;
 		}
-		protected getDbgArgs(): any[]
+
+		protected _update(content: any): void
 		{
-			return ['%o #%s', this, this.id];
+			this.beforeDetach();
+
+			this.detachPropVals();
+
+			this.unregisterEventHandlers();
+
+			this.removeChildren();
+			this.resetNextChildId();
+
+			var htmlElement = this.getHtmlElement();
+			if (htmlElement)
+			{
+				var innerHtml = CtxScope.use(this, () => this._renderHtml(content));
+				this.setInnerHtml(htmlElement, innerHtml);
+			}
+
+			this.afterAttach();
 		}
+		protected _renderHtml(content: any): string
+		{
+			return null;
+		}
+		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+		{
+
+		}
+
+		//protected getDbgArgs(): any[]
+		//{
+		//	return ['%o #%s', this, this.id];
+		//}
 		//log(fmt: string, ...args: any[]): void
 		//{
 		//	var dbgArgs = this.getDbgArgs();
@@ -187,19 +230,15 @@ module tsw.render
 		//}
 	}
 
-	export class CtxWithHtmlElement extends Ctx
+	export class CtxHtmlElementOwner extends Ctx
 	{
-		getHtmlElement(): HTMLElement
-		{
-			return null;
-		}
 		getTagName(): string
 		{
 			return null;
 		}
 	}
 
-	export class CtxElement extends CtxWithHtmlElement
+	export class CtxElement extends CtxHtmlElementOwner
 	{
 		private tagName: string;
 		private refs: tsw.elements.Ref[];
@@ -224,11 +263,11 @@ module tsw.render
 			return this.tagName;
 		}
 
-		unregisterEventHandlers(ctxRoot: CtxRoot): void
+		unregisterEventHandlersFromRoot(ctxRoot: CtxRoot): void
 		{
 			ctxRoot.detachElmEventHandlers(this.id);
 
-			super.unregisterEventHandlers(ctxRoot);
+			super.unregisterEventHandlersFromRoot(ctxRoot);
 		}
 		removeChildren(): void
 		{
@@ -240,14 +279,14 @@ module tsw.render
 
 			super.removeChildren();
 		}
-		getDbgArgs(): any[]
-		{
-			var htmlElement = document.getElementById(this.id);
-			return ['%o %s#%s %o', this, this.tagName, this.id, htmlElement];
-		}
+		//getDbgArgs(): any[]
+		//{
+		//	var htmlElement = document.getElementById(this.id);
+		//	return ['%o %s#%s %o', this, this.tagName, this.id, htmlElement];
+		//}
 	}
 
-	export class CtxRoot extends CtxWithHtmlElement
+	export class CtxRoot extends CtxHtmlElementOwner
 	{
 		private htmlElement: HTMLElement;
 		private attachedEventNames: { [eventName: string]: boolean };
@@ -257,33 +296,37 @@ module tsw.render
 		{
 			return this.htmlElement;
 		}
-		setHtmlElement(htmlElement: HTMLElement): void
+		render(content: any, htmlElement?: HTMLElement): void
 		{
-			// TODO: if this.htmlElement != htmlElement, remove old stuff and make this.htmlElement empty
+			if (htmlElement != null)
+			{
+				if (this.htmlElement && this.htmlElement !== htmlElement)
+				{
+					this._update(null);
+				}
 
-			this.htmlElement = htmlElement;
-			this.id = htmlElement.id;
+				this.htmlElement = htmlElement;
+				this.id = htmlElement.id;
+			}
+
+			this._update(content);
 		}
-		render(content: any): void
+		protected _renderHtml(content: any): string
 		{
-			// TODO: remove old stuff, call beforeRemove
-
-			var htm = this.generateHtml(content);
-			//console.log('html: [%s]', htm);
-
-			this.htmlElement.innerHTML = htm;
-
-			// TODO: call afterInsert
+			return RenderUtils.renderHtml(content);
 		}
-		private generateHtml(content: any): string // DEBUG
+		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
 		{
-			return CtxScope.use(this, () => RenderUtils.renderHtml(content));
-		}
-		toString(): string // for DEBUG
-		{
-			return "root";
+			htmlElement.innerHTML = innerHtml;
 		}
 
+		protected unregisterEventHandlers(): void
+		{
+			var jqElm = jQuery(this.htmlElement);
+			jqElm.off();
+			this.attachedEventNames = null;
+			this.eventHandlers = null;
+		}
 		attachElmEventHandlers(elmId: string, eventHandlers: tsw.common.JQueryEventHandlerMap): void
 		{
 			//console.group('attached events for: %s: %o', elmId, eventHandlers);
@@ -351,6 +394,8 @@ module tsw.render
 
 					jqElm.on(eventName, e =>
 					{
+						//console.log('on event: %s on %o', e.type, e.target);
+
 						this.handleEvent(e);
 					});
 				}
@@ -396,10 +441,14 @@ module tsw.render
 
 			return null;
 		}
-		getDbgArgs(): any[]
-		{
-			return ['%o', this];
-		}
+		//toString(): string // for DEBUG
+		//{
+		//	return "root";
+		//}
+		//getDbgArgs(): any[]
+		//{
+		//	return ['%o', this];
+		//}
 	}
 
 	export class CtxUpdatable extends Ctx
@@ -447,34 +496,42 @@ module tsw.render
 		}
 		update(): void
 		{
-			var htmlElement = this.getParentHtmlElement();
+			this._update(this.content);
+		}
+		protected _renderHtml(content: any): string
+		{
+			return RenderUtils.getRenderedHtml(content);
+		}
+		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+		{
 			//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
-			// TODO: call beforeRemove
-
-			this.detachPropVals();
-
-			var ctxRoot = this.getParentRootCtx();
-			this.unregisterEventHandlers(ctxRoot);
-
-			this.removeChildren();
-			this.resetNextChildId();
-
-			var innerHtml = CtxScope.use(this, () => RenderUtils.getRenderedHtml(this.content));
-
 			var markers = new HtmlBlockMarkers(this.id);
-			DOMUtils.updateDOM(innerHtml, htmlElement, markers);
+			DOMUtils.updateDOM(htmlElement, innerHtml, markers);
+		}
+		protected afterAttach(): void
+		{
+			var renderer = <tsw.common.Renderer> this.content;
+			if (renderer.afterAttach) renderer.afterAttach();
 
-			// TODO: call afterInsert
+			super.afterAttach();
 		}
-		toString(): string // for DEBUG
+		protected beforeDetach(): void
 		{
-			return "block: " + this.id;
+			super.beforeDetach();
+
+			var renderer = <tsw.common.Renderer> this.content;
+			if (renderer.beforeDetach) renderer.beforeDetach();
 		}
-		getDbgArgs(): any[]
-		{
-			return ['%o #%s', this, this.id];
-		}
+
+		//toString(): string // for DEBUG
+		//{
+		//	return "block: " + this.id;
+		//}
+		//getDbgArgs(): any[]
+		//{
+		//	return ['%o #%s', this, this.id];
+		//}
 	}
 
 	class CtxUpdatableAttr extends CtxUpdatable
@@ -484,7 +541,7 @@ module tsw.render
 
 		update(): void
 		{
-			var htmlElement = this.getParentHtmlElement();
+			var htmlElement = this.getHtmlElement();
 			//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
 			var v: string = CtxScope.use(this, () => this.renderFn());
@@ -511,18 +568,18 @@ module tsw.render
 					jqElement.attr(this.attrName, v);
 			}
 		}
-		toString(): string // for DEBUG
-		{
-			var ctxElm = this.getParentElmCtx();
-			return utils.format("attr: #${id}[${attrName}]",  {
-				id: ctxElm.id,
-				attrName: this.attrName,
-			});
-		}
-		getDbgArgs(): any[]
-		{
-			return ['%o #%s[%s]', this, this.id, this.attrName];
-		}
+		//toString(): string // for DEBUG
+		//{
+		//	var ctxElm = this.getParentHtmlElmOwnerCtx();
+		//	return utils.format("attr: #${id}[${attrName}]",  {
+		//		id: ctxElm.id,
+		//		attrName: this.attrName,
+		//	});
+		//}
+		//getDbgArgs(): any[]
+		//{
+		//	return ['%o #%s[%s]', this, this.id, this.attrName];
+		//}
 	}
 
 	class CtxUpdatableValue extends CtxUpdatable
@@ -533,7 +590,7 @@ module tsw.render
 
 		update(): void
 		{
-			var htmlElement = this.getParentHtmlElement();
+			var htmlElement = this.getHtmlElement();
 
 			var val = CtxScope.use(this, () => this.renderFn());
 			//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
@@ -541,18 +598,18 @@ module tsw.render
 			var jqElement = jQuery(htmlElement);
 			jqElement.prop(this.propName, val);
 		}
-		toString(): string // for DEBUG
-		{
-			var ctxElm = this.getParentElmCtx();
-			return utils.format("value: #${id}[${propName}]",  {
-				id: ctxElm.id,
-				propName: this.propName,
-			});
-		}
-		getDbgArgs(): any[]
-		{
-			return ['%o prop:[%s]', this, this.propName];
-		}
+		//toString(): string // for DEBUG
+		//{
+		//	var ctxElm = this.getParentHtmlElmOwnerCtx();
+		//	return utils.format("value: #${id}[${propName}]",  {
+		//		id: ctxElm.id,
+		//		propName: this.propName,
+		//	});
+		//}
+		//getDbgArgs(): any[]
+		//{
+		//	return ['%o prop:[%s]', this, this.propName];
+		//}
 	}
 
 	export class CtxScope
@@ -604,7 +661,7 @@ module tsw.render
 
 			// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
  			var ctxCurrent = CtxScope.getCurrent();
-			var ctxElm = ctxCurrent.getParentElmCtx();
+			var ctxElm = ctxCurrent.getParentHtmlElmOwnerCtx();
 			var tagName = ctxElm ? ctxElm.getTagName() : null;
 
 			//console.log('ctxElm: ', ctxElm);
@@ -1044,7 +1101,7 @@ module tsw.render
 	{
 		private static tmpDiv: HTMLElement;
 
-		static updateDOM(html: string, targetElement: HTMLElement, markers: HtmlBlockMarkers)
+		static updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockMarkers)
 		{
 			// TODO: remove native event handlers
 

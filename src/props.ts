@@ -43,6 +43,11 @@ module tsw.props
 		private val: T;
 		private insideSet = false;
 
+		constructor(initialValue?: T)
+		{
+			super();
+			this.val = initialValue;
+		}
 		get(): T
 		{
 			tsw.render.CtxUtils.attach(this);

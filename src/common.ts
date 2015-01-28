@@ -20,7 +20,7 @@ module tsw.common
 	export interface Renderer
 	{
 		render: () => any;
-		beforeRemove?: () => void;
-		afterInsert?: () => void;
+		afterAttach?: () => void;
+		beforeDetach?: () => void;
 	}
 }
