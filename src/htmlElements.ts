@@ -83,15 +83,6 @@ module tsw.elements
 			return this;
 		}
 
-		// todo: may be remove this. replace with value
-		checked(val: boolean): elm;
-		checked(val: () => boolean): elm;
-		checked(val: any): elm
-		{
-			this.attr('checked', val);
-			return this;
-		}
-
 		placeholder(v: string): input
 		{
 			this.attr('placeholder', v);
@@ -114,11 +105,52 @@ module tsw.elements
 			super('label')
 		}
 
-		for(ref: tsw.elements.Ref): label
+		// "for" is a keyword. it can not be used as a property name in IE before version 9. so we use name "forRef" instead.
+		forRef(ref: tsw.elements.Ref): label
 		{
 			this.attr('for', ref);
 
 			return this;
+		}
+	}
+
+	export class RadioGroup<T>
+	{
+		private propVal: tsw.props.PropVal<T>;
+		private groupName: string;
+		private refs: { key: T; ref: tsw.elements.Ref }[] = [];
+
+		constructor(propVal: tsw.props.PropVal<T>, groupName: string)
+		{
+			this.propVal = propVal;
+			this.groupName = groupName;
+		}
+		item(v: T): tsw.elements.input
+		{
+			var p = {
+				get: () => this.propVal.get() == v,
+				set: () => this.propVal.set(v),
+			};
+
+			var elm = new tsw.elements.input();
+			elm.type('radio').value(p).attr('name', this.groupName).addRef(this.getRefFor(v));
+			return elm;
+		}
+		label(v: T): tsw.elements.label
+		{
+			var elm = new tsw.elements.label();
+			elm.forRef(this.getRefFor(v));
+			return elm;
+		}
+		private getRefFor(v: T): tsw.elements.Ref
+		{
+			var keyRef = utils.arrayUtils.find(this.refs, kr => kr.key == v);
+			if (keyRef == null)
+			{
+				keyRef = { key: v, ref: new tsw.elements.Ref() };
+				this.refs.push(keyRef);
+			}
+			return keyRef.ref;
 		}
 	}
 }

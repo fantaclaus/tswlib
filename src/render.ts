@@ -96,7 +96,6 @@ module tsw.render
 				{
 					//console.group('update:', ctx, ctx.id);
 
-					// TODO: check that ctx is still valid
 					ctx.update();
 
 					//console.groupEnd();

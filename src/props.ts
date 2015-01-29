@@ -3,13 +3,13 @@ module tsw.props
 	export interface PropDef<T>
 	{
 		get: () => T;
-		set?: (v: T, fireOnChange: boolean) => void;
+		set?: (v: T, fireOnChange?: boolean) => void;
 	}
 
 	export class PropVal<T> implements PropDef<T>
 	{
 		private val: T;
-		private insideSet = false;
+		private insideSet = false; // to prevent infinite loops
 		//name: string;
 		//
 		//toString(): string

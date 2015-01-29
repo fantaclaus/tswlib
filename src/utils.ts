@@ -69,19 +69,19 @@ module tsw.utils
 	//}
 	export class arrayUtils
 	{
-		//static find<T>(array: T[], predicate: (value: T, index: number) => boolean): T
-		//{
-		//	if (array)
-		//	{
-		//		for (var i = 0, len = array.length; i < len; ++i)
-		//		{
-		//			var item = array[i];
-		//			if (predicate(item, i)) return item;
-		//		}
-		//	}
-		//
-		//	return null;
-		//}
+		static find<T>(array: T[], predicate: (value: T, index: number) => boolean): T
+		{
+			if (array)
+			{
+				for (var i = 0, len = array.length; i < len; ++i)
+				{
+					var item = array[i];
+					if (predicate(item, i)) return item;
+				}
+			}
+
+			return null;
+		}
 		static contains(array: any[], item: any): boolean
 		{
 			return array.indexOf(item) >= 0;
