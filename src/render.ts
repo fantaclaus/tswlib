@@ -1,40 +1,73 @@
 module tsw.render
 {
+	interface PropKeyContext
+	{
+		propKey: any;
+		ctx: CtxUpdatable;
+	}
+
 	export class CtxUtils
 	{
+		private static propKeyToCtxMap: PropKeyContext[] = null;
 		private static ctxUpdateQueue: CtxUpdatable[] = null;
 		private static timerId: number = null;
+
 
 		private static getCtx(): CtxUpdatable
 		{
 			var ctx = CtxScope.getCurrent();
 			return ctx ? ctx.getParentUpdatableCtx() : null;
 		}
-		public static attach(propVal: tsw.props.PropValBase): void
+		public static attach(propKey: any): void
 		{
 			var ctx = this.getCtx();
 			if (ctx)
 			{
-				ctx.attachPropVal(propVal);
-				propVal.bindCtx(ctx);
+				this.propKeyToCtxMap = this.propKeyToCtxMap || [];
+
+				var exists = this.propKeyToCtxMap.some(p => p.propKey === propKey && p.ctx == ctx);
+				if (!exists)
+				{
+					this.propKeyToCtxMap.push({ propKey: propKey, ctx: ctx });
+
+					//console.log('attached:', propKey.toString(), this.propKeyToCtxMap && this.propKeyToCtxMap.map(p => p.propKey));
+				}
 			}
 		}
-		public static update(propVal: tsw.props.PropValBase): void
+		public static removeCtxs(ctxs: Ctx[]): void
 		{
-			var contexts = propVal.getContexts();
-			if (!contexts || contexts.length == 0) return;
+			if (this.propKeyToCtxMap)
+			{
+				//var removedKeys = this.propKeyToCtxMap
+				//	.filter(p => utils.arrayUtils.contains(ctxs, p.ctx))
+				//	.map(p => p.propKey);
+
+				this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !utils.arrayUtils.contains(ctxs, p.ctx));
+
+				//console.log('removed: ', removedKeys, this.propKeyToCtxMap && this.propKeyToCtxMap.map(p => p.propKey));
+			}
+		}
+		public static update(propKey: any): void
+		{
+
+			var propKeyContexts = this.propKeyToCtxMap && this.propKeyToCtxMap.filter(p => p.propKey === propKey);
+			//console.log('update req: %o; found: %o', propKey, propKeyContexts);
+
+			if (propKeyContexts == null || propKeyContexts.length == 0) return;
 
 			var currentCtx = this.getCtx(); // context set in event handler for 'change' or 'input' event
 
 			// currentCtx is checked for optimization: don't update context whose value is just set by user action
 
+			// add contexts to this.ctxUpdateQueue
+
 			var newQueue = this.ctxUpdateQueue || [];
 
-			contexts.forEach(ctx =>
+			propKeyContexts.forEach(p =>
 			{
-				if (ctx !== currentCtx && !utils.arrayUtils.contains(newQueue, ctx))
+				if (p.ctx !== currentCtx && !utils.arrayUtils.contains(newQueue, p.ctx))
 				{
-					newQueue.push(ctx);
+					newQueue.push(p.ctx);
 				}
 			});
 
@@ -160,10 +193,6 @@ module tsw.render
 		{
 			this.forEachChild(ctx => ctx.unregisterEventHandlersFromRoot(ctxRoot));
 		}
-		protected detachPropVals(): void
-		{
-			this.forEachChild(ctx => ctx.detachPropVals());
-		}
 		protected afterAttach(): void
 		{
 			this.forEachChild(ctx => ctx.afterAttach());
@@ -192,7 +221,7 @@ module tsw.render
 		{
 			this.beforeDetach();
 
-			this.detachPropVals();
+			this.detachPropKeys();
 
 			this.unregisterEventHandlers();
 
@@ -215,6 +244,19 @@ module tsw.render
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
 		{
 
+		}
+		private detachPropKeys(): void
+		{
+			var ctxs: Ctx[] = [];
+			this.collectChildContexts(ctxs);
+
+			CtxUtils.removeCtxs(ctxs);
+		}
+		private collectChildContexts(ctxs: Ctx[]): void
+		{
+			ctxs.push(this);
+
+			this.forEachChild(ctx => ctx.collectChildContexts(ctxs));
 		}
 
 		//protected getDbgArgs(): any[]
@@ -453,33 +495,8 @@ module tsw.render
 
 	export class CtxUpdatable extends Ctx
 	{
-		private propVals: tsw.props.PropValBase[];
-
 		update(): void
 		{
-		}
-
-		attachPropVal(propVal: tsw.props.PropValBase): void
-		{
-			this.propVals = this.propVals || [];
-
-			if (!tsw.utils.arrayUtils.contains(this.propVals, propVal))
-			{
-				this.propVals.push(propVal);
-			}
-		}
-
-		detachPropVals(): void
-		{
-			if (this.propVals)
-			{
-				//console.group('ctx %o: detachPropVals', this);
-				this.propVals.forEach(propVal => propVal.unbindCtx(this));
-				this.propVals = null;
-				//console.groupEnd();
-			}
-
-			super.detachPropVals();
 		}
 	}
 
@@ -1013,7 +1030,7 @@ module tsw.render
 		private static canBeUpdatedAttr(item: any): boolean
 		{
 			if (item instanceof Function) return true;
-			if (item.get instanceof Function && item.set instanceof Function) return true; // PropVal
+			if (item.get instanceof Function) return true; // PropVal // && item.set instanceof Function
 			return false;
 		}
 		private static getRenderedAttrValueRaw(item: any): any

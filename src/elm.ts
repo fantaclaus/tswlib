@@ -1,14 +1,14 @@
 module tsw.elements
 {
-	export interface NameValue
-	{
-		name: string;
-		value: any;
-	}
-
-	export class Ref extends tsw.props.PropValBase implements tsw.props.PropDef<string>
+	export class Ref implements tsw.props.PropDef<string>
 	{
 		private refId: string;
+		//name: string; // DEBUG
+		//
+		//toString(): string
+		//{
+		//	return 'ref:' + this.name;
+		//}
 
 		get(): string
 		{
@@ -18,13 +18,15 @@ module tsw.elements
 		}
 		set(v: string): void
 		{
-			//console.log('set ref: ', v);
-
 			if (this.refId !== v)
 			{
+				//console.group('ref %s %o: set value %o', this.name, this, v);
+
 				this.refId = v;
 
 				tsw.render.CtxUtils.update(this);
+
+				//console.groupEnd();
 			}
 		}
 
@@ -32,6 +34,12 @@ module tsw.elements
 		{
 			return jQuery('#' + this.refId);
 		}
+	}
+
+	interface NameValue
+	{
+		name: string;
+		value: any;
 	}
 
 	export class elm

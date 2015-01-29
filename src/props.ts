@@ -3,49 +3,22 @@ module tsw.props
 	export interface PropDef<T>
 	{
 		get: () => T;
-		set: (v: T, fireOnChange: boolean) => void;
+		set?: (v: T, fireOnChange: boolean) => void;
 	}
 
-	export class PropValBase
-	{
-		private contexts: tsw.render.CtxUpdatable[] = null;
-
-		getContexts(): tsw.render.CtxUpdatable[]
-		{
-			return this.contexts;
-		}
-		bindCtx(ctx: tsw.render.CtxUpdatable): void
-		{
-			this.contexts = this.contexts || [];
-
-			if (!tsw.utils.arrayUtils.contains(this.contexts, ctx))
-			{
-				//console.log('propDef %o: bindCtx from ctx %o', this, ctx);
-				this.contexts.push(ctx);
-			}
-		}
-		unbindCtx(ctx: tsw.render.CtxUpdatable): void
-		{
-			if (this.contexts)
-			{
-				var index = this.contexts.indexOf(ctx);
-				if (index >= 0)
-				{
-					//console.log('propDef %o: unbindCtx from ctx %o; index=%o', this, ctx, index);
-					this.contexts.splice(index, 1);
-				}
-			}
-		}
-	}
-
-	export class PropVal<T> extends PropValBase implements PropDef<T>
+	export class PropVal<T> implements PropDef<T>
 	{
 		private val: T;
 		private insideSet = false;
+		//name: string;
+		//
+		//toString(): string
+		//{
+		//	return this.name;
+		//}
 
 		constructor(initialValue?: T)
 		{
-			super();
 			this.val = initialValue;
 		}
 		get(): T
@@ -81,9 +54,9 @@ module tsw.props
 		}
 		onChanged: () => void;
 
-		isTrue(content: any): () => any
+		isTrue(contentTrue: any, contentFalse?: any): () => any
 		{
-			return () => this.get() && content;
+			return () => this.get() ? contentTrue : contentFalse;
 		}
 		isFalse(content: any): () => any
 		{
