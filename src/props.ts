@@ -10,7 +10,8 @@ module tsw.props
 	{
 		private val: T;
 		private insideSet = false; // to prevent infinite loops
-		//name: string;
+		name: string;
+
 		//
 		//toString(): string
 		//{

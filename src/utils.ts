@@ -67,6 +67,10 @@ module tsw.utils
 	//{
 	//	return v == null;
 	//}
+	export function toStringSafe(s: string): string
+	{
+		return s == null ? '' : s;
+	}
 	export class arrayUtils
 	{
 		static find<T>(array: T[], predicate: (value: T, index: number) => boolean): T

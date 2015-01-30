@@ -231,7 +231,7 @@ module tsw.render
 			if (htmlElement)
 			{
 				var innerHtml = CtxScope.use(this, () => this._renderHtml(content));
-				this.setInnerHtml(htmlElement, innerHtml);
+				this.setInnerHtml(htmlElement, utils.toStringSafe(innerHtml));
 			}
 
 			this.afterAttach();
@@ -1108,14 +1108,13 @@ module tsw.render
 		}
 		getHtml(innerHtml: string)
 		{
-			var s = innerHtml || ''; // to avoid: "" + null == "null"
-			return "<!--" + this.begin + "-->" + s + "<!--" + this.end + "-->";
+			return "<!--" + this.begin + "-->" + utils.toStringSafe(innerHtml) + "<!--" + this.end + "-->";
 		}
 	}
 
 	class DOMUtils
 	{
-		private static tmpDiv: HTMLElement;
+		private static tmpHtmlElement: HTMLElement;
 
 		static updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockMarkers)
 		{
@@ -1201,17 +1200,17 @@ module tsw.render
 						node = nodeNext;
 					}
 
-					var tmpDiv = this.tmpDiv;
-					if (!tmpDiv)
+					var tmpHtmlElement = this.tmpHtmlElement;
+					if (!tmpHtmlElement)
 					{
-						tmpDiv = document.createElement('div');
-						this.tmpDiv = tmpDiv; // cache it
+						tmpHtmlElement = document.createElement('span');
+						this.tmpHtmlElement = tmpHtmlElement; // cache it
 					}
 
 					// insert html into TABLE doesn't work on IE<10
-					targetElement.insertBefore(tmpDiv, nodeEndMarker);
-					tmpDiv.insertAdjacentHTML('beforeBegin', html);
-					targetElement.removeChild(tmpDiv);
+					targetElement.insertBefore(tmpHtmlElement, nodeEndMarker);
+					tmpHtmlElement.insertAdjacentHTML('beforeBegin', html);
+					targetElement.removeChild(tmpHtmlElement);
 
 					// doesn't work on IE
 //					var tmp = document.createElement('template');
