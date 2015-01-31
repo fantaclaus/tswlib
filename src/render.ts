@@ -1049,9 +1049,10 @@ module tsw.render
 		{
 			if (!item.name) return this.getRenderedAttrValue(item);
 
-			var v1 = this.getRenderedAttrValue(item.value);
-			if (v1 != null && v1 !== '') return item.name + ": " + v1;
-			return '';
+			var v = this.getRenderedAttrValue(item.value);
+			if (v == null || v == '') return null;
+
+			return item.name + ": " + v;
 		}
 		private static getValuePropDef(elm: tsw.elements.elm): tsw.props.PropDef<any>
 		{
