@@ -55,10 +55,14 @@ module tsw.elements
 			this.tagName = tagName.toLowerCase();
 		}
 
-		attr(name: string, val: any): elm;
-		attr(name: string, val: () => any): elm;
-		attr(name: string, val: any): elm
+		attr(name: string, val?: any): elm;
+		attr(name: string, val?: () => any): elm;
+		attr(name: string, val?: any): elm
 		{
+			if (!name) return;
+
+			if (utils.isUndefined(val)) val = true;
+
 			if (val != null)
 			{
 				this._attrs = this._attrs || [];

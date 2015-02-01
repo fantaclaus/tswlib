@@ -148,13 +148,13 @@ module tsw.html
 		return new elements.input();
 	}
 
-	export function select(): elements.elm
+	export function select(): elements.select
 	{
-		return new elements.elm('select');
+		return new elements.select();
 	}
-	export function option(): elements.elm
+	export function option(): elements.option
 	{
-		return new elements.elm('option');
+		return new elements.option();
 	}
 	export function textarea(): elements.textarea
 	{

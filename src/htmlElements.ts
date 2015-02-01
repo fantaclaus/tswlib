@@ -55,7 +55,7 @@ module tsw.elements
 	{
 		private propDef: tsw.props.PropDef<any>;
 
-		value<T>(propDef: tsw.props.PropDef<T>): elm
+		value(propDef: tsw.props.PropDef<any>): elm
 		{
 			this.propDef = propDef;
 
@@ -95,6 +95,37 @@ module tsw.elements
 		constructor()
 		{
 			super('textarea')
+		}
+	}
+	export class select extends elmWithValue
+	{
+		constructor()
+		{
+			super('select')
+		}
+	}
+	export class option extends elm
+	{
+		constructor()
+		{
+			super('option')
+		}
+
+		value(val: string): option;
+		value(val: () => string): option;
+		value(val: any): option
+		{
+			this.attr('value', val);
+
+			return this;
+		}
+		selected(val: boolean): option;
+		selected(val: () => boolean): option;
+		selected(val: any): option
+		{
+			this.attr('selected', val);
+
+			return this;
 		}
 	}
 

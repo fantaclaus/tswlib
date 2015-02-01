@@ -843,7 +843,7 @@ module tsw.render
 					valPropName = 'value';
 				}
 			}
-			else if (tagName == 'textarea')
+			else if (tagName == 'textarea' || tagName == 'select')
 			{
 				valPropName = 'value';
 			}
