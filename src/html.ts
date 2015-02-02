@@ -143,9 +143,17 @@ module tsw.html
 		return new elements.label();
 	}
 
-	export function input(): elements.input
+	export function inputText(): elements.inputText
 	{
-		return new elements.input();
+		return new elements.inputText();
+	}
+	export function inputCheckBox(): elements.inputCheckbox
+	{
+		return new elements.inputCheckbox();
+	}
+	export function inputRadio(): elements.inputRadio
+	{
+		return new elements.inputRadio();
 	}
 
 	export function select(): elements.select
@@ -156,8 +164,8 @@ module tsw.html
 	{
 		return new elements.option();
 	}
-	export function textarea(): elements.textarea
+	export function textArea(): elements.textArea
 	{
-		return new elements.textarea();
+		return new elements.textArea();
 	}
 }

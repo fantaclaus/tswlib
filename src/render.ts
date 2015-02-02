@@ -777,7 +777,7 @@ module tsw.render
 					// pass ctx for optimization: to skip it during update. see CtxUtils.update
 					CtxScope.use(valData.ctx, () =>
 					{
-						propDef.set(v, true);
+						propDef.set(v);
 					});
 
 					var userHandler = savedHandlers[e.type];
@@ -1058,7 +1058,7 @@ module tsw.render
 		{
 			if (elm instanceof tsw.elements.elmWithValue)
 			{
-				var elmV = <tsw.elements.elmWithValue> elm;
+				var elmV = <tsw.elements.elmWithValue<any>> elm;
 				return elmV.z_getPropDef();
 			}
 

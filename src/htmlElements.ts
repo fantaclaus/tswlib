@@ -51,53 +51,67 @@ module tsw.elements
 		}
 	}
 
-	export class elmWithValue extends elm
+	export class elmWithValue<T> extends elm
 	{
-		private propDef: tsw.props.PropDef<any>;
+		private propDef: tsw.props.PropDef<T>;
 
-		value(propDef: tsw.props.PropDef<any>): elm
+		value(propDef: tsw.props.PropDef<T>): elm
 		{
 			this.propDef = propDef;
 
 			return this;
 		}
 
-		z_getPropDef(): tsw.props.PropDef<any>
+		z_getPropDef(): tsw.props.PropDef<T>
 		{
 			return this.propDef;
 		}
 	}
-	export class input extends elmWithValue
+
+	export class input<T> extends elmWithValue<T>
+	{
+		constructor(type: string)
+		{
+			super('input')
+			this.attr('type', type);
+		}
+	}
+	export class inputText extends input<string>
 	{
 		constructor()
 		{
-			super('input')
+			super('text');
 		}
 
-		type(val: string): input;
-		type(val: () => string): input;
-		type(val: any): input
-		{
-			this.attr('type', val);
-
-			return this;
-		}
-
-		placeholder(v: string): input
+		placeholder(v: string): input<string>
 		{
 			this.attr('placeholder', v);
 
 			return this;
 		}
 	}
-	export class textarea extends elmWithValue
+	export class inputCheckbox extends input<boolean>
+	{
+		constructor()
+		{
+			super('checkbox');
+		}
+	}
+	export class inputRadio extends input<boolean>
+	{
+		constructor()
+		{
+			super('radio');
+		}
+	}
+	export class textArea extends elmWithValue<string>
 	{
 		constructor()
 		{
 			super('textarea')
 		}
 	}
-	export class select extends elmWithValue
+	export class select extends elmWithValue<string>
 	{
 		constructor()
 		{
@@ -156,15 +170,15 @@ module tsw.elements
 			this.propVal = propVal;
 			this.groupName = groupName;
 		}
-		item(v: T): tsw.elements.input
+		item(v: T): tsw.elements.inputRadio
 		{
 			var p = {
 				get: () => this.propVal.get() == v,
 				set: () => this.propVal.set(v),
 			};
 
-			var elm = new tsw.elements.input();
-			elm.type('radio').value(p).attr('name', this.groupName).addRef(this.getRefFor(v));
+			var elm = new tsw.elements.inputRadio();
+			elm.value(p).attr('name', this.groupName).addRef(this.getRefFor(v));
 			return elm;
 		}
 		label(v: T): tsw.elements.label
