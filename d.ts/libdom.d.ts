@@ -53,6 +53,7 @@ interface HTMLElement extends Element {
 	innerHTML: string;
 	insertBefore(newChild: Node, refChild?: Node): Node;
 	insertAdjacentHTML(where: string, html: string): void;
+	parentElement: HTMLElement;
 }
 
 interface NodeSelector {

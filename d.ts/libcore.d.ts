@@ -21,6 +21,7 @@
 
 declare var NaN: number;
 declare var Infinity: number;
+declare var undefined: any;
 
 /**
  * Evaluates JavaScript code and executes it.
@@ -352,6 +353,8 @@ interface String {
 	 * @param replaceValue A function that returns the replacement text.
 	 */
 	replace(searchValue: RegExp, replaceValue: (substring: string, ...args: any[]) => string): string;
+
+	repeat(count: number): string;
 
 	/**
 	 * Finds the first substring match in a regular expression search.
