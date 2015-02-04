@@ -8,7 +8,7 @@ var outFolder = 'out';
 	makeDir(outFolder);
 
 	var textLogo = fs.readFileSync('logo.txt').toString();
-	textLogo = textLogo.replace(/{year}/g, '2014');
+	textLogo = textLogo.replace(/{year}/g, new Date().getFullYear());
 
 	copyFile('tswlib.d.ts', textLogo, removeRefComments);
 	copyFile('tswlib.js', textLogo);

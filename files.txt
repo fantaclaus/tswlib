@@ -4,3 +4,4 @@ src\html.ts
 src\htmlelements.ts
 src\utils.ts
 src\render.ts
+src\props.ts
