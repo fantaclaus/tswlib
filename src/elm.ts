@@ -3,12 +3,6 @@ module tsw.elements
 	export class Ref implements tsw.props.PropDef<string>
 	{
 		private refId: string;
-		//name: string; // DEBUG
-		//
-		//toString(): string
-		//{
-		//	return 'ref:' + this.name;
-		//}
 
 		get(): string
 		{
@@ -57,6 +51,7 @@ module tsw.elements
 
 		attr(name: string, val?: any): elm;
 		attr(name: string, val?: () => any): elm;
+		attr(name: string, val: tsw.props.PropDefReadable<any>): elm;
 		attr(name: string, val?: any): elm
 		{
 			if (!name) return;
@@ -73,6 +68,7 @@ module tsw.elements
 
 		cls(val: string): elm;
 		cls(val: () => string): elm;
+		cls(val: tsw.props.PropDefReadable<string>): elm;
 		cls(val: any): elm
 		{
 			this.attr('class', val);
@@ -99,7 +95,7 @@ module tsw.elements
 
 		data(name: string, val: string): elm;
 		data(name: string, val: () => string): elm;
-		data(name: string, val: tsw.props.PropDef<any>): elm;
+		data(name: string, val: tsw.props.PropDefReadable<string>): elm;
 		data(name: string, val: any): elm
 		{
 			this.attr('data-' + name, val);
@@ -109,6 +105,7 @@ module tsw.elements
 
 		disabled(val: boolean): elm;
 		disabled(val: () => boolean): elm;
+		disabled(val: tsw.props.PropDefReadable<boolean>): elm;
 		disabled(val: any): elm
 		{
 			this.attr('disabled', val);

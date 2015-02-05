@@ -1,9 +1,13 @@
 module tsw.props
 {
-	export interface PropDef<T>
+	export interface PropDefReadable<T>
 	{
 		get: () => T;
-		set?: (v: T) => void;
+	}
+
+	export interface PropDef<T> extends PropDefReadable<T>
+	{
+		set: (v: T) => void;
 	}
 
 	export class PropVal<T> implements PropDef<T>
@@ -47,6 +51,7 @@ module tsw.props
 				this.insideSet = false;
 			}
 		}
+
 		//getWithoutAttach(): T
 		//{
 		//	return this.val;
@@ -70,16 +75,24 @@ module tsw.props
 		{
 			return () => this.get() == val && content;
 		}
-		//converted<U>(to: (v: T) => U, from: (v: U) => T): PropVal<U>
-		//{
-		//	var curVal = to(this.val);
-		//
-		//	var p = new PropVal<U>(curVal);
-		//
-		//	this.onChanged = () => p.set(to(this.val));
-		//	p.onChanged = () => this.set(from(p.val));
-		//
-		//	return p;
-		//}
+
+		convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): PropDef<U>
+		{
+			var p: PropDef<U> = {
+				get: () => converter.to(this.get()),
+				set: v => this.set(converter.from(v)),
+			};
+
+			return p;
+		}
+		convert2<U>(to: (v: T) => U, from: (v: U) => T): PropDef<U>
+		{
+			var p: PropDef<U> = {
+				get: () => to(this.get()),
+				set: v => this.set(from(v)),
+			};
+
+			return p;
+		}
 	}
 }

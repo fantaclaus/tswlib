@@ -9,6 +9,7 @@ module tsw.elements
 
 		type(val: string): button;
 		type(val: () => string): button;
+		type(val: tsw.props.PropDefReadable<string>): button;
 		type(val: any): button
 		{
 			this.attr('type', val);
@@ -26,6 +27,7 @@ module tsw.elements
 
 		href(val: string): a;
 		href(val: () => string): a;
+		href(val: tsw.props.PropDefReadable<string>): a;
 		href(val: any): a
 		{
 			this.attr('href', val);
@@ -43,6 +45,7 @@ module tsw.elements
 
 		src(val: string): img;
 		src(val: () => string): img;
+		src(val: tsw.props.PropDefReadable<string>): img;
 		src(val: any): img
 		{
 			this.attr('src', val);
@@ -51,29 +54,40 @@ module tsw.elements
 		}
 	}
 
-	export class elmWithValue<T> extends elm
+	export class elmWithValue extends elm
 	{
-		private propDef: tsw.props.PropDef<T>;
+		protected propDef: tsw.props.PropDef<any>;
 
+		z_getPropDef(): tsw.props.PropDef<any>
+		{
+			return this.propDef;
+		}
+		z_getValueAttrName(): string
+		{
+			return null;
+		}
+		z_getValuePropName(): string  // for jQuery.prop
+		{
+			return null;
+		}
+	}
+
+	export class input<T> extends elmWithValue
+	{
+		constructor(type: string)
+		{
+			super('input')
+			this.attr('type', type);
+		}
 		value(propDef: tsw.props.PropDef<T>): elm
 		{
 			this.propDef = propDef;
 
 			return this;
 		}
-
-		z_getPropDef(): tsw.props.PropDef<T>
+		z_getValuePropName(): string
 		{
-			return this.propDef;
-		}
-	}
-
-	export class input<T> extends elmWithValue<T>
-	{
-		constructor(type: string)
-		{
-			super('input')
-			this.attr('type', type);
+			return 'value';
 		}
 	}
 	export class inputText extends input<string>
@@ -83,6 +97,11 @@ module tsw.elements
 			super('text');
 		}
 
+		z_getValueAttrName(): string
+		{
+			return 'value';
+		}
+
 		placeholder(v: string): input<string>
 		{
 			this.attr('placeholder', v);
@@ -90,32 +109,74 @@ module tsw.elements
 			return this;
 		}
 	}
-	export class inputCheckbox extends input<boolean>
+	export class inputCheckboxBase extends input<boolean>
+	{
+		z_getValueAttrName(): string
+		{
+			return 'checked';
+		}
+		z_getValuePropName(): string
+		{
+			return 'checked';
+		}
+	}
+	export class inputCheckbox extends inputCheckboxBase
 	{
 		constructor()
 		{
 			super('checkbox');
 		}
 	}
-	export class inputRadio extends input<boolean>
+	export class inputRadio extends inputCheckboxBase
 	{
 		constructor()
 		{
 			super('radio');
 		}
 	}
-	export class textArea extends elmWithValue<string>
+	export class textArea extends elmWithValue
 	{
 		constructor()
 		{
 			super('textarea')
 		}
+		value(propDef: tsw.props.PropDef<string>): elm
+		{
+			this.propDef = propDef;
+
+			return this;
+		}
+		z_getValuePropName(): string
+		{
+			return 'value';
+		}
 	}
-	export class select extends elmWithValue<string>
+	export class select extends elmWithValue
 	{
+		protected valuePropName: string;
+
 		constructor()
 		{
 			super('select')
+		}
+
+		value(propDef: tsw.props.PropDef<string>): elm
+		{
+			this.propDef = propDef;
+			this.valuePropName = "value";
+
+			return this;
+		}
+		selectedIndex(propDef: tsw.props.PropDef<number>): select
+		{
+			this.propDef = propDef;
+			this.valuePropName = "selectedIndex";
+
+			return this;
+		}
+		z_getValuePropName(): string
+		{
+			return this.valuePropName;
 		}
 	}
 	export class option extends elm

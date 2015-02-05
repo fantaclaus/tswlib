@@ -737,13 +737,33 @@ module tsw.render
 
 			//this.logElmAttrs(elm);
 
-			var propDef = this.getValuePropDef(elm);
+			//var elmPropDef = this.getValuePropDef(elm);
+			var elmWithVal = this.asElmWithValue(elm);
+			var propDef = elmWithVal && elmWithVal.z_getPropDef();
 
 			var useVal = propDef && propDef.get instanceof Function;
-			var updateVal = useVal && propDef && propDef.set instanceof Function;
+			var updateVal = useVal && propDef.set instanceof Function;
 
 			var valData: { value: any; ctx: CtxUpdatable; valPropName: string; } = null;
-			if (useVal) valData = this.getValueAndUpdateAttrs(tagName, attrs, ctx, propDef);
+			if (useVal)
+			{
+				var valAttrName = elmWithVal.z_getValueAttrName();
+				var valPropName = elmWithVal.z_getValuePropName();
+
+				var valueData = CtxScope.use(ctx, () => this.getValue(propDef, valPropName));
+
+				// replace attributes with value of propdef (checked or value)
+
+				if (valAttrName != null) // tagName == 'input'
+				{
+					//delete attrs['checked'];
+					//delete attrs['value'];
+
+					attrs[valAttrName] = [ valueData.value ];
+				}
+
+				valData = { value: valueData.value, ctx: valueData.ctx, valPropName:  valPropName };
+			}
 
 			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
 			//console.log('attrsHtml: [%s]', attrsHtml);
@@ -774,7 +794,7 @@ module tsw.render
 				{
 					var v = $(htmlElement).prop(valData.valPropName);
 
-					// pass ctx for optimization: to skip it during update. see CtxUtils.update
+					// pass ctx to CtxUtils.update for optimization: to skip it during update.
 					CtxScope.use(valData.ctx, () =>
 					{
 						propDef.set(v);
@@ -822,45 +842,6 @@ module tsw.render
 			}
 
 			return html;
-		}
-		private static getValueAndUpdateAttrs(tagName: string, attrs: MapStringToArray,  ctxParent: Ctx, propDef: tsw.props.PropDef<any>): { value: any; ctx: CtxUpdatable; valPropName: string; }
-		{
-			var valAttrName: string = null;
-			var valPropName: string = null;
-
-			if (tagName == 'input')
-			{
-				var attrType = attrs['type'];
-				var inputType = attrType ? attrType[0] : null;
-				if (inputType == 'checkbox' || inputType == 'radio')
-				{
-					valAttrName = 'checked';
-					valPropName = 'checked';
-				}
-				else
-				{
-					valAttrName = 'value';
-					valPropName = 'value';
-				}
-			}
-			else if (tagName == 'textarea' || tagName == 'select')
-			{
-				valPropName = 'value';
-			}
-
-			var valueData = CtxScope.use(ctxParent, () => this.getValue(propDef, valPropName));
-
-			// replace attributes with value of propdef (checked or value)
-
-			if (tagName == 'input')
-			{
-				delete attrs['checked'];
-				delete attrs['value'];
-
-				attrs[valAttrName] = [valueData.value];
-			}
-
-			return { value: valueData.value, ctx: valueData.ctx, valPropName:  valPropName };
 		}
 
 		//private static logElmAttrs(elm)
@@ -1054,17 +1035,18 @@ module tsw.render
 
 			return item.name + ": " + v;
 		}
-		private static getValuePropDef(elm: tsw.elements.elm): tsw.props.PropDef<any>
+		private static asElmWithValue(elm: tsw.elements.elm): tsw.elements.elmWithValue
 		{
 			if (elm instanceof tsw.elements.elmWithValue)
 			{
-				var elmV = <tsw.elements.elmWithValue<any>> elm;
-				return elmV.z_getPropDef();
+				return <tsw.elements.elmWithValue> elm;
 			}
-
-			return null;
+			else
+			{
+				return null;
+			}
 		}
-		private static getValue(propDef: tsw.props.PropDef<any>, valPropName: string): { value: any; ctx: CtxUpdatable }
+		private static getValue(propDef: tsw.props.PropDefReadable<any>, valPropName: string): { value: any; ctx: CtxUpdatable }
 		{
 			var ctxCurrent = CtxScope.getCurrent();
 
