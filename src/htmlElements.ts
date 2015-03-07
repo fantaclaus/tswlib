@@ -233,7 +233,8 @@ module tsw.elements
 		}
 		item(v: T): tsw.elements.inputRadio
 		{
-			var p = {
+			var p =
+			{
 				get: () => this.propVal.get() == v,
 				set: () => this.propVal.set(v),
 			};
