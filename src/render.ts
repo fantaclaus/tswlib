@@ -295,7 +295,7 @@ module tsw.render
 		getHtmlElement(): HTMLElement
 		{
 			var htmlElement = document.getElementById(this.id);
-			if (!htmlElement) throw new Error(utils.format("Can not find element by id: ${id}", { id: this.id }));
+			if (!htmlElement) throw new Error(`Can not find element by id: ${this.id}`);
 
 			return htmlElement;
 		}

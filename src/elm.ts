@@ -135,7 +135,7 @@ module tsw.elements
 
 				if (this.eventHandlers[eventName])
 				{
-					throw new Error(tsw.utils.format('Event handler "${eventName}" is already installed.', {eventName: eventName}));
+					throw new Error(`Event handler "${eventName}" is already installed.`);
 				}
 
 				this.eventHandlers[eventName] = handler;

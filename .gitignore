@@ -1,7 +1,6 @@
-/.idea/
-/out/
-/bin/
-/obj/
+out/
+bin/
+obj/
 *.suo
 *.user
 *.sln
