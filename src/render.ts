@@ -49,13 +49,12 @@ module tsw.render
 		}
 		public static update(propKey: any): void
 		{
-
 			var propKeyContexts = this.propKeyToCtxMap && this.propKeyToCtxMap.filter(p => p.propKey === propKey);
 			//console.log('update req: %o; found: %o', propKey, propKeyContexts);
 
 			if (propKeyContexts == null || propKeyContexts.length == 0) return;
 
-			var currentCtx = this.getCtx(); // context set in event handler for 'change' or 'input' event
+			var currentCtx = this.getCtx(); // context that has been set in event handler for 'change' or 'input' event
 
 			// currentCtx is checked for optimization: don't update context whose value is just set by user action
 
@@ -614,18 +613,15 @@ module tsw.render
 			var jqElement = jQuery(htmlElement);
 			jqElement.prop(this.propName, val);
 		}
-		//toString(): string // for DEBUG
-		//{
-		//	var ctxElm = this.getParentHtmlElmOwnerCtx();
-		//	return utils.format("value: #${id}[${propName}]",  {
-		//		id: ctxElm.id,
-		//		propName: this.propName,
-		//	});
-		//}
-		//getDbgArgs(): any[]
-		//{
-		//	return ['%o prop:[%s]', this, this.propName];
-		//}
+//		toString(): string // for DEBUG
+//		{
+//			var ctxElm = this.getParentHtmlElmOwnerCtx();
+//			return `value: #${ctxElm.id}[${this.propName}]`;
+//		}
+//		getDbgArgs(): any[]
+//		{
+//			return ['%o prop:[%s]', this, this.propName];
+//		}
 	}
 
 	export class CtxScope
@@ -754,7 +750,7 @@ module tsw.render
 
 				// replace attributes with value of propdef (checked or value)
 
-				if (valAttrName != null) // tagName == 'input'
+				if (valAttrName != null && valueData.value != null) // tagName == 'input'
 				{
 					//delete attrs['checked'];
 					//delete attrs['value'];
@@ -772,7 +768,7 @@ module tsw.render
 
 			if (useVal && tagName == 'textarea')
 			{
-				innerHtml = utils.htmlEncode(valData.value);
+				innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
 			}
 			else
 			{
@@ -1010,7 +1006,7 @@ module tsw.render
 		private static canBeUpdatedAttr(item: any): boolean
 		{
 			if (item instanceof Function) return true;
-			if (item.get instanceof Function) return true; // PropVal // && item.set instanceof Function
+			if (item.get instanceof Function) return true; // PropVal
 			return false;
 		}
 		private static getRenderedAttrValueRaw(item: any): any
@@ -1020,26 +1016,37 @@ module tsw.render
 
 			return item;
 		}
-		private static canBeUpdatedStyle(item: any): boolean
+		private static canBeUpdatedStyle(item: tsw.elements.attrValType | tsw.elements.StyleRule): boolean
 		{
-			if (!item.name) return this.canBeUpdatedAttr(item);
-
-			return this.canBeUpdatedAttr(item.value);
+			if (typeof item === "object" && item instanceof tsw.elements.StyleRule)
+			{
+				return this.canBeUpdatedAttr(item.propValue);	
+			}
+			else
+			{
+				return this.canBeUpdatedAttr(item);
+			}	
 		}
-		private static getRenderedStyleValue(item: any): any
+		private static getRenderedStyleValue(item: tsw.elements.attrValType | tsw.elements.StyleRule): any
 		{
-			if (!item.name) return this.getRenderedAttrValue(item);
+			if (typeof item === "object" && item instanceof tsw.elements.StyleRule)
+			{
+				var v = this.getRenderedAttrValue(item.propValue);
 
-			var v = this.getRenderedAttrValue(item.value);
-			if (v == null || v == '') return null;
+				if (v == null || v == '') return null;
 
-			return item.name + ": " + v;
+				return item.propName + ": " + v;
+			}
+			else
+			{
+				return this.getRenderedAttrValue(item);
+			}	
 		}
 		private static asElmWithValue(elm: tsw.elements.elm): tsw.elements.elmWithValue
 		{
 			if (elm instanceof tsw.elements.elmWithValue)
 			{
-				return <tsw.elements.elmWithValue> elm;
+				return elm;
 			}
 			else
 			{

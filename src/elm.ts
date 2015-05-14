@@ -1,4 +1,4 @@
-module tsw.elements
+﻿module tsw.elements
 {
 	export class Ref implements tsw.props.PropDef<string>
 	{
@@ -30,10 +30,19 @@ module tsw.elements
 		}
 	}
 
+	export type attrValSimpleType = string|number|boolean;
+	export type attrValType = tsw.props.PropDefReadable<attrValSimpleType> | (() => attrValSimpleType) | attrValSimpleType;
+	
+	export class StyleRule
+	{
+		propName: string;
+		propValue: attrValType;
+	}	
+	
     export interface NameValue
 	{
 		name: string;
-		value: any;
+		value: attrValType | StyleRule;
 	}
 
 	export class elm
@@ -49,10 +58,7 @@ module tsw.elements
 			this.tagName = tagName.toLowerCase();
 		}
 
-		attr(name: string, val?: any): elm;
-		attr(name: string, val?: () => any): elm;
-		attr(name: string, val: tsw.props.PropDefReadable<any>): elm;
-		attr(name: string, val?: any): elm
+		attr(name: string, val?: attrValType): elm
 		{
 			if (!name) return;
 
@@ -60,58 +66,46 @@ module tsw.elements
 
 			if (val != null)
 			{
-				this._attrs = this._attrs || [];
-				this._attrs.push({name: name.toLowerCase(), value: val});
+				this.z_addAttr(name, val);
 			}
+
 			return this;
 		}
-
-		cls(val: string): elm;
-		cls(val: () => string): elm;
-		cls(val: tsw.props.PropDefReadable<string>): elm;
-		cls(val: any): elm
+		cls(val: string | (() => string) | tsw.props.PropDefReadable<string>): elm
 		{
 			this.attr('class', val);
 			return this;
 		}
-
-		style(name: string, val: string): elm;
-		style(name: string, val: () => string): elm;
-		style(val: string): elm;
-		style(val: () => string): elm;
-		style(name: any, val?: any): elm
+		style(val: attrValType): elm
 		{
-			if (tsw.utils.isUndefined(val))
+			this.attr('style', val);
+
+			return this;
+		}
+		styleRule(name: string, val: attrValType): elm
+		{
+			if (val != null)
 			{
-				this.attr('style', name);
-			}
-			else if (val != null)
-			{
-				this.attr('style', <any>{ name: name, value: val });
+				var v = new StyleRule();
+				v.propName = name;
+				v.propValue = val;
+				
+				this.z_addAttr('style', v);
 			}
 
 			return this;
 		}
-
-		data(name: string, val: string): elm;
-		data(name: string, val: () => string): elm;
-		data(name: string, val: tsw.props.PropDefReadable<string>): elm;
-		data(name: string, val: any): elm
+		data(name: string, val: string | (() => string) | tsw.props.PropDefReadable<string>): elm
 		{
 			this.attr('data-' + name, val);
 
 			return this;
 		}
-
-		disabled(val: boolean): elm;
-		disabled(val: () => boolean): elm;
-		disabled(val: tsw.props.PropDefReadable<boolean>): elm;
-		disabled(val: any): elm
+		disabled(val: boolean | (() => boolean) | tsw.props.PropDefReadable<boolean>): elm
 		{
 			this.attr('disabled', val);
 			return this;
 		}
-
 		children(items: any): elm
 		{
 			this._children = this._children || [];
@@ -151,6 +145,11 @@ module tsw.elements
 			return this;
 		}
 
+		z_addAttr(name: string, val: attrValType | StyleRule): void
+		{
+			this._attrs = this._attrs || [];
+			this._attrs.push({ name: name.toLowerCase(), value: val });
+		}
 		z_getTagName(): string
 		{
 			return this.tagName;
