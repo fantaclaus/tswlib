@@ -1,65 +1,59 @@
-module tsw.utils
+module tsw.internal
 {
-	export function htmlEncode(s: string): string
+	export class utils
 	{
-		return s
-			.replace(/&/g, '&amp;')
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;");
-	}
-	export function appendDelimited(s1: string, delim: string, s2: string): string
-	{
-		if (s1 && s2) return s1 + delim + s2;
-
-		if (s1) return s1;
-
-		return s2;
-	}
-	export function join<T>(items: T[], delim:string, selector: (item: T) => string): string
-	{
-		// if all items are null, return null
-
-		var result: string = null;
-
-		if (items)
+		static htmlEncode(s: string): string
 		{
-			for (var i = 0; i < items.length; i++)
+			return s
+				.replace(/&/g, '&amp;')
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;");
+		}
+		static appendDelimited(s1: string, delim: string, s2: string): string
+		{
+			if (s1 && s2) return s1 + delim + s2;
+
+			if (s1) return s1;
+
+			return s2;
+		}
+		static join<T>(items: T[], delim: string, selector: (item: T) => string): string
+		{
+			// if all items are null, return null
+
+			var result: string = null;
+
+			if (items)
 			{
-				var item = items[i];
-				if (item != null)
+				for (var i = 0; i < items.length; i++)
 				{
-					var s = selector(item);
-
-					if (s != null && result == null) result = ''; // if at least one item is converted to non-null, result is not null
-
-					if (s != null && s !== '') // don't add nulls and ampty strings. but zero-number value must be added.
+					var item = items[i];
+					if (item != null)
 					{
-						if (delim && result) result += delim;
+						var s = selector(item);
 
-						result += s;
+						if (s != null && result == null) result = ''; // if at least one item is converted to non-null, result is not null
+
+						if (s != null && s !== '') // don't add nulls and ampty strings. but zero-number value must be added.
+						{
+							if (delim && result) result += delim;
+
+							result += s;
+						}
 					}
 				}
 			}
+
+			return result;
 		}
-
-		return result;
-	}
-	//export function splitStr(s: string, delim: string): string[]
-	//{
-	//	return s ? s.split(delim) : [];
-	//}
-
-	export function isUndefined(v: any): boolean
-	{
-		return typeof v == 'undefined';
-	}
-	//export function isNullOrUndefined(v: any): boolean
-	//{
-	//	return v == null;
-	//}
-	export function toStringSafe(s: string): string
-	{
-		return s == null ? '' : s;
+		static isUndefined(v: any): boolean
+		{
+			return typeof v == 'undefined';
+		}
+		static toStringSafe(s: string): string
+		{
+			return s == null ? '' : s;
+		}
 	}
 	export class arrayUtils
 	{
@@ -80,10 +74,6 @@ module tsw.utils
 		{
 			return array.indexOf(item) >= 0;
 		}
-		//static empty(array: any[]): boolean
-		//{
-		//	return array == null || array.length == 0;
-		//}
 	}
 	export class objUtils
 	{

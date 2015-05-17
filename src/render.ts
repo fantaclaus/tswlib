@@ -1,4 +1,4 @@
-module tsw.render
+module tsw.internal
 {
 	interface PropKeyContext
 	{
@@ -39,10 +39,10 @@ module tsw.render
 			if (this.propKeyToCtxMap)
 			{
 				//var removedKeys = this.propKeyToCtxMap
-				//	.filter(p => utils.arrayUtils.contains(ctxs, p.ctx))
+				//	.filter(p => tsw.internal.arrayUtils.contains(ctxs, p.ctx))
 				//	.map(p => p.propKey);
 
-				this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !utils.arrayUtils.contains(ctxs, p.ctx));
+				this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !tsw.internal.arrayUtils.contains(ctxs, p.ctx));
 
 				//console.log('removed: ', removedKeys, this.propKeyToCtxMap && this.propKeyToCtxMap.map(p => p.propKey));
 			}
@@ -64,7 +64,7 @@ module tsw.render
 
 			propKeyContexts.forEach(p =>
 			{
-				if (p.ctx !== currentCtx && !utils.arrayUtils.contains(newQueue, p.ctx))
+				if (p.ctx !== currentCtx && !tsw.internal.arrayUtils.contains(newQueue, p.ctx))
 				{
 					newQueue.push(p.ctx);
 				}
@@ -111,11 +111,10 @@ module tsw.render
 
 				if (!ctx) return false;
 
-				if (utils.arrayUtils.contains(contexts, ctx)) return true;
+				if (tsw.internal.arrayUtils.contains(contexts, ctx)) return true;
 			}
 		}
 	}
-
 	export class Ctx
 	{
 		private lastChildId: number;
@@ -208,7 +207,7 @@ module tsw.render
 		generateNextChildId(): string
 		{
 			this.lastChildId = (this.lastChildId || 0) + 1;
-			return tsw.utils.appendDelimited(this.id, '-', this.lastChildId.toString());
+			return tsw.internal.utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 		}
 		protected resetNextChildId(): void
 		{
@@ -230,7 +229,7 @@ module tsw.render
 			if (htmlElement)
 			{
 				var innerHtml = CtxScope.use(this, () => this._renderHtml(content));
-				this.setInnerHtml(htmlElement, utils.toStringSafe(innerHtml));
+				this.setInnerHtml(htmlElement, tsw.internal.utils.toStringSafe(innerHtml));
 			}
 
 			this.afterAttach();
@@ -269,7 +268,6 @@ module tsw.render
 		//	console.log.apply(console, dbgArgs);
 		//}
 	}
-
 	export class CtxHtmlElementOwner extends Ctx
 	{
 		getTagName(): string
@@ -277,7 +275,6 @@ module tsw.render
 			return null;
 		}
 	}
-
 	export class CtxElement extends CtxHtmlElementOwner
 	{
 		private tagName: string;
@@ -325,7 +322,6 @@ module tsw.render
 		//	return ['%o %s#%s %o', this, this.tagName, this.id, htmlElement];
 		//}
 	}
-
 	export class CtxRoot extends CtxHtmlElementOwner
 	{
 		private htmlElement: HTMLElement;
@@ -403,10 +399,10 @@ module tsw.render
 
 			if (this.eventHandlers)
 			{
-				utils.objUtils.forEachKey(this.eventHandlers, elmId =>
+				tsw.internal.objUtils.forEachKey(this.eventHandlers, elmId =>
 				{
 					var elmEventHandlers = this.eventHandlers[elmId];
-					utils.objUtils.forEachKey(elmEventHandlers, eventName =>
+					tsw.internal.objUtils.forEachKey(elmEventHandlers, eventName =>
 					{
 						currentEventNames[eventName] = true;
 						currentEventNamesCount++;
@@ -416,7 +412,7 @@ module tsw.render
 
 			if (this.attachedEventNames)
 			{
-				utils.objUtils.forEachKey(this.attachedEventNames, eventName =>
+				tsw.internal.objUtils.forEachKey(this.attachedEventNames, eventName =>
 				{
 					if (!(eventName in currentEventNames))
 					{
@@ -426,7 +422,7 @@ module tsw.render
 				});
 			}
 
-			utils.objUtils.forEachKey(currentEventNames, eventName =>
+			tsw.internal.objUtils.forEachKey(currentEventNames, eventName =>
 			{
 				if (!this.attachedEventNames || !(eventName in this.attachedEventNames))
 				{
@@ -490,14 +486,12 @@ module tsw.render
 		//	return ['%o', this];
 		//}
 	}
-
 	export class CtxUpdatable extends Ctx
 	{
 		update(): void
 		{
 		}
 	}
-
 	class CtxUpdatableChild extends CtxUpdatable
 	{
 		content: any;
@@ -548,7 +542,6 @@ module tsw.render
 		//	return ['%o #%s', this, this.id];
 		//}
 	}
-
 	class CtxUpdatableAttr extends CtxUpdatable
 	{
 		attrName: string;
@@ -596,7 +589,6 @@ module tsw.render
 		//	return ['%o #%s[%s]', this, this.id, this.attrName];
 		//}
 	}
-
 	class CtxUpdatableValue extends CtxUpdatable
 	{
 		//tagName: string;
@@ -623,7 +615,6 @@ module tsw.render
 //			return ['%o prop:[%s]', this, this.propName];
 //		}
 	}
-
 	export class CtxScope
 	{
 		private static contexts: Ctx[] = [];
@@ -661,15 +652,14 @@ module tsw.render
 			var items: any[] = [];
 			this.addExpanded(items, content);
 
-			return tsw.utils.join(items, null, item => this.renderItem(item));
+			return tsw.internal.utils.join(items, null, item => this.renderItem(item));
 		}
 		private static renderItem(item: any): string
 		{
 			if (item === true || item === false) return '';
 
-			if (item instanceof tsw.common.rawHtml) return (<tsw.common.rawHtml> item).value;
-
-			if (item instanceof tsw.elements.elm) return this.renderElement(<tsw.elements.elm> item);
+			if (item instanceof tsw.elements.RawHtml) return item.value;
+			if (item instanceof tsw.elements.Element) return this.renderElement(item);
 
 			// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
  			var ctxCurrent = CtxScope.getCurrent();
@@ -684,7 +674,7 @@ module tsw.render
 			}
 
 			var s = item.toString();
-			return tsw.utils.htmlEncode(s);
+			return tsw.internal.utils.htmlEncode(s);
 		}
 		private static renderUpdatableChild(item: any): string
 		{
@@ -702,7 +692,7 @@ module tsw.render
 			var markers = new HtmlBlockMarkers(ctx.id);
 			return markers.getHtml(innerHtml);
 		}
-		private static renderElement(elm: tsw.elements.elm): string
+		private static renderElement(elm: tsw.elements.Element): string
 		{
 			var tagName = elm.z_getTagName();
 			//console.log(elm, tagName);
@@ -768,7 +758,7 @@ module tsw.render
 
 			if (useVal && tagName == 'textarea')
 			{
-				innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
+				innerHtml = valData.value == null ? '' : tsw.internal.utils.htmlEncode(valData.value);
 			}
 			else
 			{
@@ -821,9 +811,9 @@ module tsw.render
 			var htmlStartTag = '<' + tagName;
 
 			var isCtxUsed = ctx.hasChildren() || eventHanders != null || elmRefs != null;
-			if (isCtxUsed) htmlStartTag = tsw.utils.appendDelimited(htmlStartTag, ' ', 'id=' + this.quoteAttrVal(id));
+			if (isCtxUsed) htmlStartTag = tsw.internal.utils.appendDelimited(htmlStartTag, ' ', 'id=' + this.quoteAttrVal(id));
 
-			htmlStartTag = tsw.utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
+			htmlStartTag = tsw.internal.utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
 			htmlStartTag += '>';
 
 			var html: string;
@@ -845,7 +835,7 @@ module tsw.render
 		//	var elmAttrs = elm.z_getAttrs();
 		//	var ss = elmAttrs.reduce((s, ea) =>
 		//	{
-		//		return tsw.utils.appendDelimited(s, ', ', utils.format('{${name}=${value}}', ea));
+		//		return tsw.internal.utils.appendDelimited(s, ', ', utils.format('{${name}=${value}}', ea));
 		//	}, '');
 		//	console.log('attrs: ', ss);
 		//}
@@ -873,7 +863,7 @@ module tsw.render
 					var attrHtml = a.attrName;
 					if (a.attrVal) attrHtml += '=' + this.quoteAttrVal(a.attrVal);
 
-					return tsw.utils.appendDelimited(attrsHtml, ' ', attrHtml);
+					return tsw.internal.utils.appendDelimited(attrsHtml, ' ', attrHtml);
 				},
 				'');
 
@@ -890,12 +880,12 @@ module tsw.render
 			if (attrName == 'class')
 			{
 				canBeUpdated = attrVals.some(av => this.canBeUpdatedAttr(av));
-				fn = () => tsw.utils.join(attrVals, ' ', av => this.getRenderedAttrValue(av));
+				fn = () => tsw.internal.utils.join(attrVals, ' ', av => this.getRenderedAttrValue(av));
 			}
 			else if (attrName == 'style')
 			{
 				canBeUpdated = attrVals.some(av => this.canBeUpdatedStyle(av));
-				fn = () => tsw.utils.join(attrVals, '; ', av => this.getRenderedStyleValue(av));
+				fn = () => tsw.internal.utils.join(attrVals, '; ', av => this.getRenderedStyleValue(av));
 			}
 			else
 			{
@@ -921,9 +911,9 @@ module tsw.render
 		}
 		protected static getRenderedAttrValues(attrVals: any[]): string
 		{
-			return tsw.utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
+			return tsw.internal.utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
 		}
-		private static getElmAttrs(elm: tsw.elements.elm): MapStringToArray
+		private static getElmAttrs(elm: tsw.elements.Element): MapStringToArray
 		{
 			var attrs: MapStringToArray = {};
 
@@ -1042,9 +1032,9 @@ module tsw.render
 				return this.getRenderedAttrValue(item);
 			}	
 		}
-		private static asElmWithValue(elm: tsw.elements.elm): tsw.elements.elmWithValue
+		private static asElmWithValue(elm: tsw.elements.Element): tsw.elements.ElementWithValue
 		{
-			if (elm instanceof tsw.elements.elmWithValue)
+			if (elm instanceof tsw.elements.ElementWithValue)
 			{
 				return elm;
 			}
@@ -1085,7 +1075,6 @@ module tsw.render
 			}
 		}
 	}
-
 	class HtmlBlockMarkers
 	{
 		begin: string;
@@ -1098,10 +1087,9 @@ module tsw.render
 		}
 		getHtml(innerHtml: string)
 		{
-			return "<!--" + this.begin + "-->" + utils.toStringSafe(innerHtml) + "<!--" + this.end + "-->";
+			return "<!--" + this.begin + "-->" + tsw.internal.utils.toStringSafe(innerHtml) + "<!--" + this.end + "-->";
 		}
 	}
-
 	class DOMUtils
 	{
 		private static tmpHtmlElement: HTMLElement;

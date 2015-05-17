@@ -6,7 +6,7 @@
 
 		get(): string
 		{
-			tsw.render.CtxUtils.attach(this);
+			tsw.internal.CtxUtils.attach(this);
 
 			return this.refId;
 		}
@@ -18,7 +18,7 @@
 
 				this.refId = v;
 
-				tsw.render.CtxUtils.update(this);
+				tsw.internal.CtxUtils.update(this);
 
 				//console.groupEnd();
 			}
@@ -38,14 +38,13 @@
 		propName: string;
 		propValue: attrValType;
 	}	
-	
     export interface NameValue
 	{
 		name: string;
 		value: attrValType | StyleRule;
 	}
 
-	export class elm
+	export class Element
 	{
 		private tagName: string = null;
 		private _attrs: NameValue[] = null;
@@ -58,11 +57,11 @@
 			this.tagName = tagName.toLowerCase();
 		}
 
-		attr(name: string, val?: attrValType): elm
+		attr(name: string, val?: attrValType): Element
 		{
 			if (!name) return;
 
-			if (utils.isUndefined(val)) val = true;
+			if (tsw.internal.utils.isUndefined(val)) val = true;
 
 			if (val != null)
 			{
@@ -71,18 +70,18 @@
 
 			return this;
 		}
-		cls(val: string | (() => string) | tsw.props.PropDefReadable<string>): elm
+		cls(val: string | (() => string) | tsw.props.PropDefReadable<string>): Element
 		{
 			this.attr('class', val);
 			return this;
 		}
-		style(val: attrValType): elm
+		style(val: attrValType): Element
 		{
 			this.attr('style', val);
 
 			return this;
 		}
-		styleRule(name: string, val: attrValType): elm
+		styleRule(name: string, val: attrValType): Element
 		{
 			if (val != null)
 			{
@@ -95,33 +94,33 @@
 
 			return this;
 		}
-		data(name: string, val: string | (() => string) | tsw.props.PropDefReadable<string>): elm
+		data(name: string, val: string | (() => string) | tsw.props.PropDefReadable<string>): Element
 		{
 			this.attr('data-' + name, val);
 
 			return this;
 		}
-		disabled(val: boolean | (() => boolean) | tsw.props.PropDefReadable<boolean>): elm
+		disabled(val: boolean | (() => boolean) | tsw.props.PropDefReadable<boolean>): Element
 		{
 			this.attr('disabled', val);
 			return this;
 		}
-		children(items: any): elm
+		children(items: any): Element
 		{
 			this._children = this._children || [];
 			this._children.push(items);
 			return this;
 		}
-		onclick(handler: tsw.common.JQueryEventHandler): elm
+		onclick(handler: tsw.common.JQueryEventHandler): Element
 		{
 			return this.on('click', handler);
 		}
-		onEvents(eventNames: string[], handler: tsw.common.JQueryEventHandler): elm
+		onEvents(eventNames: string[], handler: tsw.common.JQueryEventHandler): Element
 		{
 			eventNames.forEach(e => this.on(e, handler));
 			return this;
 		}
-		on(eventName: string, handler: tsw.common.JQueryEventHandler): elm
+		on(eventName: string, handler: tsw.common.JQueryEventHandler): Element
 		{
 			if (eventName && handler instanceof Function)
 			{
@@ -138,7 +137,7 @@
 			return this;
 		}
 
-		addRef(ref: Ref): elm
+		addRef(ref: Ref): Element
 		{
 			this._refs = this._refs || [];
 			this._refs.push(ref);

@@ -1,171 +1,143 @@
 module tsw.html
 {
-	export function nbsp(): tsw.common.rawHtml
+	export function nbsp(): elements.RawHtml
 	{
-		return new tsw.common.rawHtml("&nbsp;");
+		return new elements.RawHtml("&nbsp;");
 	}
-	export function raw(s: string): tsw.common.rawHtml
+	export function raw(s: string): elements.RawHtml
 	{
-		return new tsw.common.rawHtml(s);
+		return new elements.RawHtml(s);
 	}
-	export function el(tagName: string = ''): elements.elm
+	export function el(tagName: string = ''): elements.Element
 	{
-		return new elements.elm(tagName);
+		return new elements.Element(tagName);
 	}
-
-	export function div(): elements.elm
+	export function div(): elements.Element
 	{
-		return new elements.elm('div');
+		return new elements.Element('div');
 	}
-
-	export function p(): elements.elm
+	export function p(): elements.Element
 	{
-		return new elements.elm('p');
+		return new elements.Element('p');
 	}
-
-	export function span(): elements.elm
+	export function span(): elements.Element
 	{
-		return new elements.elm('span');
+		return new elements.Element('span');
 	}
-
-	export function b(): elements.elm
+	export function b(): elements.Element
 	{
-		return new elements.elm('b');
+		return new elements.Element('b');
 	}
-
-	export function i(): elements.elm
+	export function i(): elements.Element
 	{
-		return new elements.elm('i');
+		return new elements.Element('i');
 	}
-
-	export function h1(): elements.elm
+	export function h1(): elements.Element
 	{
-		return new elements.elm('h1');
+		return new elements.Element('h1');
 	}
-
-	export function h2(): elements.elm
+	export function h2(): elements.Element
 	{
-		return new elements.elm('h2');
+		return new elements.Element('h2');
 	}
-
-	export function h3(): elements.elm
+	export function h3(): elements.Element
 	{
-		return new elements.elm('h3');
+		return new elements.Element('h3');
 	}
-
-	export function h4(): elements.elm
+	export function h4(): elements.Element
 	{
-		return new elements.elm('h4');
+		return new elements.Element('h4');
 	}
-
-	export function small(): elements.elm
+	export function small(): elements.Element
 	{
-		return new elements.elm('small');
+		return new elements.Element('small');
 	}
-
-	export function a(): elements.a
+	export function a(): elements.ElementA
 	{
-		return new elements.a();
+		return new elements.ElementA();
 	}
-
-	export function nav(): elements.elm
+	export function nav(): elements.Element
 	{
-		return new elements.elm('nav');
+		return new elements.Element('nav');
 	}
-
-	export function br(): elements.elm
+	export function br(): elements.Element
 	{
-		return new elements.elm('br');
+		return new elements.Element('br');
 	}
-
-	export function hr(): elements.elm
+	export function hr(): elements.Element
 	{
-		return new elements.elm('hr');
+		return new elements.Element('hr');
 	}
-
-	export function button(): elements.button
+	export function button(): elements.ElementButton
 	{
-		return new elements.button();
+		return new elements.ElementButton();
 	}
-
-	export function ul(): elements.elm
+	export function ul(): elements.Element
 	{
-		return new elements.elm('ul');
+		return new elements.Element('ul');
 	}
-
-	export function li(): elements.elm
+	export function li(): elements.Element
 	{
-		return new elements.elm('li');
+		return new elements.Element('li');
 	}
-
-	export function img(): elements.img
+	export function img(): elements.ElementImg
 	{
-		return new elements.img();
+		return new elements.ElementImg();
 	}
-
-	export function form(): elements.elm
+	export function form(): elements.Element
 	{
-		return new elements.elm('form');
+		return new elements.Element('form');
 	}
-
-	export function table(): elements.elm
+	export function table(): elements.Element
 	{
-		return new elements.elm('table');
+		return new elements.Element('table');
 	}
-
-	export function thead(): elements.elm
+	export function thead(): elements.Element
 	{
-		return new elements.elm('thead');
+		return new elements.Element('thead');
 	}
-
-	export function tbody(): elements.elm
+	export function tbody(): elements.Element
 	{
-		return new elements.elm('tbody');
+		return new elements.Element('tbody');
 	}
-
-	export function tr(): elements.elm
+	export function tr(): elements.Element
 	{
-		return new elements.elm('tr');
+		return new elements.Element('tr');
 	}
-
-	export function th(): elements.elm
+	export function th(): elements.Element
 	{
-		return new elements.elm('th');
+		return new elements.Element('th');
 	}
-
-	export function td(): elements.elm
+	export function td(): elements.Element
 	{
-		return new elements.elm('td');
+		return new elements.Element('td');
 	}
-
-	export function label(): elements.label
+	export function label(): elements.ElementLabel
 	{
-		return new elements.label();
+		return new elements.ElementLabel();
 	}
-
-	export function inputText(): elements.inputText
+	export function inputText(): elements.ElementInputText
 	{
-		return new elements.inputText();
+		return new elements.ElementInputText();
 	}
-	export function inputCheckBox(): elements.inputCheckbox
+	export function inputCheckBox(): elements.ElementInputCheckbox
 	{
-		return new elements.inputCheckbox();
+		return new elements.ElementInputCheckbox();
 	}
-	export function inputRadio(): elements.inputRadio
+	export function inputRadio(): elements.ElementInputRadio
 	{
-		return new elements.inputRadio();
+		return new elements.ElementInputRadio();
 	}
-
-	export function select(): elements.select
+	export function select(): elements.ElementSelect
 	{
-		return new elements.select();
+		return new elements.ElementSelect();
 	}
-	export function option(): elements.option
+	export function option(): elements.ElementOption
 	{
-		return new elements.option();
+		return new elements.ElementOption();
 	}
-	export function textArea(): elements.textArea
+	export function textArea(): elements.ElementTextArea
 	{
-		return new elements.textArea();
+		return new elements.ElementTextArea();
 	}
 }

@@ -4,12 +4,10 @@ module tsw.props
 	{
 		get: () => T;
 	}
-
 	export interface PropDef<T> extends PropDefReadable<T>
 	{
 		set: (v: T) => void;
 	}
-
 	export class PropVal<T> implements PropDef<T>
 	{
 		val: T;
@@ -22,7 +20,7 @@ module tsw.props
 		}
 		get(): T
 		{
-			tsw.render.CtxUtils.attach(this);
+			tsw.internal.CtxUtils.attach(this);
 
 			return this.val;
 		}
@@ -39,7 +37,7 @@ module tsw.props
 				{
 					this.val = v;
 
-					tsw.render.CtxUtils.update(this);
+					tsw.internal.CtxUtils.update(this);
 
 					if (this.onChanged) this.onChanged();
 				}

@@ -1,60 +1,64 @@
 module tsw.elements
 {
-	export class button extends elm
+	export class RawHtml
+	{
+		constructor(public value: string)
+		{
+		}
+	}
+
+	export class ElementButton extends Element
 	{
 		constructor()
 		{
 			super('button')
 		}
 
-		type(val: string): button;
-		type(val: () => string): button;
-		type(val: tsw.props.PropDefReadable<string>): button;
-		type(val: any): button
+		type(val: string): ElementButton;
+		type(val: () => string): ElementButton;
+		type(val: tsw.props.PropDefReadable<string>): ElementButton;
+		type(val: any): ElementButton
 		{
 			this.attr('type', val);
 
 			return this;
 		}
 	}
-
-	export class a extends elm
+	export class ElementA extends Element
 	{
 		constructor()
 		{
 			super('a')
 		}
 
-		href(val: string): a;
-		href(val: () => string): a;
-		href(val: tsw.props.PropDefReadable<string>): a;
-		href(val: any): a
+		href(val: string): ElementA;
+		href(val: () => string): ElementA;
+		href(val: tsw.props.PropDefReadable<string>): ElementA;
+		href(val: any): ElementA
 		{
 			this.attr('href', val);
 
 			return this;
 		}
 	}
-
-	export class img extends elm
+	export class ElementImg extends Element
 	{
 		constructor()
 		{
 			super('img')
 		}
 
-		src(val: string): img;
-		src(val: () => string): img;
-		src(val: tsw.props.PropDefReadable<string>): img;
-		src(val: any): img
+		src(val: string): ElementImg;
+		src(val: () => string): ElementImg;
+		src(val: tsw.props.PropDefReadable<string>): ElementImg;
+		src(val: any): ElementImg
 		{
 			this.attr('src', val);
 
 			return this;
 		}
 	}
-
-	export class elmWithValue extends elm
+	export class ElementWithValue extends Element
 	{
 		protected propDef: tsw.props.PropDef<any>;
 
@@ -71,15 +75,14 @@ module tsw.elements
 			return null;
 		}
 	}
-
-	export class input<T> extends elmWithValue
+	export class ElementInput<T> extends ElementWithValue
 	{
 		constructor(type: string)
 		{
 			super('input')
 			this.attr('type', type);
 		}
-		value(propDef: tsw.props.PropDef<T>): elm
+		value(propDef: tsw.props.PropDef<T>): Element
 		{
 			this.propDef = propDef;
 
@@ -90,7 +93,7 @@ module tsw.elements
 			return 'value';
 		}
 	}
-	export class inputText extends input<string>
+	export class ElementInputText extends ElementInput<string>
 	{
 		constructor()
 		{
@@ -102,14 +105,14 @@ module tsw.elements
 			return 'value';
 		}
 
-		placeholder(v: string): input<string>
+		placeholder(v: string): ElementInput<string>
 		{
 			this.attr('placeholder', v);
 
 			return this;
 		}
 	}
-	export class inputCheckboxBase extends input<boolean>
+	export class ElementInputCheckboxBase extends ElementInput<boolean>
 	{
 		z_getValueAttrName(): string
 		{
@@ -120,27 +123,27 @@ module tsw.elements
 			return 'checked';
 		}
 	}
-	export class inputCheckbox extends inputCheckboxBase
+	export class ElementInputCheckbox extends ElementInputCheckboxBase
 	{
 		constructor()
 		{
 			super('checkbox');
 		}
 	}
-	export class inputRadio extends inputCheckboxBase
+	export class ElementInputRadio extends ElementInputCheckboxBase
 	{
 		constructor()
 		{
 			super('radio');
 		}
 	}
-	export class textArea extends elmWithValue
+	export class ElementTextArea extends ElementWithValue
 	{
 		constructor()
 		{
 			super('textarea')
 		}
-		value(propDef: tsw.props.PropDef<string>): elm
+		value(propDef: tsw.props.PropDef<string>): Element
 		{
 			this.propDef = propDef;
 
@@ -151,7 +154,7 @@ module tsw.elements
 			return 'value';
 		}
 	}
-	export class select extends elmWithValue
+	export class ElementSelect extends ElementWithValue
 	{
 		protected valuePropName: string;
 
@@ -160,14 +163,14 @@ module tsw.elements
 			super('select')
 		}
 
-		value(propDef: tsw.props.PropDef<string>): elm
+		value(propDef: tsw.props.PropDef<string>): Element
 		{
 			this.propDef = propDef;
 			this.valuePropName = "value";
 
 			return this;
 		}
-		selectedIndex(propDef: tsw.props.PropDef<number>): select
+		selectedIndex(propDef: tsw.props.PropDef<number>): ElementSelect
 		{
 			this.propDef = propDef;
 			this.valuePropName = "selectedIndex";
@@ -179,32 +182,31 @@ module tsw.elements
 			return this.valuePropName;
 		}
 	}
-	export class option extends elm
+	export class ElementOption extends Element
 	{
 		constructor()
 		{
 			super('option')
 		}
 
-		value(val: string): option;
-		value(val: () => string): option;
-		value(val: any): option
+		value(val: string): ElementOption;
+		value(val: () => string): ElementOption;
+		value(val: any): ElementOption
 		{
 			this.attr('value', val);
 
 			return this;
 		}
-		selected(val: boolean): option;
-		selected(val: () => boolean): option;
-		selected(val: any): option
+		selected(val: boolean): ElementOption;
+		selected(val: () => boolean): ElementOption;
+		selected(val: any): ElementOption
 		{
 			this.attr('selected', val);
 
 			return this;
 		}
 	}
-
-	export class label extends elm
+	export class ElementLabel extends Element
 	{
 		constructor()
 		{
@@ -212,7 +214,7 @@ module tsw.elements
 		}
 
 		// "for" is a keyword. it can not be used as a property name in IE before version 9. so we use name "forRef" instead.
-		forRef(ref: tsw.elements.Ref): label
+		forRef(ref: tsw.elements.Ref): ElementLabel
 		{
 			this.attr('for', ref);
 
@@ -231,7 +233,7 @@ module tsw.elements
 			this.propVal = propVal;
 			this.groupName = groupName;
 		}
-		item(v: T): tsw.elements.inputRadio
+		item(v: T): tsw.elements.ElementInputRadio
 		{
 			var p =
 			{
@@ -239,19 +241,19 @@ module tsw.elements
 				set: () => this.propVal.set(v),
 			};
 
-			var elm = new tsw.elements.inputRadio();
+			var elm = new tsw.elements.ElementInputRadio();
 			elm.value(p).attr('name', this.groupName).addRef(this.getRefFor(v));
 			return elm;
 		}
-		label(v: T): tsw.elements.label
+		label(v: T): tsw.elements.ElementLabel
 		{
-			var elm = new tsw.elements.label();
+			var elm = new tsw.elements.ElementLabel();
 			elm.forRef(this.getRefFor(v));
 			return elm;
 		}
 		private getRefFor(v: T): tsw.elements.Ref
 		{
-			var keyRef = utils.arrayUtils.find(this.refs, kr => kr.key == v);
+			var keyRef = tsw.internal.arrayUtils.find(this.refs, kr => kr.key == v);
 			if (keyRef == null)
 			{
 				keyRef = { key: v, ref: new tsw.elements.Ref() };
