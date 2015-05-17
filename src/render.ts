@@ -1,4 +1,4 @@
-module tsw.internal
+﻿module tsw.internal
 {
 	interface PropKeyContext
 	{
@@ -39,10 +39,10 @@ module tsw.internal
 			if (this.propKeyToCtxMap)
 			{
 				//var removedKeys = this.propKeyToCtxMap
-				//	.filter(p => tsw.internal.arrayUtils.contains(ctxs, p.ctx))
+				//	.filter(p => arrayUtils.contains(ctxs, p.ctx))
 				//	.map(p => p.propKey);
 
-				this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !tsw.internal.arrayUtils.contains(ctxs, p.ctx));
+				this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !arrayUtils.contains(ctxs, p.ctx));
 
 				//console.log('removed: ', removedKeys, this.propKeyToCtxMap && this.propKeyToCtxMap.map(p => p.propKey));
 			}
@@ -64,7 +64,7 @@ module tsw.internal
 
 			propKeyContexts.forEach(p =>
 			{
-				if (p.ctx !== currentCtx && !tsw.internal.arrayUtils.contains(newQueue, p.ctx))
+				if (p.ctx !== currentCtx && !arrayUtils.contains(newQueue, p.ctx))
 				{
 					newQueue.push(p.ctx);
 				}
@@ -111,7 +111,7 @@ module tsw.internal
 
 				if (!ctx) return false;
 
-				if (tsw.internal.arrayUtils.contains(contexts, ctx)) return true;
+				if (arrayUtils.contains(contexts, ctx)) return true;
 			}
 		}
 	}
@@ -207,7 +207,7 @@ module tsw.internal
 		generateNextChildId(): string
 		{
 			this.lastChildId = (this.lastChildId || 0) + 1;
-			return tsw.internal.utils.appendDelimited(this.id, '-', this.lastChildId.toString());
+			return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 		}
 		protected resetNextChildId(): void
 		{
@@ -229,7 +229,7 @@ module tsw.internal
 			if (htmlElement)
 			{
 				var innerHtml = CtxScope.use(this, () => this._renderHtml(content));
-				this.setInnerHtml(htmlElement, tsw.internal.utils.toStringSafe(innerHtml));
+				this.setInnerHtml(htmlElement, utils.toStringSafe(innerHtml));
 			}
 
 			this.afterAttach();
@@ -322,11 +322,18 @@ module tsw.internal
 		//	return ['%o %s#%s %o', this, this.tagName, this.id, htmlElement];
 		//}
 	}
+
+	export interface HtmlElementEvents
+	{
+		htmlElm: HTMLElement;
+		ehMap: JQueryEventHandlerMap;
+	}
+
 	export class CtxRoot extends CtxHtmlElementOwner
 	{
 		private htmlElement: HTMLElement;
 		private attachedEventNames: { [eventName: string]: boolean };
-		private eventHandlers: { [elmId: string]: tsw.elements.JQueryEventHandlerMap };
+		private eventHandlers: { [elmId: string]: JQueryEventHandlerMap };
 
 		getHtmlElement(): HTMLElement
 		{
@@ -363,7 +370,7 @@ module tsw.internal
 			this.attachedEventNames = null;
 			this.eventHandlers = null;
 		}
-		attachElmEventHandlers(elmId: string, eventHandlers: tsw.elements.JQueryEventHandlerMap): void
+		attachElmEventHandlers(elmId: string, eventHandlers: JQueryEventHandlerMap): void
 		{
 			//console.group('attached events for: %s: %o', elmId, eventHandlers);
 
@@ -399,10 +406,10 @@ module tsw.internal
 
 			if (this.eventHandlers)
 			{
-				tsw.internal.objUtils.forEachKey(this.eventHandlers, elmId =>
+				objUtils.forEachKey(this.eventHandlers, elmId =>
 				{
 					var elmEventHandlers = this.eventHandlers[elmId];
-					tsw.internal.objUtils.forEachKey(elmEventHandlers, eventName =>
+					objUtils.forEachKey(elmEventHandlers, eventName =>
 					{
 						currentEventNames[eventName] = true;
 						currentEventNamesCount++;
@@ -412,7 +419,7 @@ module tsw.internal
 
 			if (this.attachedEventNames)
 			{
-				tsw.internal.objUtils.forEachKey(this.attachedEventNames, eventName =>
+				objUtils.forEachKey(this.attachedEventNames, eventName =>
 				{
 					if (!(eventName in currentEventNames))
 					{
@@ -422,7 +429,7 @@ module tsw.internal
 				});
 			}
 
-			tsw.internal.objUtils.forEachKey(currentEventNames, eventName =>
+			objUtils.forEachKey(currentEventNames, eventName =>
 			{
 				if (!this.attachedEventNames || !(eventName in this.attachedEventNames))
 				{
@@ -431,7 +438,6 @@ module tsw.internal
 					jqElm.on(eventName, e =>
 					{
 						//console.log('on event: %s on %o', e.type, e.target);
-
 						this.handleEvent(e);
 					});
 				}
@@ -459,8 +465,7 @@ module tsw.internal
 				}
 			}
 		}
-
-		protected findEventHandlers(htmlElement: HTMLElement): { htmlElm: HTMLElement; ehMap: tsw.elements.JQueryEventHandlerMap }
+		private findEventHandlers(htmlElement: HTMLElement): HtmlElementEvents
 		{
 			while (htmlElement && htmlElement != this.htmlElement)
 			{
@@ -664,7 +669,7 @@ module tsw.internal
 			var items: any[] = [];
 			this.addExpanded(items, content);
 
-			return tsw.internal.utils.join(items, null, item => this.renderItem(item));
+			return utils.join(items, null, item => this.renderItem(item));
 		}
 		private static renderItem(item: any): string
 		{
@@ -686,7 +691,7 @@ module tsw.internal
 			}
 
 			var s = item.toString();
-			return tsw.internal.utils.htmlEncode(s);
+			return utils.htmlEncode(s);
 		}
 		private static renderUpdatableChild(item: any): string
 		{
@@ -775,7 +780,7 @@ module tsw.internal
 
 			if (useVal && tagName == 'textarea')
 			{
-				innerHtml = valData.value == null ? '' : tsw.internal.utils.htmlEncode(valData.value);
+				innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
 			}
 			else
 			{
@@ -789,7 +794,7 @@ module tsw.internal
 			{
 				eventHanders = eventHanders || {};
 
-				var savedHandlers: tsw.elements.JQueryEventHandlerMap = {};
+				var savedHandlers: JQueryEventHandlerMap = {};
 				savedHandlers['change'] = eventHanders['change'];
 				savedHandlers['input'] = eventHanders['input'];
 
@@ -828,9 +833,9 @@ module tsw.internal
 			var htmlStartTag = '<' + tagName;
 
 			var isCtxUsed = ctx.hasChildren() || eventHanders != null || elmRefs != null;
-			if (isCtxUsed) htmlStartTag = tsw.internal.utils.appendDelimited(htmlStartTag, ' ', 'id=' + this.quoteAttrVal(id));
+			if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + this.quoteAttrVal(id));
 
-			htmlStartTag = tsw.internal.utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
+			htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
 			htmlStartTag += '>';
 
 			var html: string;
@@ -852,7 +857,7 @@ module tsw.internal
 		//	var elmAttrs = elm.z_getAttrs();
 		//	var ss = elmAttrs.reduce((s, ea) =>
 		//	{
-		//		return tsw.internal.utils.appendDelimited(s, ', ', utils.format('{${name}=${value}}', ea));
+		//		return utils.appendDelimited(s, ', ', utils.format('{${name}=${value}}', ea));
 		//	}, '');
 		//	console.log('attrs: ', ss);
 		//}
@@ -880,7 +885,7 @@ module tsw.internal
 					var attrHtml = a.attrName;
 					if (a.attrVal) attrHtml += '=' + this.quoteAttrVal(a.attrVal);
 
-					return tsw.internal.utils.appendDelimited(attrsHtml, ' ', attrHtml);
+					return utils.appendDelimited(attrsHtml, ' ', attrHtml);
 				},
 				'');
 
@@ -897,12 +902,12 @@ module tsw.internal
 			if (attrName == 'class')
 			{
 				canBeUpdated = attrVals.some(av => this.canBeUpdatedAttr(av));
-				fn = () => tsw.internal.utils.join(attrVals, ' ', av => this.getRenderedAttrValue(av));
+				fn = () => utils.join(attrVals, ' ', av => this.getRenderedAttrValue(av));
 			}
 			else if (attrName == 'style')
 			{
 				canBeUpdated = attrVals.some(av => this.canBeUpdatedStyle(av));
-				fn = () => tsw.internal.utils.join(attrVals, '; ', av => this.getRenderedStyleValue(av));
+				fn = () => utils.join(attrVals, '; ', av => this.getRenderedStyleValue(av));
 			}
 			else
 			{
@@ -928,7 +933,7 @@ module tsw.internal
 		}
 		protected static getRenderedAttrValues(attrVals: any[]): string
 		{
-			return tsw.internal.utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
+			return utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
 		}
 		private static getElmAttrs(elm: tsw.elements.Element): MapStringToArray
 		{
@@ -1023,9 +1028,9 @@ module tsw.internal
 
 			return item;
 		}
-		private static canBeUpdatedStyle(item: tsw.elements.attrValType | tsw.internal.StyleRule): boolean
+		private static canBeUpdatedStyle(item: tsw.elements.attrValType | StyleRule): boolean
 		{
-			if (typeof item === "object" && item instanceof tsw.internal.StyleRule)
+			if (typeof item === "object" && item instanceof StyleRule)
 			{
 				return this.canBeUpdatedAttr(item.propValue);	
 			}
@@ -1034,9 +1039,9 @@ module tsw.internal
 				return this.canBeUpdatedAttr(item);
 			}	
 		}
-		private static getRenderedStyleValue(item: tsw.elements.attrValType | tsw.internal.StyleRule): any
+		private static getRenderedStyleValue(item: tsw.elements.attrValType | StyleRule): any
 		{
-			if (typeof item === "object" && item instanceof tsw.internal.StyleRule)
+			if (typeof item === "object" && item instanceof StyleRule)
 			{
 				var v = this.getRenderedAttrValue(item.propValue);
 
@@ -1099,12 +1104,13 @@ module tsw.internal
 
 		constructor(id: string)
 		{
-			this.begin = "BEGIN:" + id;
-			this.end = "END:" + id;
+			this.begin = `BEGIN:${id}`;
+			this.end = `END:${id}`;
 		}
 		getHtml(innerHtml: string)
 		{
-			return "<!--" + this.begin + "-->" + tsw.internal.utils.toStringSafe(innerHtml) + "<!--" + this.end + "-->";
+			let html = utils.toStringSafe(innerHtml);
+			return `<!--${this.begin}-->${html}<!--${this.end}-->`;
 		}
 	}
 	class DOMUtils

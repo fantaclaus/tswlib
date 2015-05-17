@@ -1,4 +1,4 @@
-module tsw.internal
+﻿module tsw.internal
 {
 	export class utils
 	{

@@ -10,6 +10,10 @@
 		name: string;
 		value: tsw.elements.attrValType | StyleRule;
 	}
+	export interface JQueryEventHandlerMap
+	{
+		[eventName: string]: tsw.elements.JQueryEventHandler;
+	}
 }
 
 module tsw.elements
@@ -23,17 +27,13 @@ module tsw.elements
 	{
 		(e: JQueryEventObject, target: HTMLElement): void;
 	}
-	export interface JQueryEventHandlerMap
-	{
-		[eventName: string]: JQueryEventHandler;
-	}
 
 	export class Element
 	{
 		private tagName: string = null;
 		private _attrs: tsw.internal.NameValue[] = null;
 		private _children: tsw.internal.NameValue[] = null;
-		private eventHandlers: JQueryEventHandlerMap = null;
+		private eventHandlers: tsw.internal.JQueryEventHandlerMap = null;
 		private _refs: Ref[] = null;
 
 		constructor(tagName: string)
@@ -145,7 +145,7 @@ module tsw.elements
 		{
 			return this._attrs;
 		}
-		z_getEventHandlers(): JQueryEventHandlerMap
+		z_getEventHandlers(): tsw.internal.JQueryEventHandlerMap
 		{
 			return this.eventHandlers;
 		}

@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"declaration": true,
+		"noImplicitAny": true,
+		"noLib": true,
+		"removeComments": true,
+		"out": "tmp/tswlib.js",
+		"target": "ES5"
+	},
+	"files": [
+		"d.ts/libcore.d.ts",
+		"d.ts/libdom.d.ts",
+		"d.ts/jquery.d.ts",
+		"src/common.ts",
+		"src/elm.ts",
+		"src/html.ts",
+		"src/htmlelements.ts",
+		"src/utils.ts",
+		"src/render.ts",
+		"src/props.ts"
+	]
+}
