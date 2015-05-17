@@ -278,9 +278,9 @@ module tsw.internal
 	export class CtxElement extends CtxHtmlElementOwner
 	{
 		private tagName: string;
-		private refs: tsw.elements.Ref[];
+		private refs: tsw.Ref[];
 
-		constructor(id: string, tagName: string, refs: tsw.elements.Ref[])
+		constructor(id: string, tagName: string, refs: tsw.Ref[])
 		{
 			super();
 
@@ -326,7 +326,7 @@ module tsw.internal
 	{
 		private htmlElement: HTMLElement;
 		private attachedEventNames: { [eventName: string]: boolean };
-		private eventHandlers: { [elmId: string]: tsw.common.JQueryEventHandlerMap };
+		private eventHandlers: { [elmId: string]: tsw.elements.JQueryEventHandlerMap };
 
 		getHtmlElement(): HTMLElement
 		{
@@ -363,7 +363,7 @@ module tsw.internal
 			this.attachedEventNames = null;
 			this.eventHandlers = null;
 		}
-		attachElmEventHandlers(elmId: string, eventHandlers: tsw.common.JQueryEventHandlerMap): void
+		attachElmEventHandlers(elmId: string, eventHandlers: tsw.elements.JQueryEventHandlerMap): void
 		{
 			//console.group('attached events for: %s: %o', elmId, eventHandlers);
 
@@ -460,7 +460,7 @@ module tsw.internal
 			}
 		}
 
-		protected findEventHandlers(htmlElement: HTMLElement): { htmlElm: HTMLElement; ehMap: tsw.common.JQueryEventHandlerMap }
+		protected findEventHandlers(htmlElement: HTMLElement): { htmlElm: HTMLElement; ehMap: tsw.elements.JQueryEventHandlerMap }
 		{
 			while (htmlElement && htmlElement != this.htmlElement)
 			{
@@ -520,7 +520,7 @@ module tsw.internal
 		}
 		protected afterAttach(): void
 		{
-			var renderer = <tsw.common.Renderer> this.content;
+			var renderer = <tsw.Renderer> this.content;
 			if (renderer.afterAttach) renderer.afterAttach();
 
 			super.afterAttach();
@@ -529,7 +529,7 @@ module tsw.internal
 		{
 			super.beforeDetach();
 
-			var renderer = <tsw.common.Renderer> this.content;
+			var renderer = <tsw.Renderer> this.content;
 			if (renderer.beforeDetach) renderer.beforeDetach();
 		}
 
@@ -644,6 +644,18 @@ module tsw.internal
 	{
 		[name: string]: any[];
 	}
+	interface ValueData
+	{
+		value: any;
+		ctx: CtxUpdatable;
+		valPropName: string;
+	}
+		
+	interface ValueData2
+	{
+		value: any;
+		ctx: CtxUpdatable;
+	}
 
 	class RenderUtils
 	{
@@ -730,25 +742,30 @@ module tsw.internal
 			var useVal = propDef && propDef.get instanceof Function;
 			var updateVal = useVal && propDef.set instanceof Function;
 
-			var valData: { value: any; ctx: CtxUpdatable; valPropName: string; } = null;
+			var valData: ValueData = null;
 			if (useVal)
 			{
 				var valAttrName = elmWithVal.z_getValueAttrName();
 				var valPropName = elmWithVal.z_getValuePropName();
 
-				var valueData = CtxScope.use(ctx, () => this.getValue(propDef, valPropName));
+				var valData2 = CtxScope.use(ctx, () => this.getValue(propDef, valPropName));
 
 				// replace attributes with value of propdef (checked or value)
 
-				if (valAttrName != null && valueData.value != null) // tagName == 'input'
+				if (valAttrName != null && valData2.value != null) // tagName == 'input'
 				{
 					//delete attrs['checked'];
 					//delete attrs['value'];
 
-					attrs[valAttrName] = [ valueData.value ];
+					attrs[valAttrName] = [ valData2.value ];
 				}
 
-				valData = { value: valueData.value, ctx: valueData.ctx, valPropName:  valPropName };
+				valData =
+				{
+					value: valData2.value,
+					ctx: valData2.ctx,
+					valPropName: valPropName,
+				};
 			}
 
 			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
@@ -772,7 +789,7 @@ module tsw.internal
 			{
 				eventHanders = eventHanders || {};
 
-				var savedHandlers: tsw.common.JQueryEventHandlerMap = {};
+				var savedHandlers: tsw.elements.JQueryEventHandlerMap = {};
 				savedHandlers['change'] = eventHanders['change'];
 				savedHandlers['input'] = eventHanders['input'];
 
@@ -1006,9 +1023,9 @@ module tsw.internal
 
 			return item;
 		}
-		private static canBeUpdatedStyle(item: tsw.elements.attrValType | tsw.elements.StyleRule): boolean
+		private static canBeUpdatedStyle(item: tsw.elements.attrValType | tsw.internal.StyleRule): boolean
 		{
-			if (typeof item === "object" && item instanceof tsw.elements.StyleRule)
+			if (typeof item === "object" && item instanceof tsw.internal.StyleRule)
 			{
 				return this.canBeUpdatedAttr(item.propValue);	
 			}
@@ -1017,9 +1034,9 @@ module tsw.internal
 				return this.canBeUpdatedAttr(item);
 			}	
 		}
-		private static getRenderedStyleValue(item: tsw.elements.attrValType | tsw.elements.StyleRule): any
+		private static getRenderedStyleValue(item: tsw.elements.attrValType | tsw.internal.StyleRule): any
 		{
-			if (typeof item === "object" && item instanceof tsw.elements.StyleRule)
+			if (typeof item === "object" && item instanceof tsw.internal.StyleRule)
 			{
 				var v = this.getRenderedAttrValue(item.propValue);
 
@@ -1043,7 +1060,7 @@ module tsw.internal
 				return null;
 			}
 		}
-		private static getValue(propDef: tsw.props.PropDefReadable<any>, valPropName: string): { value: any; ctx: CtxUpdatable }
+		private static getValue(propDef: tsw.PropDefReadable<any>, valPropName: string): ValueData2
 		{
 			var ctxCurrent = CtxScope.getCurrent();
 

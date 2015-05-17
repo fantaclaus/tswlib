@@ -1,55 +1,39 @@
-﻿module tsw.elements
+﻿module tsw.internal
 {
-	export class Ref implements tsw.props.PropDef<string>
-	{
-		private refId: string;
-
-		get(): string
-		{
-			tsw.internal.CtxUtils.attach(this);
-
-			return this.refId;
-		}
-		set(v: string): void
-		{
-			if (this.refId !== v)
-			{
-				//console.group('ref %s %o: set value %o', this.name, this, v);
-
-				this.refId = v;
-
-				tsw.internal.CtxUtils.update(this);
-
-				//console.groupEnd();
-			}
-		}
-
-		asJQuery(): JQuery
-		{
-			return jQuery('#' + this.refId);
-		}
-	}
-
-	export type attrValSimpleType = string|number|boolean;
-	export type attrValType = tsw.props.PropDefReadable<attrValSimpleType> | (() => attrValSimpleType) | attrValSimpleType;
-	
 	export class StyleRule
 	{
 		propName: string;
-		propValue: attrValType;
-	}	
+		propValue: tsw.elements.attrValType;
+	}
     export interface NameValue
 	{
 		name: string;
-		value: attrValType | StyleRule;
+		value: tsw.elements.attrValType | StyleRule;
+	}
+}
+
+module tsw.elements
+{
+	export type attrValSimpleType = string|number|boolean;
+	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | tsw.PropDefReadable<attrValSimpleType>;
+	export type stringValType = string | (() => string) | tsw.PropDefReadable<string>;
+	export type boolValType = boolean | (() => boolean) | tsw.PropDefReadable<boolean>;
+
+	export interface JQueryEventHandler
+	{
+		(e: JQueryEventObject, target: HTMLElement): void;
+	}
+	export interface JQueryEventHandlerMap
+	{
+		[eventName: string]: JQueryEventHandler;
 	}
 
 	export class Element
 	{
 		private tagName: string = null;
-		private _attrs: NameValue[] = null;
-		private _children: NameValue[] = null;
-		private eventHandlers: tsw.common.JQueryEventHandlerMap = null;
+		private _attrs: tsw.internal.NameValue[] = null;
+		private _children: tsw.internal.NameValue[] = null;
+		private eventHandlers: JQueryEventHandlerMap = null;
 		private _refs: Ref[] = null;
 
 		constructor(tagName: string)
@@ -70,7 +54,7 @@
 
 			return this;
 		}
-		cls(val: string | (() => string) | tsw.props.PropDefReadable<string>): Element
+		cls(val: stringValType): Element
 		{
 			this.attr('class', val);
 			return this;
@@ -85,7 +69,7 @@
 		{
 			if (val != null)
 			{
-				var v = new StyleRule();
+				var v = new tsw.internal.StyleRule();
 				v.propName = name;
 				v.propValue = val;
 				
@@ -94,13 +78,13 @@
 
 			return this;
 		}
-		data(name: string, val: string | (() => string) | tsw.props.PropDefReadable<string>): Element
+		data(name: string, val: stringValType): Element
 		{
 			this.attr('data-' + name, val);
 
 			return this;
 		}
-		disabled(val: boolean | (() => boolean) | tsw.props.PropDefReadable<boolean>): Element
+		disabled(val: boolValType): Element
 		{
 			this.attr('disabled', val);
 			return this;
@@ -111,16 +95,16 @@
 			this._children.push(items);
 			return this;
 		}
-		onclick(handler: tsw.common.JQueryEventHandler): Element
+		onclick(handler: tsw.elements.JQueryEventHandler): Element
 		{
 			return this.on('click', handler);
 		}
-		onEvents(eventNames: string[], handler: tsw.common.JQueryEventHandler): Element
+		onEvents(eventNames: string[], handler: tsw.elements.JQueryEventHandler): Element
 		{
 			eventNames.forEach(e => this.on(e, handler));
 			return this;
 		}
-		on(eventName: string, handler: tsw.common.JQueryEventHandler): Element
+		on(eventName: string, handler: tsw.elements.JQueryEventHandler): Element
 		{
 			if (eventName && handler instanceof Function)
 			{
@@ -144,7 +128,7 @@
 			return this;
 		}
 
-		z_addAttr(name: string, val: attrValType | StyleRule): void
+		z_addAttr(name: string, val: attrValType | tsw.internal.StyleRule): void
 		{
 			this._attrs = this._attrs || [];
 			this._attrs.push({ name: name.toLowerCase(), value: val });
@@ -157,11 +141,11 @@
 		{
 			return this._children;
 		}
-		z_getAttrs(): NameValue[]
+		z_getAttrs(): tsw.internal.NameValue[]
 		{
 			return this._attrs;
 		}
-		z_getEventHandlers(): tsw.common.JQueryEventHandlerMap
+		z_getEventHandlers(): JQueryEventHandlerMap
 		{
 			return this.eventHandlers;
 		}

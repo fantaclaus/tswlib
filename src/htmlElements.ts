@@ -13,11 +13,7 @@ module tsw.elements
 		{
 			super('button')
 		}
-
-		type(val: string): ElementButton;
-		type(val: () => string): ElementButton;
-		type(val: tsw.props.PropDefReadable<string>): ElementButton;
-		type(val: any): ElementButton
+		type(val: stringValType): ElementButton
 		{
 			this.attr('type', val);
 
@@ -30,11 +26,7 @@ module tsw.elements
 		{
 			super('a')
 		}
-
-		href(val: string): ElementA;
-		href(val: () => string): ElementA;
-		href(val: tsw.props.PropDefReadable<string>): ElementA;
-		href(val: any): ElementA
+		href(val: stringValType): ElementA
 		{
 			this.attr('href', val);
 
@@ -47,11 +39,7 @@ module tsw.elements
 		{
 			super('img')
 		}
-
-		src(val: string): ElementImg;
-		src(val: () => string): ElementImg;
-		src(val: tsw.props.PropDefReadable<string>): ElementImg;
-		src(val: any): ElementImg
+		src(val: stringValType): ElementImg
 		{
 			this.attr('src', val);
 
@@ -60,9 +48,9 @@ module tsw.elements
 	}
 	export class ElementWithValue extends Element
 	{
-		protected propDef: tsw.props.PropDef<any>;
+		protected propDef: tsw.PropDef<any>;
 
-		z_getPropDef(): tsw.props.PropDef<any>
+		z_getPropDef(): tsw.PropDef<any>
 		{
 			return this.propDef;
 		}
@@ -82,7 +70,7 @@ module tsw.elements
 			super('input')
 			this.attr('type', type);
 		}
-		value(propDef: tsw.props.PropDef<T>): Element
+		value(propDef: tsw.PropDef<T>): Element
 		{
 			this.propDef = propDef;
 
@@ -143,7 +131,7 @@ module tsw.elements
 		{
 			super('textarea')
 		}
-		value(propDef: tsw.props.PropDef<string>): Element
+		value(propDef: tsw.PropDef<string>): Element
 		{
 			this.propDef = propDef;
 
@@ -163,14 +151,14 @@ module tsw.elements
 			super('select')
 		}
 
-		value(propDef: tsw.props.PropDef<string>): Element
+		value(propDef: tsw.PropDef<string>): Element
 		{
 			this.propDef = propDef;
 			this.valuePropName = "value";
 
 			return this;
 		}
-		selectedIndex(propDef: tsw.props.PropDef<number>): ElementSelect
+		selectedIndex(propDef: tsw.PropDef<number>): ElementSelect
 		{
 			this.propDef = propDef;
 			this.valuePropName = "selectedIndex";
@@ -188,18 +176,13 @@ module tsw.elements
 		{
 			super('option')
 		}
-
-		value(val: string): ElementOption;
-		value(val: () => string): ElementOption;
-		value(val: any): ElementOption
+		value(val: stringValType): ElementOption
 		{
 			this.attr('value', val);
 
 			return this;
 		}
-		selected(val: boolean): ElementOption;
-		selected(val: () => boolean): ElementOption;
-		selected(val: any): ElementOption
+		selected(val: boolValType): ElementOption
 		{
 			this.attr('selected', val);
 
@@ -214,7 +197,7 @@ module tsw.elements
 		}
 
 		// "for" is a keyword. it can not be used as a property name in IE before version 9. so we use name "forRef" instead.
-		forRef(ref: tsw.elements.Ref): ElementLabel
+		forRef(ref: tsw.Ref): ElementLabel
 		{
 			this.attr('for', ref);
 
@@ -224,11 +207,11 @@ module tsw.elements
 
 	export class RadioGroup<T>
 	{
-		private propVal: tsw.props.PropVal<T>;
+		private propVal: tsw.PropVal<T>;
 		private groupName: string;
-		private refs: { key: T; ref: tsw.elements.Ref }[] = [];
+		private refs: { key: T; ref: tsw.Ref }[] = [];
 
-		constructor(propVal: tsw.props.PropVal<T>, groupName: string)
+		constructor(propVal: tsw.PropVal<T>, groupName: string)
 		{
 			this.propVal = propVal;
 			this.groupName = groupName;
@@ -251,12 +234,12 @@ module tsw.elements
 			elm.forRef(this.getRefFor(v));
 			return elm;
 		}
-		private getRefFor(v: T): tsw.elements.Ref
+		private getRefFor(v: T): tsw.Ref
 		{
 			var keyRef = tsw.internal.arrayUtils.find(this.refs, kr => kr.key == v);
 			if (keyRef == null)
 			{
-				keyRef = { key: v, ref: new tsw.elements.Ref() };
+				keyRef = { key: v, ref: new tsw.Ref() };
 				this.refs.push(keyRef);
 			}
 			return keyRef.ref;

@@ -1,15 +1,10 @@
-module tsw.common
+module tsw
 {
-	export interface JQueryEventHandler
+	export function setContent(htmlElement: HTMLElement, content: any): void
 	{
-		(e: JQueryEventObject, target: HTMLElement): void;
+		var ctxRoot = new tsw.internal.CtxRoot();
+		ctxRoot.render(content, htmlElement);
 	}
-
-	export interface JQueryEventHandlerMap
-	{
-		[eventName: string]: JQueryEventHandler;
-	}
-
 	export interface Renderer
 	{
 		render: () => any;
