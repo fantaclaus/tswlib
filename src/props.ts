@@ -20,7 +20,7 @@ module tsw
 		}
 		get(): T
 		{
-			tsw.internal.CtxUtils.attach(this);
+			tsw.attachContext(this);
 
 			return this.val;
 		}
@@ -37,7 +37,7 @@ module tsw
 				{
 					this.val = v;
 
-					tsw.internal.CtxUtils.update(this);
+					tsw.updateContext(this);
 
 					if (this.onChanged) this.onChanged();
 				}
@@ -100,7 +100,7 @@ module tsw
 
 		get(): string
 		{
-			tsw.internal.CtxUtils.attach(this);
+			tsw.attachContext(this);
 
 			return this.refId;
 		}
@@ -112,7 +112,7 @@ module tsw
 
 				this.refId = v;
 
-				tsw.internal.CtxUtils.update(this);
+				tsw.updateContext(this);
 
 				//console.groupEnd();
 			}

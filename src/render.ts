@@ -12,7 +12,6 @@
 		private static ctxUpdateQueue: CtxUpdatable[] = null;
 		private static timerId: number = null;
 
-
 		private static getCtx(): CtxUpdatable
 		{
 			var ctx = CtxScope.getCurrent();
