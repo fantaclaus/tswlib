@@ -50,6 +50,14 @@ module tsw
 		{
 			return new elements.Element('h4');
 		}
+		static h5(): elements.Element
+		{
+			return new elements.Element('h5');
+		}
+		static h6(): elements.Element
+		{
+			return new elements.Element('h6');
+		}
 		static small(): elements.Element
 		{
 			return new elements.Element('small');
