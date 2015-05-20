@@ -675,10 +675,10 @@
 			if (item === true || item === false) return '';
 
 			if (item instanceof tsw.elements.RawHtml) return item.value;
-			if (item instanceof tsw.elements.Element) return this.renderElement(item);
+			if (item instanceof tsw.elements.ElementGeneric) return this.renderElement(item);
 
 			// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
- 			var ctxCurrent = CtxScope.getCurrent();
+			var ctxCurrent = CtxScope.getCurrent();
 			var ctxElm = ctxCurrent.getParentHtmlElmOwnerCtx();
 			var tagName = ctxElm ? ctxElm.getTagName() : null;
 
@@ -708,7 +708,7 @@
 			var markers = new HtmlBlockMarkers(ctx.id);
 			return markers.getHtml(innerHtml);
 		}
-		private static renderElement(elm: tsw.elements.Element): string
+		private static renderElement(elm: tsw.elements.ElementGeneric): string
 		{
 			var tagName = elm.z_getTagName();
 			//console.log(elm, tagName);
@@ -934,7 +934,7 @@
 		{
 			return utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
 		}
-		private static getElmAttrs(elm: tsw.elements.Element): MapStringToArray
+		private static getElmAttrs(elm: tsw.elements.ElementGeneric): MapStringToArray
 		{
 			var attrs: MapStringToArray = {};
 
@@ -1053,7 +1053,7 @@
 				return this.getRenderedAttrValue(item);
 			}	
 		}
-		private static asElmWithValue(elm: tsw.elements.Element): tsw.elements.ElementWithValue
+		private static asElmWithValue(elm: tsw.elements.ElementGeneric): tsw.elements.ElementWithValue
 		{
 			if (elm instanceof tsw.elements.ElementWithValue)
 			{
@@ -1064,7 +1064,7 @@
 				return null;
 			}
 		}
-		private static getValue(propDef: tsw.PropDefReadable<any>, valPropName: string): ValueData2
+		private static getValue(propDef: tsw.global.PropDefReadable<any>, valPropName: string): ValueData2
 		{
 			var ctxCurrent = CtxScope.getCurrent();
 

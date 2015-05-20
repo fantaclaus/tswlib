@@ -10,117 +10,117 @@ module tsw
 		{
 			return new elements.RawHtml(s);
 		}
-		static el(tagName: string = ''): elements.Element
+		static el(tagName: string = ''): elements.ElementGeneric
 		{
-			return new elements.Element(tagName);
+			return new elements.ElementGeneric(tagName);
 		}
-		static div(): elements.Element
+		static div(): elements.ElementGeneric
 		{
-			return new elements.Element('div');
+			return new elements.ElementGeneric('div');
 		}
-		static p(): elements.Element
+		static p(): elements.ElementGeneric
 		{
-			return new elements.Element('p');
+			return new elements.ElementGeneric('p');
 		}
-		static span(): elements.Element
+		static span(): elements.ElementGeneric
 		{
-			return new elements.Element('span');
+			return new elements.ElementGeneric('span');
 		}
-		static b(): elements.Element
+		static b(): elements.ElementGeneric
 		{
-			return new elements.Element('b');
+			return new elements.ElementGeneric('b');
 		}
-		static i(): elements.Element
+		static i(): elements.ElementGeneric
 		{
-			return new elements.Element('i');
+			return new elements.ElementGeneric('i');
 		}
-		static h1(): elements.Element
+		static h1(): elements.ElementGeneric
 		{
-			return new elements.Element('h1');
+			return new elements.ElementGeneric('h1');
 		}
-		static h2(): elements.Element
+		static h2(): elements.ElementGeneric
 		{
-			return new elements.Element('h2');
+			return new elements.ElementGeneric('h2');
 		}
-		static h3(): elements.Element
+		static h3(): elements.ElementGeneric
 		{
-			return new elements.Element('h3');
+			return new elements.ElementGeneric('h3');
 		}
-		static h4(): elements.Element
+		static h4(): elements.ElementGeneric
 		{
-			return new elements.Element('h4');
+			return new elements.ElementGeneric('h4');
 		}
-		static h5(): elements.Element
+		static h5(): elements.ElementGeneric
 		{
-			return new elements.Element('h5');
+			return new elements.ElementGeneric('h5');
 		}
-		static h6(): elements.Element
+		static h6(): elements.ElementGeneric
 		{
-			return new elements.Element('h6');
+			return new elements.ElementGeneric('h6');
 		}
-		static small(): elements.Element
+		static small(): elements.ElementGeneric
 		{
-			return new elements.Element('small');
+			return new elements.ElementGeneric('small');
 		}
 		static a(): elements.ElementA
 		{
 			return new elements.ElementA();
 		}
-		static nav(): elements.Element
+		static nav(): elements.ElementGeneric
 		{
-			return new elements.Element('nav');
+			return new elements.ElementGeneric('nav');
 		}
-		static br(): elements.Element
+		static br(): elements.ElementGeneric
 		{
-			return new elements.Element('br');
+			return new elements.ElementGeneric('br');
 		}
-		static hr(): elements.Element
+		static hr(): elements.ElementGeneric
 		{
-			return new elements.Element('hr');
+			return new elements.ElementGeneric('hr');
 		}
 		static button(): elements.ElementButton
 		{
 			return new elements.ElementButton();
 		}
-		static ul(): elements.Element
+		static ul(): elements.ElementGeneric
 		{
-			return new elements.Element('ul');
+			return new elements.ElementGeneric('ul');
 		}
-		static li(): elements.Element
+		static li(): elements.ElementGeneric
 		{
-			return new elements.Element('li');
+			return new elements.ElementGeneric('li');
 		}
 		static img(): elements.ElementImg
 		{
 			return new elements.ElementImg();
 		}
-		static form(): elements.Element
+		static form(): elements.ElementGeneric
 		{
-			return new elements.Element('form');
+			return new elements.ElementGeneric('form');
 		}
-		static table(): elements.Element
+		static table(): elements.ElementGeneric
 		{
-			return new elements.Element('table');
+			return new elements.ElementGeneric('table');
 		}
-		static thead(): elements.Element
+		static thead(): elements.ElementGeneric
 		{
-			return new elements.Element('thead');
+			return new elements.ElementGeneric('thead');
 		}
-		static tbody(): elements.Element
+		static tbody(): elements.ElementGeneric
 		{
-			return new elements.Element('tbody');
+			return new elements.ElementGeneric('tbody');
 		}
-		static tr(): elements.Element
+		static tr(): elements.ElementGeneric
 		{
-			return new elements.Element('tr');
+			return new elements.ElementGeneric('tr');
 		}
-		static th(): elements.Element
+		static th(): elements.ElementGeneric
 		{
-			return new elements.Element('th');
+			return new elements.ElementGeneric('th');
 		}
-		static td(): elements.Element
+		static td(): elements.ElementGeneric
 		{
-			return new elements.Element('td');
+			return new elements.ElementGeneric('td');
 		}
 		static label(): elements.ElementLabel
 		{

@@ -7,7 +7,7 @@ module tsw.elements
 		}
 	}
 
-	export class ElementButton extends Element
+	export class ElementButton extends ElementGeneric
 	{
 		constructor()
 		{
@@ -20,7 +20,7 @@ module tsw.elements
 			return this;
 		}
 	}
-	export class ElementA extends Element
+	export class ElementA extends ElementGeneric
 	{
 		constructor()
 		{
@@ -33,7 +33,7 @@ module tsw.elements
 			return this;
 		}
 	}
-	export class ElementImg extends Element
+	export class ElementImg extends ElementGeneric
 	{
 		constructor()
 		{
@@ -46,11 +46,11 @@ module tsw.elements
 			return this;
 		}
 	}
-	export class ElementWithValue extends Element
+	export class ElementWithValue extends ElementGeneric
 	{
-		protected propDef: tsw.PropDef<any>;
+		protected propDef: tsw.global.PropDef<any>;
 
-		z_getPropDef(): tsw.PropDef<any>
+		z_getPropDef(): tsw.global.PropDef<any>
 		{
 			return this.propDef;
 		}
@@ -70,7 +70,7 @@ module tsw.elements
 			super('input')
 			this.attr('type', type);
 		}
-		value(propDef: tsw.PropDef<T>): Element
+		value(propDef: tsw.global.PropDef<T>): ElementGeneric
 		{
 			this.propDef = propDef;
 
@@ -131,7 +131,7 @@ module tsw.elements
 		{
 			super('textarea')
 		}
-		value(propDef: tsw.PropDef<string>): Element
+		value(propDef: tsw.global.PropDef<string>): ElementGeneric
 		{
 			this.propDef = propDef;
 
@@ -151,14 +151,14 @@ module tsw.elements
 			super('select')
 		}
 
-		value(propDef: tsw.PropDef<string>): Element
+		value(propDef: tsw.global.PropDef<string>): ElementGeneric
 		{
 			this.propDef = propDef;
 			this.valuePropName = "value";
 
 			return this;
 		}
-		selectedIndex(propDef: tsw.PropDef<number>): ElementSelect
+		selectedIndex(propDef: tsw.global.PropDef<number>): ElementSelect
 		{
 			this.propDef = propDef;
 			this.valuePropName = "selectedIndex";
@@ -170,7 +170,7 @@ module tsw.elements
 			return this.valuePropName;
 		}
 	}
-	export class ElementOption extends Element
+	export class ElementOption extends ElementGeneric
 	{
 		constructor()
 		{
@@ -189,7 +189,7 @@ module tsw.elements
 			return this;
 		}
 	}
-	export class ElementLabel extends Element
+	export class ElementLabel extends ElementGeneric
 	{
 		constructor()
 		{

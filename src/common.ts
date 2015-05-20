@@ -5,6 +5,16 @@ module tsw
 		var ctxRoot = new tsw.internal.CtxRoot();
 		ctxRoot.render(content, htmlElement);
 	}
+	export interface Renderer
+	{
+		render: () => any;
+		afterAttach?: () => void;
+		beforeDetach?: () => void;
+	}
+}
+
+module tsw.global
+{
 	export function attachContext(propKey: any): void
 	{
 		tsw.internal.CtxUtils.attach(propKey);
@@ -12,11 +22,5 @@ module tsw
 	export function updateContext(propKey: any): void
 	{
 		tsw.internal.CtxUtils.update(propKey);
-	}
-	export interface Renderer
-	{
-		render: () => any;
-		afterAttach?: () => void;
-		beforeDetach?: () => void;
 	}
 }

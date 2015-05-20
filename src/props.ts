@@ -1,4 +1,4 @@
-module tsw
+module tsw.global
 {
 	export interface PropDefReadable<T>
 	{
@@ -8,7 +8,11 @@ module tsw
 	{
 		set: (v: T) => void;
 	}
-	export class PropVal<T> implements PropDef<T>
+}
+
+module tsw
+{
+	export class PropVal<T> implements tsw.global.PropDef<T>
 	{
 		val: T;
 		private insideSet = false; // to prevent infinite loops
@@ -20,7 +24,7 @@ module tsw
 		}
 		get(): T
 		{
-			tsw.attachContext(this);
+			tsw.global.attachContext(this);
 
 			return this.val;
 		}
@@ -37,7 +41,7 @@ module tsw
 				{
 					this.val = v;
 
-					tsw.updateContext(this);
+					tsw.global.updateContext(this);
 
 					if (this.onChanged) this.onChanged();
 				}
@@ -74,18 +78,18 @@ module tsw
 			return () => this.get() == val && content;
 		}
 
-		convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): PropDef<U>
+		convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): tsw.global.PropDef<U>
 		{
-			var p: PropDef<U> = {
+			var p: tsw.global.PropDef<U> = {
 				get: () => converter.to(this.get()),
 				set: v => this.set(converter.from(v)),
 			};
 
 			return p;
 		}
-		convert2<U>(to: (v: T) => U, from: (v: U) => T): PropDef<U>
+		convert2<U>(to: (v: T) => U, from: (v: U) => T): tsw.global.PropDef<U>
 		{
-			var p: PropDef<U> = {
+			var p: tsw.global.PropDef<U> = {
 				get: () => to(this.get()),
 				set: v => this.set(from(v)),
 			};
@@ -94,13 +98,13 @@ module tsw
 		}
 	}
 
-	export class Ref implements tsw.PropDef<string>
+	export class Ref implements tsw.global.PropDef<string>
 	{
 		private refId: string;
 
 		get(): string
 		{
-			tsw.attachContext(this);
+			tsw.global.attachContext(this);
 
 			return this.refId;
 		}
@@ -112,7 +116,7 @@ module tsw
 
 				this.refId = v;
 
-				tsw.updateContext(this);
+				tsw.global.updateContext(this);
 
 				//console.groupEnd();
 			}

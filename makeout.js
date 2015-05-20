@@ -35,8 +35,7 @@ function processDefFileLine(lines) {
         var isExcluded = moduleName === 'tsw.internal' ||
             line.substr(0, 3) === '///' ||
             line.match(/^\s*z_/) ||
-            line.match(/^\s*(private|protected)\s+/) ||
-            line.match(/^\s*constructor\(\);/);
+            line.match(/^\s*(private|protected)\s+/);
         if (!isExcluded) {
             var line2 = line;
             lines2.push(line2);

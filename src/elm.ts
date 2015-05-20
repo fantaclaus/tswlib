@@ -5,7 +5,7 @@
 		propName: string;
 		propValue: tsw.elements.attrValType;
 	}
-    export interface NameValue
+	export interface NameValue
 	{
 		name: string;
 		value: tsw.elements.attrValType | StyleRule;
@@ -19,16 +19,16 @@
 module tsw.elements
 {
 	export type attrValSimpleType = string|number|boolean;
-	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | tsw.PropDefReadable<attrValSimpleType>;
-	export type stringValType = string | (() => string) | tsw.PropDefReadable<string>;
-	export type boolValType = boolean | (() => boolean) | tsw.PropDefReadable<boolean>;
+	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | tsw.global.PropDefReadable<attrValSimpleType>;
+	export type stringValType = string | (() => string) | tsw.global.PropDefReadable<string>;
+	export type boolValType = boolean | (() => boolean) | tsw.global.PropDefReadable<boolean>;
 
 	export interface JQueryEventHandler
 	{
 		(e: JQueryEventObject, target: HTMLElement): void;
 	}
 
-	export class Element
+	export class ElementGeneric
 	{
 		private tagName: string = null;
 		private _attrs: tsw.internal.NameValue[] = null;
@@ -41,7 +41,7 @@ module tsw.elements
 			this.tagName = tagName.toLowerCase();
 		}
 
-		attr(name: string, val?: attrValType): Element
+		attr(name: string, val?: attrValType): ElementGeneric
 		{
 			if (!name) return;
 
@@ -54,18 +54,18 @@ module tsw.elements
 
 			return this;
 		}
-		cls(val: stringValType): Element
+		cls(val: stringValType): ElementGeneric
 		{
 			this.attr('class', val);
 			return this;
 		}
-		style(val: attrValType): Element
+		style(val: attrValType): ElementGeneric
 		{
 			this.attr('style', val);
 
 			return this;
 		}
-		styleRule(name: string, val: attrValType): Element
+		styleRule(name: string, val: attrValType): ElementGeneric
 		{
 			if (val != null)
 			{
@@ -78,33 +78,33 @@ module tsw.elements
 
 			return this;
 		}
-		data(name: string, val: stringValType): Element
+		data(name: string, val: stringValType): ElementGeneric
 		{
 			this.attr('data-' + name, val);
 
 			return this;
 		}
-		disabled(val: boolValType): Element
+		disabled(val: boolValType): ElementGeneric
 		{
 			this.attr('disabled', val);
 			return this;
 		}
-		children(items: any): Element
+		children(items: any): ElementGeneric
 		{
 			this._children = this._children || [];
 			this._children.push(items);
 			return this;
 		}
-		onclick(handler: tsw.elements.JQueryEventHandler): Element
+		onclick(handler: tsw.elements.JQueryEventHandler): ElementGeneric
 		{
 			return this.on('click', handler);
 		}
-		onEvents(eventNames: string[], handler: tsw.elements.JQueryEventHandler): Element
+		onEvents(eventNames: string[], handler: tsw.elements.JQueryEventHandler): ElementGeneric
 		{
 			eventNames.forEach(e => this.on(e, handler));
 			return this;
 		}
-		on(eventName: string, handler: tsw.elements.JQueryEventHandler): Element
+		on(eventName: string, handler: tsw.elements.JQueryEventHandler): ElementGeneric
 		{
 			if (eventName && handler instanceof Function)
 			{
@@ -121,7 +121,7 @@ module tsw.elements
 			return this;
 		}
 
-		addRef(ref: Ref): Element
+		addRef(ref: Ref): ElementGeneric
 		{
 			this._refs = this._refs || [];
 			this._refs.push(ref);
