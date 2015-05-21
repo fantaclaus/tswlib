@@ -728,7 +728,7 @@
 
 			var ctxCurrent = CtxScope.getCurrent();
 
-			var attrId = this.getRenderedAttrValues(attrs['id']);
+			var attrId = this.getRenderedLastAttrValue(attrs['id']);
 			delete attrs['id'];
 
 			var id = attrId || ctxCurrent.generateNextChildId();
@@ -773,7 +773,7 @@
 			}
 
 			var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
-			//console.log('attrsHtml: [%s]', attrsHtml);
+			//console.log(`attrsHtml: [${attrsHtml}]`);
 
 			var innerHtml: string;
 
@@ -878,7 +878,7 @@
 					attrName: attrName,
 					attrVal: this.getAttrVal(attrs, attrName)
 				}))
-				.filter(a => a.attrVal !== null)
+				.filter(a => a.attrVal != null)
 				.reduce((attrsHtml, a) =>
 				{
 					var attrHtml = a.attrName;
@@ -911,7 +911,7 @@
 			else
 			{
 				canBeUpdated = attrVals.some(av => this.canBeUpdatedAttr(av));
-				fn = () => this.getRenderedAttrValues(attrVals);
+				fn = () => this.getRenderedLastAttrValue(attrVals);
 			}
 
 			if (canBeUpdated)
@@ -930,9 +930,13 @@
 				return fn();
 			}
 		}
-		protected static getRenderedAttrValues(attrVals: any[]): string
+		protected static getRenderedLastAttrValue(attrVals: any[]): string
 		{
-			return utils.join(attrVals, ', ', av => this.getRenderedAttrValue(av));
+			// it returns last value to support overwriting of attr values
+			// for example, bs.btnLink() returns <A href="#"> by default, and href could be re-assigned to another 
+			// value this way: bs.btnLink().href("some url")
+			
+			return attrVals && utils.join(attrVals.slice(-1), ', ', av => this.getRenderedAttrValue(av));
 		}
 		private static getElmAttrs(elm: tsw.elements.ElementGeneric): MapStringToArray
 		{
@@ -943,9 +947,9 @@
 			{
 				elmAttrs.forEach(a =>
 				{
-					if (a.value != null)
+					var attrName = a.name;
+					if (attrName)
 					{
-						var attrName = a.name;
 						var vals: any[] = attrs[attrName];
 						if (!vals)
 						{
@@ -988,9 +992,12 @@
 
 		private static canBeUpdated(item: any): boolean
 		{
-			if (item instanceof Function) return true;
-			if (item.render instanceof Function) return true; // macro element
-			if (item.get instanceof Function) return true; // PropVal
+			if (item != null)
+			{
+				if (item instanceof Function) return true;
+				if (item.render instanceof Function) return true; // macro element
+				if (item.get instanceof Function) return true; // PropVal
+			}	
 
 			return false;
 		}
@@ -1001,9 +1008,12 @@
 		}
 		private static getRenderedContent(item: any): any
 		{
-			if (item instanceof Function) return item();
-			if (item.render instanceof Function) return item.render();
-			if (item.get instanceof Function) return item.get();
+			if (item != null)
+			{
+				if (item instanceof Function) return item();
+				if (item.render instanceof Function) return item.render();
+				if (item.get instanceof Function) return item.get();
+			}	
 
 			return item;
 		}
@@ -1016,15 +1026,20 @@
 		}
 		private static canBeUpdatedAttr(item: any): boolean
 		{
-			if (item instanceof Function) return true;
-			if (item.get instanceof Function) return true; // PropVal
+			if (item != null)
+			{
+				if (item instanceof Function) return true;
+				if (item.get instanceof Function) return true; // PropVal
+			}
 			return false;
 		}
 		private static getRenderedAttrValueRaw(item: any): any
 		{
-			if (item instanceof Function) return item();
-			if (item.get instanceof Function) return item.get();
-
+			if (item != null)
+			{
+				if (item instanceof Function) return item();
+				if (item.get instanceof Function) return item.get();
+			}
 			return item;
 		}
 		private static canBeUpdatedStyle(item: tsw.elements.attrValType | StyleRule): boolean

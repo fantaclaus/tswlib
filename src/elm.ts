@@ -43,12 +43,10 @@ module tsw.elements
 
 		attr(name: string, val?: attrValType): ElementGeneric
 		{
-			if (!name) return;
-
-			if (tsw.internal.utils.isUndefined(val)) val = true;
-
-			if (val != null)
+			if (name != null)
 			{
+				if (tsw.internal.utils.isUndefined(val)) val = true;
+	
 				this.z_addAttr(name, val);
 			}
 
@@ -67,7 +65,7 @@ module tsw.elements
 		}
 		styleRule(name: string, val: attrValType): ElementGeneric
 		{
-			if (val != null)
+			if (name != null && val != null)
 			{
 				var v = new tsw.internal.StyleRule();
 				v.propName = name;

@@ -34,7 +34,7 @@
 
 						if (s != null && result == null) result = ''; // if at least one item is converted to non-null, result is not null
 
-						if (s != null && s !== '') // don't add nulls and ampty strings. but zero-number value must be added.
+						if (s != null && s !== '') // don't add nulls and empty strings. but zero-number value must be added.
 						{
 							if (delim && result) result += delim;
 
