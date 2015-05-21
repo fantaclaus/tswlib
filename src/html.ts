@@ -1,154 +1,43 @@
-module tsw
+module tsw.html
 {
-	export class html
-	{
-		static nbsp(): elements.RawHtml
-		{
-			return new elements.RawHtml("&nbsp;");
-		}
-		static raw(s: string): elements.RawHtml
-		{
-			return new elements.RawHtml(s);
-		}
-		static el(tagName: string = ''): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric(tagName);
-		}
-		static div(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('div');
-		}
-		static p(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('p');
-		}
-		static span(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('span');
-		}
-		static b(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('b');
-		}
-		static i(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('i');
-		}
-		static h1(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('h1');
-		}
-		static h2(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('h2');
-		}
-		static h3(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('h3');
-		}
-		static h4(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('h4');
-		}
-		static h5(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('h5');
-		}
-		static h6(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('h6');
-		}
-		static small(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('small');
-		}
-		static a(): elements.ElementA
-		{
-			return new elements.ElementA();
-		}
-		static nav(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('nav');
-		}
-		static br(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('br');
-		}
-		static hr(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('hr');
-		}
-		static button(): elements.ElementButton
-		{
-			return new elements.ElementButton();
-		}
-		static ul(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('ul');
-		}
-		static li(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('li');
-		}
-		static img(): elements.ElementImg
-		{
-			return new elements.ElementImg();
-		}
-		static form(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('form');
-		}
-		static table(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('table');
-		}
-		static thead(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('thead');
-		}
-		static tbody(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('tbody');
-		}
-		static tr(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('tr');
-		}
-		static th(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('th');
-		}
-		static td(): elements.ElementGeneric
-		{
-			return new elements.ElementGeneric('td');
-		}
-		static label(): elements.ElementLabel
-		{
-			return new elements.ElementLabel();
-		}
-		static inputText(): elements.ElementInputText
-		{
-			return new elements.ElementInputText();
-		}
-		static inputCheckBox(): elements.ElementInputCheckbox
-		{
-			return new elements.ElementInputCheckbox();
-		}
-		static inputRadio(): elements.ElementInputRadio
-		{
-			return new elements.ElementInputRadio();
-		}
-		static select(): elements.ElementSelect
-		{
-			return new elements.ElementSelect();
-		}
-		static option(): elements.ElementOption
-		{
-			return new elements.ElementOption();
-		}
-		static textArea(): elements.ElementTextArea
-		{
-			return new elements.ElementTextArea();
-		}
-	}
+	export function nbsp() { return new elements.RawHtml("&nbsp;"); }
+	export function raw(s: string) { return new elements.RawHtml(s); }
+	
+	export function el(tagName: string = '') { return new elements.ElementGeneric(tagName); }
+
+	export function a() { return new elements.ElementA(); }
+	export function b() { return new elements.ElementGeneric('b'); }
+	export function br() { return new elements.ElementGeneric('br'); }
+	export function button() { return new elements.ElementButton(); }
+	export function div() { return new elements.ElementGeneric('div'); }
+	export function form() { return new elements.ElementGeneric('form'); }
+	export function h1() { return new elements.ElementGeneric('h1'); }
+	export function h2() { return new elements.ElementGeneric('h2'); }
+	export function h3() { return new elements.ElementGeneric('h3'); }
+	export function h4() { return new elements.ElementGeneric('h4'); }
+	export function h5() { return new elements.ElementGeneric('h5'); }
+	export function h6() { return new elements.ElementGeneric('h6'); }
+	export function hr() { return new elements.ElementGeneric('hr'); }
+	export function i() { return new elements.ElementGeneric('i'); }
+	export function img() { return new elements.ElementImg(); }
+	export function inputCheckBox() { return new elements.ElementInputCheckbox(); }
+	export function inputRadio() { return new elements.ElementInputRadio(); }
+	export function inputText() { return new elements.ElementInputText(); }
+	export function label() { return new elements.ElementLabel(); }
+	export function li() { return new elements.ElementGeneric('li'); }
+	export function nav() { return new elements.ElementGeneric('nav'); }
+	export function option() { return new elements.ElementOption(); }
+	export function p() { return new elements.ElementGeneric('p'); }
+	export function pre() { return new elements.ElementGeneric('pre'); }
+	export function select() { return new elements.ElementSelect(); }
+	export function small() { return new elements.ElementGeneric('small'); }
+	export function span() { return new elements.ElementGeneric('span'); }
+	export function table() { return new elements.ElementGeneric('table'); }
+	export function tbody() { return new elements.ElementGeneric('tbody'); }
+	export function td() { return new elements.ElementGeneric('td'); }
+	export function textArea() { return new elements.ElementTextArea(); }
+	export function th() { return new elements.ElementGeneric('th'); }
+	export function thead() { return new elements.ElementGeneric('thead'); }
+	export function tr() { return new elements.ElementGeneric('tr'); }
+	export function ul() { return new elements.ElementGeneric('ul'); }
 }
