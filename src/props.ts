@@ -98,6 +98,19 @@ module tsw
 		}
 	}
 
+	export class PropValArray<T> extends PropVal<T[]>
+	{
+		constructor(items?: T[])
+		{
+			super(items);
+		}
+		addItem(item: T)
+		{
+			this.get().push(item);
+			tsw.global.updateContext(this);
+		}
+	}
+
 	export class Ref implements tsw.global.PropDef<string>
 	{
 		private refId: string;
