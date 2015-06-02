@@ -89,8 +89,11 @@ module tsw.elements
 		}
 		children(items: any): ElementGeneric
 		{
-			this._children = this._children || [];
-			this._children.push(items);
+			if (items != null)
+			{
+				this._children = this._children || [];
+				this._children.push(items);
+			}
 			return this;
 		}
 		onclick(handler: tsw.elements.JQueryEventHandler): ElementGeneric
@@ -121,8 +124,11 @@ module tsw.elements
 
 		addRef(ref: Ref): ElementGeneric
 		{
-			this._refs = this._refs || [];
-			this._refs.push(ref);
+			if (ref != null)
+			{
+				this._refs = this._refs || [];
+				this._refs.push(ref);
+			}
 			return this;
 		}
 
