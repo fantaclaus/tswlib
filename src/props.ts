@@ -104,9 +104,19 @@ module tsw
 		{
 			super(items);
 		}
-		addItem(item: T)
+		addItem(item: T, index?: number)
 		{
-			this.get().push(item);
+			let a = this.get();			
+			
+			if (tsw.internal.utils.isUndefined(index))
+			{
+				a.push(item);
+			}
+			else
+			{
+				a.splice(index, 0, item);
+			}
+			
 			tsw.global.updateContext(this);
 		}
 	}
