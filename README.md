@@ -1,3 +1,9 @@
+**NOTE**: This readme describes quite old version of the library. 
+The latest version supports two-way binding and is almost completely incompatible with 
+ current description. For example, there is no class `Control` anymore.
+
+--- 
+
 Overview
 ========
 
