@@ -1,27 +1,35 @@
-/// <reference path="typings/lib.es6.d.ts" />
-/// <reference path="typings/node/node.d.ts" />
 var fs = require('fs');
 var args = process.argv.slice(2);
 if (args.length < 3)
     throw new Error('arguments are not supplied');
-var tmpFolder = args[0], outFolder = args[1], logoFileName = args[2];
+var tmpFolder = args[0], outFolder = args[1], logoFileName = args[2], srcName = args[3];
 start();
 function start() {
     makeDir(outFolder);
     var textLogo = fs.readFileSync(logoFileName).toString();
     textLogo = textLogo.replace(/{year}/g, new Date().getFullYear().toString());
-    copyFile('tswlib.d.ts', textLogo, processDefFileLine);
-    copyFile('tswlib.js', textLogo, processJSFileLine);
+    copyFile(srcName + '.d.ts', textLogo, processDefFileLine);
+    copyFile(srcName + '.js', textLogo, processJSFileLine);
+    copyFile(srcName + '.js.map');
 }
 function copyFile(fileName, textLogo, processLines) {
-    var text = fs.readFileSync(pathCombine(tmpFolder, fileName)).toString();
-    if (processLines) {
-        var lines = text.split("\n");
-        var lines2 = processLines(lines);
-        text = lines2.join('\n');
+    if (textLogo === void 0) { textLogo = ''; }
+    var fnSrc = pathCombine(tmpFolder, fileName);
+    var fnDst = pathCombine(outFolder, fileName);
+    if (fs.existsSync(fnSrc)) {
+        console.log(fnSrc + " -> " + fnDst);
+        var text = fs.readFileSync(fnSrc).toString();
+        if (processLines) {
+            var lines = text.split("\n");
+            var lines2 = processLines(lines);
+            text = lines2.join('\n');
+        }
+        var data2 = textLogo + text;
+        fs.writeFileSync(fnDst, data2);
     }
-    var data2 = textLogo + text;
-    fs.writeFileSync(pathCombine(outFolder, fileName), data2);
+    else {
+        console.log(fnSrc + " not found");
+    }
 }
 function processDefFileLine(lines) {
     var lines2 = [];
@@ -32,10 +40,10 @@ function processDefFileLine(lines) {
         if (m != null) {
             moduleName = m[1];
         }
-        var isExcluded = moduleName === 'tsw.internal' ||
-            line.substr(0, 3) === '///' ||
+        var isExcluded = moduleName.match(/\binternal\b/) ||
+            startsWith(line, '///') ||
             line.match(/^\s*z_/) ||
-            line.match(/^\s*(private|protected)\s+/);
+            line.match(/^\s*private\s+/);
         if (!isExcluded) {
             var line2 = line;
             lines2.push(line2);
@@ -48,7 +56,7 @@ function processJSFileLine(lines) {
     for (var _i = 0; _i < lines.length; _i++) {
         var line = lines[_i];
         var lineTrimmed = line.trim();
-        var isExcluded = lineTrimmed.substr(0, 2) === '//';
+        var isExcluded = !startsWith(lineTrimmed, '//#') && startsWith(lineTrimmed, '//');
         if (!isExcluded) {
             lines2.push(line);
         }
@@ -64,3 +72,7 @@ function pathCombine(s1, s2) {
         s1 += '\\';
     return s1 + s2;
 }
+function startsWith(s, pat) {
+    return s.substr(0, pat.length) === pat;
+}
+//# sourceMappingURL=makeout.js.map

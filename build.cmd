@@ -5,7 +5,7 @@ rem call tsc.cmd @defs.txt @files.txt --out tmp\tswlib.js --removeComments --noL
 call tsc.cmd
 if errorlevel 1 goto err
 
-node makeout.js tmp out logo.txt
+node makeout.js tmp out logo.txt tswlib
 if errorlevel 1 goto err
 
 del tmp\*.* /q
