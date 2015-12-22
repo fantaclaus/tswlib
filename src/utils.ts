@@ -48,7 +48,7 @@
 		}
 		static isUndefined(v: any): boolean
 		{
-			return typeof v == 'undefined';
+			return v === void 0;
 		}
 		static toStringSafe(s: string): string
 		{

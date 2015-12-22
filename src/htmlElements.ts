@@ -13,7 +13,7 @@ module tsw.elements
 		{
 			super('button')
 		}
-		type(val: stringValType): ElementButton
+		type(val: stringValType)
 		{
 			this.attr('type', val);
 
@@ -26,7 +26,7 @@ module tsw.elements
 		{
 			super('a')
 		}
-		href(val: stringValType): ElementA
+		href(val: stringValType)
 		{
 			this.attr('href', val);
 
@@ -39,7 +39,7 @@ module tsw.elements
 		{
 			super('img')
 		}
-		src(val: stringValType): ElementImg
+		src(val: stringValType)
 		{
 			this.attr('src', val);
 
@@ -70,7 +70,7 @@ module tsw.elements
 			super('input')
 			this.attr('type', type);
 		}
-		value(propDef: tsw.global.PropDef<T>): ElementGeneric
+		value(propDef: tsw.global.PropDef<T>)
 		{
 			this.propDef = propDef;
 
@@ -93,7 +93,7 @@ module tsw.elements
 			return 'value';
 		}
 
-		placeholder(v: string): ElementInput<string>
+		placeholder(v: string)
 		{
 			this.attr('placeholder', v);
 
@@ -131,7 +131,7 @@ module tsw.elements
 		{
 			super('textarea')
 		}
-		value(propDef: tsw.global.PropDef<string>): ElementGeneric
+		value(propDef: tsw.global.PropDef<string>)
 		{
 			this.propDef = propDef;
 
@@ -151,14 +151,14 @@ module tsw.elements
 			super('select')
 		}
 
-		value(propDef: tsw.global.PropDef<string>): ElementGeneric
+		value(propDef: tsw.global.PropDef<string>)
 		{
 			this.propDef = propDef;
 			this.valuePropName = "value";
 
 			return this;
 		}
-		selectedIndex(propDef: tsw.global.PropDef<number>): ElementSelect
+		selectedIndex(propDef: tsw.global.PropDef<number>)
 		{
 			this.propDef = propDef;
 			this.valuePropName = "selectedIndex";
@@ -176,13 +176,13 @@ module tsw.elements
 		{
 			super('option')
 		}
-		value(val: stringValType): ElementOption
+		value(val: stringValType)
 		{
 			this.attr('value', val);
 
 			return this;
 		}
-		selected(val: boolValType): ElementOption
+		selected(val: boolValType)
 		{
 			this.attr('selected', val);
 
@@ -197,7 +197,7 @@ module tsw.elements
 		}
 
 		// "for" is a keyword. it can not be used as a property name in IE before version 9. so we use name "forRef" instead.
-		forRef(ref: tsw.Ref): ElementLabel
+		forRef(ref: tsw.Ref)
 		{
 			this.attr('for', ref);
 

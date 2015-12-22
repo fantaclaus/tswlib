@@ -41,53 +41,51 @@ module tsw.elements
 			this.tagName = tagName.toLowerCase();
 		}
 
-		attr(name: string, val?: attrValType): ElementGeneric
+		attr(name: string, val: attrValType = true)
 		{
 			if (name != null)
 			{
-				if (tsw.internal.utils.isUndefined(val)) val = true;
-	
 				this.z_addAttr(name, val);
 			}
 
 			return this;
 		}
-		cls(val: stringValType): ElementGeneric
+		cls(val: stringValType)
 		{
 			this.attr('class', val);
 			return this;
 		}
-		style(val: attrValType): ElementGeneric
+		style(val: attrValType)
 		{
 			this.attr('style', val);
 
 			return this;
 		}
-		styleRule(name: string, val: attrValType): ElementGeneric
+		styleRule(name: string, val: attrValType)
 		{
 			if (name != null && val != null)
 			{
 				var v = new tsw.internal.StyleRule();
 				v.propName = name;
 				v.propValue = val;
-				
+
 				this.z_addAttr('style', v);
 			}
 
 			return this;
 		}
-		data(name: string, val: stringValType): ElementGeneric
+		data(name: string, val: stringValType)
 		{
 			this.attr('data-' + name, val);
 
 			return this;
 		}
-		disabled(val: boolValType): ElementGeneric
+		disabled(val: boolValType)
 		{
 			this.attr('disabled', val);
 			return this;
 		}
-		children(items: any): ElementGeneric
+		children(items: any)
 		{
 			if (items != null)
 			{
@@ -96,16 +94,16 @@ module tsw.elements
 			}
 			return this;
 		}
-		onclick(handler: tsw.elements.JQueryEventHandler): ElementGeneric
+		onclick(handler: tsw.elements.JQueryEventHandler)
 		{
 			return this.on('click', handler);
 		}
-		onEvents(eventNames: string[], handler: tsw.elements.JQueryEventHandler): ElementGeneric
+		onEvents(eventNames: string[], handler: tsw.elements.JQueryEventHandler)
 		{
 			eventNames.forEach(e => this.on(e, handler));
 			return this;
 		}
-		on(eventName: string, handler: tsw.elements.JQueryEventHandler): ElementGeneric
+		on(eventName: string, handler: tsw.elements.JQueryEventHandler)
 		{
 			if (eventName && handler instanceof Function)
 			{
@@ -122,7 +120,7 @@ module tsw.elements
 			return this;
 		}
 
-		addRef(ref: Ref): ElementGeneric
+		addRef(ref: Ref)
 		{
 			if (ref != null)
 			{

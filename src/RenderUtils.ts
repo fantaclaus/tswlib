@@ -227,18 +227,17 @@
 		{
 			var attrsHtml = Object.keys(attrs)
 				.map(attrName => ({
-				attrName: attrName,
-				attrVal: this.getAttrVal(attrs, attrName)
-			}))
+					attrName: attrName,
+					attrVal: this.getAttrVal(attrs, attrName)
+				}))
 				.filter(a => a.attrVal != null)
 				.reduce((attrsHtml, a) =>
-			{
-				var attrHtml = a.attrName;
-				if (a.attrVal) attrHtml += '=' + this.quoteAttrVal(a.attrVal);
+				{
+					var attrHtml = a.attrName;
+					if (a.attrVal) attrHtml += '=' + this.quoteAttrVal(a.attrVal);
 
-				return utils.appendDelimited(attrsHtml, ' ', attrHtml);
-			},
-				'');
+					return utils.appendDelimited(attrsHtml, ' ', attrHtml);
+				}, '');
 
 			return attrsHtml;
 		}
@@ -285,9 +284,9 @@
 		protected static getRenderedLastAttrValue(attrVals: any[]): string
 		{
 			// it returns last value to support overwriting of attr values
-			// for example, bs.btnLink() returns <A href="#"> by default, and href could be re-assigned to another 
+			// for example, bs.btnLink() returns <A href="#"> by default, and href could be re-assigned to another
 			// value this way: bs.btnLink().href("some url")
-			
+
 			return attrVals && utils.join(attrVals.slice(-1), ', ', av => this.getRenderedAttrValue(av));
 		}
 		private static getElmAttrs(elm: tsw.elements.ElementGeneric): MapStringToArray
@@ -595,4 +594,3 @@
 		}
 	}
 }
- 

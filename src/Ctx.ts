@@ -32,7 +32,7 @@
 		}
 		private findSelfOrParent(predicate: (ctx: Ctx) => boolean): Ctx
 		{
-			var ctx = this;
+			var ctx: Ctx = this;
 
 			while (ctx != null)
 			{
