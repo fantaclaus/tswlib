@@ -1,4 +1,4 @@
-module tsw
+namespace tsw
 {
 	export function setContent(htmlElement: HTMLElement, content: any): void
 	{
@@ -13,7 +13,7 @@ module tsw
 	}
 }
 
-module tsw.global
+namespace tsw.global
 {
 	export function attachContext(propKey: any): void
 	{

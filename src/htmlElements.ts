@@ -1,4 +1,4 @@
-module tsw.elements
+namespace tsw.elements
 {
 	export class RawHtml
 	{
@@ -50,14 +50,23 @@ module tsw.elements
 	{
 		protected propDef: tsw.global.PropDef<any>;
 
+		/**
+		 * @internal
+		 */
 		z_getPropDef(): tsw.global.PropDef<any>
 		{
 			return this.propDef;
 		}
+		/**
+		 * @internal
+		 */
 		z_getValueAttrName(): string
 		{
 			return null;
 		}
+		/**
+		 * @internal
+		 */
 		z_getValuePropName(): string  // for jQuery.prop
 		{
 			return null;
@@ -76,6 +85,9 @@ module tsw.elements
 
 			return this;
 		}
+		/**
+		 * @internal
+		 */
 		z_getValuePropName(): string
 		{
 			return 'value';
@@ -88,6 +100,9 @@ module tsw.elements
 			super('text');
 		}
 
+		/**
+		 * @internal
+		 */
 		z_getValueAttrName(): string
 		{
 			return 'value';
@@ -102,10 +117,16 @@ module tsw.elements
 	}
 	export class ElementInputCheckboxBase extends ElementInput<boolean>
 	{
+		/**
+		 * @internal
+		 */
 		z_getValueAttrName(): string
 		{
 			return 'checked';
 		}
+		/**
+		 * @internal
+		 */
 		z_getValuePropName(): string
 		{
 			return 'checked';
@@ -137,6 +158,9 @@ module tsw.elements
 
 			return this;
 		}
+		/**
+		 * @internal
+		 */
 		z_getValuePropName(): string
 		{
 			return 'value';
@@ -165,6 +189,9 @@ module tsw.elements
 
 			return this;
 		}
+		/**
+		 * @internal
+		 */
 		z_getValuePropName(): string
 		{
 			return this.valuePropName;

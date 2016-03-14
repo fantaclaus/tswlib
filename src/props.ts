@@ -1,4 +1,4 @@
-module tsw.global
+namespace tsw.global
 {
 	export interface PropDefReadable<T>
 	{
@@ -10,7 +10,7 @@ module tsw.global
 	}
 }
 
-module tsw
+namespace tsw
 {
 	export class PropVal<T> implements tsw.global.PropDef<T>
 	{

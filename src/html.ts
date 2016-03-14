@@ -1,4 +1,4 @@
-module tsw.html
+namespace tsw.html
 {
 	export function nbsp() { return new elements.RawHtml("&nbsp;"); }
 	export function raw(s: string) { return new elements.RawHtml(s); }

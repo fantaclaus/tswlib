@@ -1,4 +1,7 @@
-﻿module tsw.internal
+﻿/**
+ * @internal
+ */
+namespace tsw.internal
 {
 	export class StyleRule
 	{
@@ -16,7 +19,7 @@
 	}
 }
 
-module tsw.elements
+namespace tsw.elements
 {
 	export type attrValSimpleType = string|number|boolean;
 	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | tsw.global.PropDefReadable<attrValSimpleType>;
@@ -130,27 +133,45 @@ module tsw.elements
 			return this;
 		}
 
+		/**
+		 * @internal
+		 */
 		z_addAttr(name: string, val: attrValType | tsw.internal.StyleRule): void
 		{
 			this._attrs = this._attrs || [];
 			this._attrs.push({ name: name.toLowerCase(), value: val });
 		}
+		/**
+		 * @internal
+		 */
 		z_getTagName(): string
 		{
 			return this.tagName;
 		}
+		/**
+		 * @internal
+		 */
 		z_getChildren(): any[]
 		{
 			return this._children;
 		}
+		/**
+		 * @internal
+		 */
 		z_getAttrs(): tsw.internal.NameValue[]
 		{
 			return this._attrs;
 		}
+		/**
+		 * @internal
+		 */
 		z_getEventHandlers(): tsw.internal.JQueryEventHandlerMap
 		{
 			return this.eventHandlers;
 		}
+		/**
+		 * @internal
+		 */
 		z_getRefs(): Ref[]
 		{
 			return this._refs;

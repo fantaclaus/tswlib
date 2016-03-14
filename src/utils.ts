@@ -1,4 +1,7 @@
-﻿module tsw.internal
+﻿/**
+ * @internal
+ */
+namespace tsw.internal
 {
 	export class utils
 	{
