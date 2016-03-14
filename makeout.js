@@ -19,23 +19,25 @@ function start() {
     makeDir(prms.outFolder);
     var textLogo = fs.readFileSync(prms.logoFileName).toString();
     textLogo = textLogo.replace(/{year}/g, new Date().getFullYear().toString());
-    copyFile(prms.srcName + '.d.ts', textLogo);
-    copyFile(prms.srcName + '.js', textLogo);
-    copyFile(prms.srcName + '.js.map');
+    copyFile(prms.srcName + '.d.ts', { header: textLogo + '\n' });
+    copyFile(prms.srcName + '.js', { header: textLogo + '\n' });
 }
-function copyFile(fileName, textLogo, processLines) {
-    if (textLogo === void 0) { textLogo = ''; }
+function copyFile(fileName, opts) {
     var fnSrc = pathCombine(prms.tmpFolder, fileName);
     var fnDst = pathCombine(prms.outFolder, fileName);
     if (fs.existsSync(fnSrc)) {
         console.log(fnSrc + " -> " + fnDst);
         var text = fs.readFileSync(fnSrc).toString();
-        if (processLines) {
+        if (opts.processLines) {
             var lines = text.split("\n");
-            var lines2 = processLines(lines);
+            var lines2 = opts.processLines(lines);
             text = lines2.join('\n');
         }
-        var data2 = textLogo + text;
+        var data2 = text;
+        if (opts.header)
+            data2 = opts.header + data2;
+        if (opts.footer)
+            data2 = data2 + opts.footer;
         fs.writeFileSync(fnDst, data2);
     }
     else {

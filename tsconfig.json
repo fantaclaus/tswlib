@@ -5,9 +5,9 @@
 		"noImplicitAny": true,
 		"removeComments": true,
 		"out": "tmp/tswlib.js",
-		"sourceMap": true,
+		//"sourceMap": true,
 		//"inlineSourceMap": true,
-		"inlineSources": true,
+		//"inlineSources": true,
 		"target": "es5"
 	},
 	"exclude": [
