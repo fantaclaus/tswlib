@@ -1,21 +1,32 @@
+"use strict";
 var fs = require('fs');
 var args = process.argv.slice(2);
-if (args.length < 3)
+if (args.length < 4)
     throw new Error('arguments are not supplied');
-var tmpFolder = args[0], outFolder = args[1], logoFileName = args[2], srcName = args[3];
-start();
+var prms = {
+    tmpFolder: args[0],
+    outFolder: args[1],
+    logoFileName: args[2],
+    srcName: args[3],
+};
+try {
+    start();
+}
+catch (e) {
+    console.error(e.message);
+}
 function start() {
-    makeDir(outFolder);
-    var textLogo = fs.readFileSync(logoFileName).toString();
+    makeDir(prms.outFolder);
+    var textLogo = fs.readFileSync(prms.logoFileName).toString();
     textLogo = textLogo.replace(/{year}/g, new Date().getFullYear().toString());
-    copyFile(srcName + '.d.ts', textLogo, processDefFileLine);
-    copyFile(srcName + '.js', textLogo, processJSFileLine);
-    copyFile(srcName + '.js.map');
+    copyFile(prms.srcName + '.d.ts', textLogo);
+    copyFile(prms.srcName + '.js', textLogo);
+    copyFile(prms.srcName + '.js.map');
 }
 function copyFile(fileName, textLogo, processLines) {
     if (textLogo === void 0) { textLogo = ''; }
-    var fnSrc = pathCombine(tmpFolder, fileName);
-    var fnDst = pathCombine(outFolder, fileName);
+    var fnSrc = pathCombine(prms.tmpFolder, fileName);
+    var fnDst = pathCombine(prms.outFolder, fileName);
     if (fs.existsSync(fnSrc)) {
         console.log(fnSrc + " -> " + fnDst);
         var text = fs.readFileSync(fnSrc).toString();
@@ -34,8 +45,8 @@ function copyFile(fileName, textLogo, processLines) {
 function processDefFileLine(lines) {
     var lines2 = [];
     var moduleName = null;
-    for (var _i = 0; _i < lines.length; _i++) {
-        var line = lines[_i];
+    for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+        var line = lines_1[_i];
         var m = line.match(/^\s*declare module\s+([\w.]+)/);
         if (m != null) {
             moduleName = m[1];
@@ -53,8 +64,8 @@ function processDefFileLine(lines) {
 }
 function processJSFileLine(lines) {
     var lines2 = [];
-    for (var _i = 0; _i < lines.length; _i++) {
-        var line = lines[_i];
+    for (var _i = 0, lines_2 = lines; _i < lines_2.length; _i++) {
+        var line = lines_2[_i];
         var lineTrimmed = line.trim();
         var isExcluded = !startsWith(lineTrimmed, '//#') && startsWith(lineTrimmed, '//');
         if (!isExcluded) {

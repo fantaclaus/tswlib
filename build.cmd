@@ -1,7 +1,5 @@
 @echo off
 
-rem call tsc.cmd @defs.txt @files.txt --out tmp\tswlib.js --removeComments --noLib --noImplicitAny --declaration
-
 call tsc.cmd
 if errorlevel 1 goto err
 
