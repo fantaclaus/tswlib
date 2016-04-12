@@ -1,13 +1,10 @@
-{
+﻿{
 	"compilerOptions": {
 		"stripInternal": true,
 		"declaration": true,
 		"noImplicitAny": true,
 		"removeComments": true,
 		"out": "tmp/tswlib.js",
-		//"sourceMap": true,
-		//"inlineSourceMap": true,
-		//"inlineSources": true,
 		"target": "es5"
 	},
 	"exclude": [

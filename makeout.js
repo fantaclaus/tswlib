@@ -3,12 +3,7 @@ var fs = require('fs');
 var args = process.argv.slice(2);
 if (args.length < 4)
     throw new Error('arguments are not supplied');
-var prms = {
-    tmpFolder: args[0],
-    outFolder: args[1],
-    logoFileName: args[2],
-    srcName: args[3],
-};
+var tmpFolder = args[0], outFolder = args[1], logoFileName = args[2], srcName = args[3];
 try {
     start();
 }
@@ -16,28 +11,25 @@ catch (e) {
     console.error(e.message);
 }
 function start() {
-    makeDir(prms.outFolder);
-    var textLogo = fs.readFileSync(prms.logoFileName).toString();
+    makeDir(outFolder);
+    var textLogo = fs.readFileSync(logoFileName).toString();
     textLogo = textLogo.replace(/{year}/g, new Date().getFullYear().toString());
-    copyFile(prms.srcName + '.d.ts', { header: textLogo + '\n' });
-    copyFile(prms.srcName + '.js', { header: textLogo + '\n' });
+    copyFile(srcName + '.d.ts', textLogo);
+    copyFile(srcName + '.js', textLogo);
 }
-function copyFile(fileName, opts) {
-    var fnSrc = pathCombine(prms.tmpFolder, fileName);
-    var fnDst = pathCombine(prms.outFolder, fileName);
+function copyFile(fileName, textLogo, processLines) {
+    if (textLogo === void 0) { textLogo = ''; }
+    var fnSrc = pathCombine(tmpFolder, fileName);
+    var fnDst = pathCombine(outFolder, fileName);
     if (fs.existsSync(fnSrc)) {
         console.log(fnSrc + " -> " + fnDst);
         var text = fs.readFileSync(fnSrc).toString();
-        if (opts.processLines) {
+        if (processLines) {
             var lines = text.split("\n");
-            var lines2 = opts.processLines(lines);
+            var lines2 = processLines(lines);
             text = lines2.join('\n');
         }
-        var data2 = text;
-        if (opts.header)
-            data2 = opts.header + data2;
-        if (opts.footer)
-            data2 = data2 + opts.footer;
+        var data2 = textLogo + text;
         fs.writeFileSync(fnDst, data2);
     }
     else {
