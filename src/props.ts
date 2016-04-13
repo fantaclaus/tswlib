@@ -1,153 +1,160 @@
-namespace tsw.global
+import { CtxUtils } from './CtxUtils';
+import { utils } from './utils';
+import * as JQ from "jquery";
+
+function attachContext(propKey: any): void
 {
-	export interface PropDefReadable<T>
+	CtxUtils.attach(propKey);
+}
+function updateContext(propKey: any): void
+{
+	CtxUtils.update(propKey);
+}
+
+export interface PropDefReadable<T>
+{
+	get: () => T;
+}
+export interface PropDef<T> extends PropDefReadable<T>
+{
+	set: (v: T) => void;
+}
+
+export class PropVal<T> implements PropDef<T>
+{
+	val: T;
+	private insideSet = false; // to prevent infinite loops
+	name: string;
+
+	constructor(initialValue?: T)
 	{
-		get: () => T;
+		this.val = initialValue;
 	}
-	export interface PropDef<T> extends PropDefReadable<T>
+	get(): T
 	{
-		set: (v: T) => void;
+		attachContext(this);
+
+		return this.val;
+	}
+	set(v: T): void
+	{
+		if (this.insideSet) return;
+		this.insideSet = true;
+
+		try
+		{
+			//console.group('propDef %s %o: set value %o', this.name, this, v);
+
+			if (this.val !== v)
+			{
+				this.val = v;
+
+				updateContext(this);
+
+				if (this.onChanged) this.onChanged();
+			}
+
+			//console.groupEnd();
+		}
+		finally
+		{
+			this.insideSet = false;
+		}
+	}
+
+	//getWithoutAttach(): T
+	//{
+	//	return this.val;
+	//}
+	//setWithoutUpdate(newVal: T): void
+	//{
+	//	this.val = newVal;
+	//}
+
+	onChanged: () => void;
+
+	isTrue(contentTrue: any, contentFalse?: any): () => any
+	{
+		return () => this.get() ? contentTrue : contentFalse;
+	}
+	isFalse(content: any): () => any
+	{
+		return () => !this.get() && content;
+	}
+	isEqual(val: T, content: any): () => any
+	{
+		return () => this.get() == val && content;
+	}
+
+	convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): PropDef<U>
+	{
+		var p: PropDef<U> = {
+			get: () => converter.to(this.get()),
+			set: v => this.set(converter.from(v)),
+		};
+
+		return p;
+	}
+	convert2<U>(to: (v: T) => U, from: (v: U) => T): PropDef<U>
+	{
+		var p: PropDef<U> = {
+			get: () => to(this.get()),
+			set: v => this.set(from(v)),
+		};
+
+		return p;
 	}
 }
 
-namespace tsw
+export class PropValArray<T> extends PropVal<T[]>
 {
-	export class PropVal<T> implements tsw.global.PropDef<T>
+	constructor(items?: T[])
 	{
-		val: T;
-		private insideSet = false; // to prevent infinite loops
-		name: string;
+		super(items);
+	}
+	addItem(item: T, index?: number)
+	{
+		let a = this.get();
 
-		constructor(initialValue?: T)
+		if (utils.isUndefined(index))
 		{
-			this.val = initialValue;
+			a.push(item);
 		}
-		get(): T
+		else
 		{
-			tsw.global.attachContext(this);
-
-			return this.val;
-		}
-		set(v: T): void
-		{
-			if (this.insideSet) return;
-			this.insideSet = true;
-
-			try
-			{
-				//console.group('propDef %s %o: set value %o', this.name, this, v);
-
-				if (this.val !== v)
-				{
-					this.val = v;
-
-					tsw.global.updateContext(this);
-
-					if (this.onChanged) this.onChanged();
-				}
-
-				//console.groupEnd();
-			}
-			finally
-			{
-				this.insideSet = false;
-			}
+			a.splice(index, 0, item);
 		}
 
-		//getWithoutAttach(): T
-		//{
-		//	return this.val;
-		//}
-		//setWithoutUpdate(newVal: T): void
-		//{
-		//	this.val = newVal;
-		//}
+		updateContext(this);
+	}
+}
 
-		onChanged: () => void;
+export class Ref implements PropDef<string>
+{
+	private refId: string;
 
-		isTrue(contentTrue: any, contentFalse?: any): () => any
-		{
-			return () => this.get() ? contentTrue : contentFalse;
-		}
-		isFalse(content: any): () => any
-		{
-			return () => !this.get() && content;
-		}
-		isEqual(val: T, content: any): () => any
-		{
-			return () => this.get() == val && content;
-		}
+	get(): string
+	{
+		attachContext(this);
 
-		convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): tsw.global.PropDef<U>
+		return this.refId;
+	}
+	set(v: string): void
+	{
+		if (this.refId !== v)
 		{
-			var p: tsw.global.PropDef<U> = {
-				get: () => converter.to(this.get()),
-				set: v => this.set(converter.from(v)),
-			};
+			//console.group('ref %s %o: set value %o', this.name, this, v);
 
-			return p;
-		}
-		convert2<U>(to: (v: T) => U, from: (v: U) => T): tsw.global.PropDef<U>
-		{
-			var p: tsw.global.PropDef<U> = {
-				get: () => to(this.get()),
-				set: v => this.set(from(v)),
-			};
+			this.refId = v;
 
-			return p;
+			updateContext(this);
+
+			//console.groupEnd();
 		}
 	}
 
-	export class PropValArray<T> extends PropVal<T[]>
+	asJQuery(): JQuery
 	{
-		constructor(items?: T[])
-		{
-			super(items);
-		}
-		addItem(item: T, index?: number)
-		{
-			let a = this.get();
-
-			if (tsw.internal.utils.isUndefined(index))
-			{
-				a.push(item);
-			}
-			else
-			{
-				a.splice(index, 0, item);
-			}
-
-			tsw.global.updateContext(this);
-		}
-	}
-
-	export class Ref implements tsw.global.PropDef<string>
-	{
-		private refId: string;
-
-		get(): string
-		{
-			tsw.global.attachContext(this);
-
-			return this.refId;
-		}
-		set(v: string): void
-		{
-			if (this.refId !== v)
-			{
-				//console.group('ref %s %o: set value %o', this.name, this, v);
-
-				this.refId = v;
-
-				tsw.global.updateContext(this);
-
-				//console.groupEnd();
-			}
-		}
-
-		asJQuery(): JQuery
-		{
-			return jQuery('#' + this.refId);
-		}
+		return JQ('#' + this.refId);
 	}
 }

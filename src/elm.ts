@@ -1,180 +1,170 @@
-﻿/**
- * @internal
- */
-namespace tsw.internal
+﻿import { PropDefReadable,Ref } from './props';
+
+export class StyleRule
 {
-	export class StyleRule
-	{
-		propName: string;
-		propValue: tsw.elements.attrValType;
-	}
-	export interface NameValue
-	{
-		name: string;
-		value: tsw.elements.attrValType | StyleRule;
-	}
-	export interface JQueryEventHandlerMap
-	{
-		[eventName: string]: tsw.elements.JQueryEventHandler;
-	}
+	propName: string;
+	propValue: attrValType;
+}
+interface NameValue
+{
+	name: string;
+	value: attrValType | StyleRule;
+}
+export interface JQueryEventHandlerMap
+{
+	[eventName: string]: JQueryEventHandler;
 }
 
-namespace tsw.elements
-{
-	export type attrValSimpleType = string|number|boolean;
-	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | tsw.global.PropDefReadable<attrValSimpleType>;
-	export type stringValType = string | (() => string) | tsw.global.PropDefReadable<string>;
-	export type boolValType = boolean | (() => boolean) | tsw.global.PropDefReadable<boolean>;
+type attrValSimpleType = string|number|boolean;
+export type attrValType = attrValSimpleType | (() => attrValSimpleType) | PropDefReadable<attrValSimpleType>;
+export type stringValType = string | (() => string) | PropDefReadable<string>;
+export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
 
-	export interface JQueryEventHandler
+interface JQueryEventHandler
+{
+	(e: JQueryEventObject, target: HTMLElement): void;
+}
+
+export class ElementGeneric
+{
+	private tagName: string = null;
+	private _attrs: NameValue[] = null;
+	private _children: NameValue[] = null;
+	private eventHandlers: JQueryEventHandlerMap = null;
+	private _refs: Ref[] = null;
+
+	constructor(tagName: string)
 	{
-		(e: JQueryEventObject, target: HTMLElement): void;
+		this.tagName = tagName.toLowerCase();
 	}
 
-	export class ElementGeneric
+	attr(name: string, val: attrValType = true)
 	{
-		private tagName: string = null;
-		private _attrs: tsw.internal.NameValue[] = null;
-		private _children: tsw.internal.NameValue[] = null;
-		private eventHandlers: tsw.internal.JQueryEventHandlerMap = null;
-		private _refs: Ref[] = null;
-
-		constructor(tagName: string)
+		if (name != null)
 		{
-			this.tagName = tagName.toLowerCase();
+			this.addAttr(name, val);
 		}
 
-		attr(name: string, val: attrValType = true)
+		return this;
+	}
+	cls(val: stringValType)
+	{
+		this.attr('class', val);
+		return this;
+	}
+	style(val: attrValType)
+	{
+		this.attr('style', val);
+
+		return this;
+	}
+	styleRule(name: string, val: attrValType)
+	{
+		if (name != null && val != null)
 		{
-			if (name != null)
+			var v = new StyleRule();
+			v.propName = name;
+			v.propValue = val;
+
+			this.addAttr('style', v);
+		}
+
+		return this;
+	}
+	data(name: string, val: stringValType)
+	{
+		this.attr('data-' + name, val);
+
+		return this;
+	}
+	disabled(val: boolValType)
+	{
+		this.attr('disabled', val);
+		return this;
+	}
+	children(items: any)
+	{
+		if (items != null)
+		{
+			this._children = this._children || [];
+			this._children.push(items);
+		}
+		return this;
+	}
+	onclick(handler: JQueryEventHandler)
+	{
+		return this.on('click', handler);
+	}
+	onEvents(eventNames: string[], handler: JQueryEventHandler)
+	{
+		eventNames.forEach(e => this.on(e, handler));
+		return this;
+	}
+	on(eventName: string, handler: JQueryEventHandler)
+	{
+		if (eventName && handler instanceof Function)
+		{
+			this.eventHandlers = this.eventHandlers || {};
+
+			if (this.eventHandlers[eventName])
 			{
-				this.z_addAttr(name, val);
+				throw new Error(`Event handler "${eventName}" is already installed.`);
 			}
 
-			return this;
-		}
-		cls(val: stringValType)
-		{
-			this.attr('class', val);
-			return this;
-		}
-		style(val: attrValType)
-		{
-			this.attr('style', val);
-
-			return this;
-		}
-		styleRule(name: string, val: attrValType)
-		{
-			if (name != null && val != null)
-			{
-				var v = new tsw.internal.StyleRule();
-				v.propName = name;
-				v.propValue = val;
-
-				this.z_addAttr('style', v);
-			}
-
-			return this;
-		}
-		data(name: string, val: stringValType)
-		{
-			this.attr('data-' + name, val);
-
-			return this;
-		}
-		disabled(val: boolValType)
-		{
-			this.attr('disabled', val);
-			return this;
-		}
-		children(items: any)
-		{
-			if (items != null)
-			{
-				this._children = this._children || [];
-				this._children.push(items);
-			}
-			return this;
-		}
-		onclick(handler: tsw.elements.JQueryEventHandler)
-		{
-			return this.on('click', handler);
-		}
-		onEvents(eventNames: string[], handler: tsw.elements.JQueryEventHandler)
-		{
-			eventNames.forEach(e => this.on(e, handler));
-			return this;
-		}
-		on(eventName: string, handler: tsw.elements.JQueryEventHandler)
-		{
-			if (eventName && handler instanceof Function)
-			{
-				this.eventHandlers = this.eventHandlers || {};
-
-				if (this.eventHandlers[eventName])
-				{
-					throw new Error(`Event handler "${eventName}" is already installed.`);
-				}
-
-				this.eventHandlers[eventName] = handler;
-			}
-
-			return this;
+			this.eventHandlers[eventName] = handler;
 		}
 
-		addRef(ref: Ref)
-		{
-			if (ref != null)
-			{
-				this._refs = this._refs || [];
-				this._refs.push(ref);
-			}
-			return this;
-		}
+		return this;
+	}
 
-		/**
-		 * @internal
-		 */
-		z_addAttr(name: string, val: attrValType | tsw.internal.StyleRule): void
+	addRef(ref: Ref)
+	{
+		if (ref != null)
 		{
-			this._attrs = this._attrs || [];
-			this._attrs.push({ name: name.toLowerCase(), value: val });
+			this._refs = this._refs || [];
+			this._refs.push(ref);
 		}
-		/**
-		 * @internal
-		 */
-		z_getTagName(): string
-		{
-			return this.tagName;
-		}
-		/**
-		 * @internal
-		 */
-		z_getChildren(): any[]
-		{
-			return this._children;
-		}
-		/**
-		 * @internal
-		 */
-		z_getAttrs(): tsw.internal.NameValue[]
-		{
-			return this._attrs;
-		}
-		/**
-		 * @internal
-		 */
-		z_getEventHandlers(): tsw.internal.JQueryEventHandlerMap
-		{
-			return this.eventHandlers;
-		}
-		/**
-		 * @internal
-		 */
-		z_getRefs(): Ref[]
-		{
-			return this._refs;
-		}
+		return this;
+	}
+
+	private addAttr(name: string, val: attrValType | StyleRule): void
+	{
+		this._attrs = this._attrs || [];
+		this._attrs.push({ name: name.toLowerCase(), value: val });
+	}
+	/**
+	 * @internal
+	 */
+	z_getTagName(): string
+	{
+		return this.tagName;
+	}
+	/**
+	 * @internal
+	 */
+	z_getChildren(): any[]
+	{
+		return this._children;
+	}
+	/**
+	 * @internal
+	 */
+	z_getAttrs(): NameValue[]
+	{
+		return this._attrs;
+	}
+	/**
+	 * @internal
+	 */
+	z_getEventHandlers(): JQueryEventHandlerMap
+	{
+		return this.eventHandlers;
+	}
+	/**
+	 * @internal
+	 */
+	z_getRefs(): Ref[]
+	{
+		return this._refs;
 	}
 }
