@@ -1,5 +1,5 @@
-import { ElementGeneric, stringValType,boolValType } from './elm';
-import { PropDef,Ref,PropVal } from './props';
+import { ElementGeneric, stringValType, boolValType } from './elm';
+import { PropDef, Ref, PropVal } from './props';
 import * as elements from './htmlElements';
 import { arrayUtils } from './utils';
 
@@ -75,7 +75,7 @@ export class ElementWithValue extends ElementGeneric
 		return null;
 	}
 }
-class ElementInput<T> extends ElementWithValue
+export class ElementInput<T> extends ElementWithValue
 {
 	constructor(type: string)
 	{
@@ -118,7 +118,7 @@ export class ElementInputText extends ElementInput<string>
 		return this;
 	}
 }
-class ElementInputCheckboxBase extends ElementInput<boolean>
+export class ElementInputCheckboxBase extends ElementInput<boolean>
 {
 	/**
 	 * @internal
@@ -249,10 +249,10 @@ export class RadioGroup<T>
 	item(v: T): elements.ElementInputRadio
 	{
 		var p =
-		{
-			get: () => this.propVal.get() == v,
-			set: () => this.propVal.set(v),
-		};
+			{
+				get: () => this.propVal.get() == v,
+				set: () => this.propVal.set(v),
+			};
 
 		var elm = new elements.ElementInputRadio();
 		elm.value(p).attr('name', this.groupName).addRef(this.getRefFor(v));

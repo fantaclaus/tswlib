@@ -1,4 +1,4 @@
-﻿import { PropDefReadable,Ref } from './props';
+﻿import { PropDefReadable, Ref } from './props';
 
 export class StyleRule
 {
@@ -15,12 +15,12 @@ export interface JQueryEventHandlerMap
 	[eventName: string]: JQueryEventHandler;
 }
 
-type attrValSimpleType = string|number|boolean;
+export type attrValSimpleType = string | number | boolean;
 export type attrValType = attrValSimpleType | (() => attrValSimpleType) | PropDefReadable<attrValSimpleType>;
 export type stringValType = string | (() => string) | PropDefReadable<string>;
 export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
 
-interface JQueryEventHandler
+export interface JQueryEventHandler
 {
 	(e: JQueryEventObject, target: HTMLElement): void;
 }

@@ -1,4 +1,4 @@
-﻿import { CtxUpdatable,CtxScope,Ctx } from './Ctx';
+﻿import { CtxUpdatable, CtxScope, Ctx } from './Ctx';
 import { arrayUtils } from './utils';
 
 interface PropKeyContext

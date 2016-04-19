@@ -1,14 +1,11 @@
 {
 	"compilerOptions": {
+		"target": "es6",
+		"module": "system",
+		"outDir": "tmp",
 		"stripInternal": true,
-		"declaration": true,
 		"noImplicitAny": true,
-		"removeComments": true,
-		"out": "tmp/tswlib.js",
-		//"sourceMap": true,
-		//"inlineSourceMap": true,
-		//"inlineSources": true,
-		"target": "es5"
+		"removeComments": true
 	},
 	"exclude": [
 		"out",

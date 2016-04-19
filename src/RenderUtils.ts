@@ -1,7 +1,7 @@
-﻿import { CtxUpdatable,CtxScope,CtxUpdatableChild,CtxElement,CtxUpdatableAttr,CtxUpdatableValue } from './Ctx';
+﻿import { CtxUpdatable, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableAttr, CtxUpdatableValue } from './Ctx';
 import * as elements from './elm';
 import { utils } from './utils';
-import { RawHtml,ElementWithValue } from './htmlElements';
+import { RawHtml, ElementWithValue } from './htmlElements';
 import { JQueryEventHandlerMap } from './elm';
 import { PropDefReadable } from './props';
 
@@ -124,11 +124,11 @@ export class RenderUtils
 			}
 
 			valData =
-			{
-				value: valData2.value,
-				ctx: valData2.ctx,
-				valPropName: valPropName,
-			};
+				{
+					value: valData2.value,
+					ctx: valData2.ctx,
+					valPropName: valPropName,
+				};
 		}
 
 		var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
