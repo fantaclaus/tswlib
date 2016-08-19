@@ -4,6 +4,7 @@ import { utils } from './utils';
 import { RawHtml, ElementWithValue } from './htmlElements';
 import { JQueryEventHandlerMap } from './elm';
 import { PropDefReadable } from './props';
+import * as JQ from "jquery";
 
 interface MapStringToArray
 {
@@ -158,7 +159,7 @@ export class RenderUtils
 
 			var handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
 			{
-				var v = $(htmlElement).prop(valData.valPropName);
+				var v = JQ(htmlElement).prop(valData.valPropName);
 
 				// pass ctx to CtxUtils.update for optimization: to skip it during update.
 				CtxScope.use(valData.ctx, () =>
