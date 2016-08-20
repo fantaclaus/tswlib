@@ -1,9 +1,9 @@
 ﻿import { JQueryEventHandlerMap } from './elm';
-import { CtxUtils } from './CtxUtils';
+import * as CtxUtils from './CtxUtils';
 import { Ref } from './props';
 import { utils, objUtils } from './utils';
 import { RenderUtils } from './RenderUtils';
-import * as JQ from "jquery";
+import JQ from "jquery";
 
 export function setContent(htmlElement: HTMLElement, content: any): void
 {

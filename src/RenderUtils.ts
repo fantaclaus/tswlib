@@ -4,7 +4,7 @@ import { utils } from './utils';
 import { RawHtml, ElementWithValue } from './htmlElements';
 import { JQueryEventHandlerMap } from './elm';
 import { PropDefReadable } from './props';
-import * as JQ from "jquery";
+import JQ from "jquery";
 
 interface MapStringToArray
 {

@@ -1,15 +1,6 @@
-import { CtxUtils } from './CtxUtils';
+import * as CtxUtils from './CtxUtils';
 import { utils } from './utils';
-import * as JQ from "jquery";
-
-function attachContext(propKey: any): void
-{
-	CtxUtils.attach(propKey);
-}
-function updateContext(propKey: any): void
-{
-	CtxUtils.update(propKey);
-}
+import JQ from "jquery";
 
 export interface PropDefReadable<T>
 {
@@ -32,7 +23,7 @@ export class PropVal<T> implements PropDef<T>
 	}
 	get(): T
 	{
-		attachContext(this);
+		CtxUtils.attach(this);
 
 		return this.val;
 	}
@@ -49,7 +40,7 @@ export class PropVal<T> implements PropDef<T>
 			{
 				this.val = v;
 
-				updateContext(this);
+				CtxUtils.update(this);
 
 				if (this.onChanged) this.onChanged();
 			}
@@ -125,7 +116,7 @@ export class PropValArray<T> extends PropVal<T[]>
 			a.splice(index, 0, item);
 		}
 
-		updateContext(this);
+		CtxUtils.update(this);
 	}
 }
 
@@ -135,7 +126,7 @@ export class Ref implements PropDef<string>
 
 	get(): string
 	{
-		attachContext(this);
+		CtxUtils.attach(this);
 
 		return this.refId;
 	}
@@ -147,7 +138,7 @@ export class Ref implements PropDef<string>
 
 			this.refId = v;
 
-			updateContext(this);
+			CtxUtils.update(this);
 
 			//console.groupEnd();
 		}
