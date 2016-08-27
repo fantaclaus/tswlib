@@ -13,9 +13,9 @@ namespace tsw.internal
 		name: string;
 		value: tsw.elements.attrValType | StyleRule;
 	}
-	export interface JQueryEventHandlerMap
+	export interface EventHandlerMap
 	{
-		[eventName: string]: tsw.elements.JQueryEventHandler;
+		[eventName: string]: tsw.elements.EventHandler;
 	}
 }
 
@@ -26,7 +26,7 @@ namespace tsw.elements
 	export type stringValType = string | (() => string) | tsw.global.PropDefReadable<string>;
 	export type boolValType = boolean | (() => boolean) | tsw.global.PropDefReadable<boolean>;
 
-	export interface JQueryEventHandler
+	export interface EventHandler
 	{
 		(e: JQueryEventObject, target: HTMLElement): void;
 	}
@@ -36,7 +36,7 @@ namespace tsw.elements
 		private tagName: string = null;
 		private _attrs: tsw.internal.NameValue[] = null;
 		private _children: tsw.internal.NameValue[] = null;
-		private eventHandlers: tsw.internal.JQueryEventHandlerMap = null;
+		private eventHandlers: tsw.internal.EventHandlerMap = null;
 		private _refs: Ref[] = null;
 
 		constructor(tagName: string)
@@ -97,16 +97,16 @@ namespace tsw.elements
 			}
 			return this;
 		}
-		onclick(handler: tsw.elements.JQueryEventHandler)
+		onclick(handler: tsw.elements.EventHandler)
 		{
 			return this.on('click', handler);
 		}
-		onEvents(eventNames: string[], handler: tsw.elements.JQueryEventHandler)
+		onEvents(eventNames: string[], handler: tsw.elements.EventHandler)
 		{
 			eventNames.forEach(e => this.on(e, handler));
 			return this;
 		}
-		on(eventName: string, handler: tsw.elements.JQueryEventHandler)
+		on(eventName: string, handler: tsw.elements.EventHandler)
 		{
 			if (eventName && handler instanceof Function)
 			{
@@ -165,7 +165,7 @@ namespace tsw.elements
 		/**
 		 * @internal
 		 */
-		z_getEventHandlers(): tsw.internal.JQueryEventHandlerMap
+		z_getEventHandlers(): tsw.internal.EventHandlerMap
 		{
 			return this.eventHandlers;
 		}

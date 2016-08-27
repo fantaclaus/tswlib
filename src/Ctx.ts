@@ -6,7 +6,7 @@ namespace tsw.internal
 	interface HtmlElementEvents
 	{
 		htmlElm: HTMLElement;
-		ehMap: JQueryEventHandlerMap;
+		ehMap: EventHandlerMap;
 	}
 
 	export class Ctx
@@ -220,7 +220,7 @@ namespace tsw.internal
 	{
 		private htmlElement: HTMLElement;
 		private attachedEventNames: { [eventName: string]: boolean };
-		private eventHandlers: { [elmId: string]: JQueryEventHandlerMap };
+		private eventHandlers: { [elmId: string]: EventHandlerMap };
 
 		getHtmlElement(): HTMLElement
 		{
@@ -257,7 +257,7 @@ namespace tsw.internal
 			this.attachedEventNames = null;
 			this.eventHandlers = null;
 		}
-		attachElmEventHandlers(elmId: string, eventHandlers: JQueryEventHandlerMap): void
+		attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap): void
 		{
 			//console.group('attached events for: %s: %o', elmId, eventHandlers);
 

@@ -149,7 +149,7 @@ namespace tsw.internal
 			{
 				eventHanders = eventHanders || {};
 
-				var savedHandlers: JQueryEventHandlerMap = {};
+				var savedHandlers: EventHandlerMap = {};
 				savedHandlers['change'] = eventHanders['change'];
 				savedHandlers['input'] = eventHanders['input'];
 
