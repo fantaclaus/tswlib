@@ -48,7 +48,7 @@ namespace tsw.elements
 		{
 			if (name != null)
 			{
-				this.z_addAttr(name, val);
+				this.addAttr(name, val);
 			}
 
 			return this;
@@ -72,7 +72,7 @@ namespace tsw.elements
 				v.propName = name;
 				v.propValue = val;
 
-				this.z_addAttr('style', v);
+				this.addAttr('style', v);
 			}
 
 			return this;
@@ -133,10 +133,7 @@ namespace tsw.elements
 			return this;
 		}
 
-		/**
-		 * @internal
-		 */
-		z_addAttr(name: string, val: attrValType | tsw.internal.StyleRule): void
+		private addAttr(name: string, val: attrValType | tsw.internal.StyleRule): void
 		{
 			this._attrs = this._attrs || [];
 			this._attrs.push({ name: name.toLowerCase(), value: val });
