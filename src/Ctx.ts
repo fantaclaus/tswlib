@@ -23,15 +23,15 @@ namespace tsw.internal
 		}
 		getParentHtmlElmOwnerCtx(): CtxHtmlElementOwner
 		{
-			return <CtxHtmlElementOwner> this.findSelfOrParent(ctx => ctx instanceof CtxHtmlElementOwner);
+			return <CtxHtmlElementOwner>this.findSelfOrParent(ctx => ctx instanceof CtxHtmlElementOwner);
 		}
 		getParentUpdatableCtx(): CtxUpdatable
 		{
-			return <CtxUpdatable> this.findSelfOrParent(ctx => ctx instanceof CtxUpdatable);
+			return <CtxUpdatable>this.findSelfOrParent(ctx => ctx instanceof CtxUpdatable);
 		}
 		getParentRootCtx(): CtxRoot
 		{
-			return <CtxRoot> this.findSelfOrParent(ctx => ctx instanceof CtxRoot);
+			return <CtxRoot>this.findSelfOrParent(ctx => ctx instanceof CtxRoot);
 		}
 		private findSelfOrParent(predicate: (ctx: Ctx) => boolean): Ctx
 		{
@@ -334,7 +334,7 @@ namespace tsw.internal
 		}
 		private handleEvent(e: JQueryEventObject)
 		{
-			var htmlElm = <HTMLElement> e.target;
+			var htmlElm = <HTMLElement>e.target;
 			var r = this.findEventHandlers(htmlElm);
 			if (r)
 			{
@@ -411,7 +411,7 @@ namespace tsw.internal
 		}
 		protected afterAttach(): void
 		{
-			var renderer = <tsw.Renderer> this.content;
+			var renderer = <tsw.Renderer>this.content;
 			if (renderer.afterAttach) renderer.afterAttach();
 
 			super.afterAttach();
@@ -420,7 +420,7 @@ namespace tsw.internal
 		{
 			super.beforeDetach();
 
-			var renderer = <tsw.Renderer> this.content;
+			var renderer = <tsw.Renderer>this.content;
 			if (renderer.beforeDetach) renderer.beforeDetach();
 		}
 
@@ -496,15 +496,15 @@ namespace tsw.internal
 			var jqElement = jQuery(htmlElement);
 			jqElement.prop(this.propName, val);
 		}
-//		toString(): string // for DEBUG
-//		{
-//			var ctxElm = this.getParentHtmlElmOwnerCtx();
-//			return `value: #${ctxElm.id}[${this.propName}]`;
-//		}
-//		getDbgArgs(): any[]
-//		{
-//			return ['%o prop:[%s]', this, this.propName];
-//		}
+		//		toString(): string // for DEBUG
+		//		{
+		//			var ctxElm = this.getParentHtmlElmOwnerCtx();
+		//			return `value: #${ctxElm.id}[${this.propName}]`;
+		//		}
+		//		getDbgArgs(): any[]
+		//		{
+		//			return ['%o prop:[%s]', this, this.propName];
+		//		}
 	}
 	export class CtxScope
 	{

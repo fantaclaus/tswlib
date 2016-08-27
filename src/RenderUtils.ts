@@ -121,8 +121,7 @@ namespace tsw.internal
 					attrs[valAttrName] = [valData2.value];
 				}
 
-				valData =
-				{
+				valData = {
 					value: valData2.value,
 					ctx: valData2.ctx,
 					valPropName: valPropName,

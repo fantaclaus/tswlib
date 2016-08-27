@@ -2,7 +2,7 @@ namespace tsw.html
 {
 	export function nbsp() { return new elements.RawHtml("&nbsp;"); }
 	export function raw(s: string) { return new elements.RawHtml(s); }
-	
+
 	export function el(tagName: string = '') { return new elements.ElementGeneric(tagName); }
 
 	export function a() { return new elements.ElementA(); }

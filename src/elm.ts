@@ -21,7 +21,7 @@ namespace tsw.internal
 
 namespace tsw.elements
 {
-	export type attrValSimpleType = string|number|boolean;
+	export type attrValSimpleType = string | number | boolean;
 	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | tsw.global.PropDefReadable<attrValSimpleType>;
 	export type stringValType = string | (() => string) | tsw.global.PropDefReadable<string>;
 	export type boolValType = boolean | (() => boolean) | tsw.global.PropDefReadable<boolean>;
