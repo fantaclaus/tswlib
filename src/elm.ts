@@ -97,16 +97,16 @@ namespace tsw.elements
 			}
 			return this;
 		}
-		onclick(handler: tsw.elements.EventHandler)
+		onclick(handler: EventHandler)
 		{
 			return this.on('click', handler);
 		}
-		onEvents(eventNames: string[], handler: tsw.elements.EventHandler)
+		onEvents(eventNames: string[], handler: EventHandler)
 		{
 			eventNames.forEach(e => this.on(e, handler));
 			return this;
 		}
-		on(eventName: string, handler: tsw.elements.EventHandler)
+		on(eventName: string, handler: EventHandler)
 		{
 			if (eventName && handler instanceof Function)
 			{

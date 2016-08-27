@@ -172,9 +172,9 @@ namespace tsw.internal
 	export class CtxElement extends CtxHtmlElementOwner
 	{
 		private tagName: string;
-		private refs: tsw.Ref[];
+		private refs: Ref[];
 
-		constructor(id: string, tagName: string, refs: tsw.Ref[])
+		constructor(id: string, tagName: string, refs: Ref[])
 		{
 			super();
 
@@ -411,7 +411,7 @@ namespace tsw.internal
 		}
 		protected afterAttach(): void
 		{
-			var renderer = <tsw.Renderer>this.content;
+			var renderer = <Renderer>this.content;
 			if (renderer.afterAttach) renderer.afterAttach();
 
 			super.afterAttach();
@@ -420,7 +420,7 @@ namespace tsw.internal
 		{
 			super.beforeDetach();
 
-			var renderer = <tsw.Renderer>this.content;
+			var renderer = <Renderer>this.content;
 			if (renderer.beforeDetach) renderer.beforeDetach();
 		}
 
