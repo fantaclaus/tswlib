@@ -92,6 +92,12 @@ namespace tsw
 				set: v => this.set(from(v)),
 			};
 		}
+		select<U>(to: (v: T) => U): tsw.global.PropDefReadable<U>
+		{
+			return {
+				get: () => to(this.get()),
+			};
+		}
 	}
 
 	export class PropValArray<T> extends PropVal<T[]>
