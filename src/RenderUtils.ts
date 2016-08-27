@@ -155,7 +155,7 @@ namespace tsw.internal
 
 				var handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
 				{
-					var v = $(htmlElement).prop(valData.valPropName);
+					var v = jQuery(htmlElement).prop(valData.valPropName);
 
 					// pass ctx to CtxUtils.update for optimization: to skip it during update.
 					CtxScope.use(valData.ctx, () =>
