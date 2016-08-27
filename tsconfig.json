@@ -4,7 +4,7 @@
 		"declaration": true,
 		"noImplicitAny": true,
 		"removeComments": true,
-		"out": "tmp/tswlib.js",
+		"outFile": "tmp/tswlib.js",
 		"target": "es5"
 	},
 	"exclude": [
