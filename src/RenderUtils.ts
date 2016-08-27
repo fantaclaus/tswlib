@@ -477,8 +477,8 @@ namespace tsw.internal
 
 		constructor(id: string)
 		{
-			this.begin = `BEGIN:${id}`;
-			this.end = `END:${id}`;
+			this.begin = `B:${id}`;
+			this.end = `E:${id}`;
 		}
 		getHtml(innerHtml: string)
 		{
