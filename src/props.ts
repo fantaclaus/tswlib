@@ -80,21 +80,17 @@ namespace tsw
 
 		convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): tsw.global.PropDef<U>
 		{
-			var p: tsw.global.PropDef<U> = {
+			return {
 				get: () => converter.to(this.get()),
 				set: v => this.set(converter.from(v)),
 			};
-
-			return p;
 		}
 		convert2<U>(to: (v: T) => U, from: (v: U) => T): tsw.global.PropDef<U>
 		{
-			var p: tsw.global.PropDef<U> = {
+			return {
 				get: () => to(this.get()),
 				set: v => this.set(from(v)),
 			};
-
-			return p;
 		}
 	}
 
