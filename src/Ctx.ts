@@ -1,5 +1,5 @@
 ﻿import { EventHandlerMap } from './elm';
-import * as CtxUtils from './CtxUtils';
+import { CtxUtils } from './CtxUtils';
 import { Ref } from './Ref';
 import { utils, objUtils } from './utils';
 import { RenderUtils } from './RenderUtils';

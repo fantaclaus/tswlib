@@ -1,4 +1,4 @@
-import * as CtxUtils from './CtxUtils';
+import { CtxUtils } from './CtxUtils';
 import { utils } from './utils';
 import { PropDef, PropDefReadable } from './PropDefs';
 

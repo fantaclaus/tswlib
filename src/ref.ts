@@ -1,4 +1,4 @@
-import * as CtxUtils from './CtxUtils';
+import { CtxUtils } from './CtxUtils';
 import { PropDef } from './propDefs';
 
 export class Ref implements PropDef<string>
