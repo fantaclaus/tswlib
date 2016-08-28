@@ -1,6 +1,6 @@
 import * as CtxUtils from './CtxUtils';
 import { utils } from './utils';
-import JQ from "jquery";
+import jQuery from "jquery";
 
 export interface PropDefReadable<T>
 {
@@ -79,21 +79,23 @@ export class PropVal<T> implements PropDef<T>
 
 	convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): PropDef<U>
 	{
-		var p: PropDef<U> = {
+		return {
 			get: () => converter.to(this.get()),
 			set: v => this.set(converter.from(v)),
 		};
-
-		return p;
 	}
 	convert2<U>(to: (v: T) => U, from: (v: U) => T): PropDef<U>
 	{
-		var p: PropDef<U> = {
+		return {
 			get: () => to(this.get()),
 			set: v => this.set(from(v)),
 		};
-
-		return p;
+	}
+	select<U>(to: (v: T) => U): PropDefReadable<U>
+	{
+		return {
+			get: () => to(this.get()),
+		};
 	}
 }
 
@@ -146,6 +148,6 @@ export class Ref implements PropDef<string>
 
 	asJQuery(): JQuery
 	{
-		return JQ('#' + this.refId);
+		return jQuery('#' + this.refId);
 	}
 }

@@ -1,9 +1,9 @@
-﻿import { JQueryEventHandlerMap } from './elm';
+﻿import { EventHandlerMap } from './elm';
 import * as CtxUtils from './CtxUtils';
 import { Ref } from './props';
 import { utils, objUtils } from './utils';
 import { RenderUtils } from './RenderUtils';
-import JQ from "jquery";
+import jQuery from "jquery";
 
 export function setContent(htmlElement: HTMLElement, content: any): void
 {
@@ -11,17 +11,17 @@ export function setContent(htmlElement: HTMLElement, content: any): void
 	ctxRoot.render(content, htmlElement);
 }
 
-interface HtmlElementEvents
-{
-	htmlElm: HTMLElement;
-	ehMap: JQueryEventHandlerMap;
-}
-
 export interface Renderer
 {
 	render: () => any;
 	afterAttach?: () => void;
 	beforeDetach?: () => void;
+}
+
+interface HtmlElementEvents
+{
+	htmlElm: HTMLElement;
+	ehMap: EventHandlerMap;
 }
 
 export class Ctx
@@ -235,7 +235,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 {
 	private htmlElement: HTMLElement;
 	private attachedEventNames: { [eventName: string]: boolean };
-	private eventHandlers: { [elmId: string]: JQueryEventHandlerMap };
+	private eventHandlers: { [elmId: string]: EventHandlerMap };
 
 	getHtmlElement(): HTMLElement
 	{
@@ -267,12 +267,12 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 	protected unregisterEventHandlers(): void
 	{
-		var jqElm = JQ(this.htmlElement);
+		var jqElm = jQuery(this.htmlElement);
 		jqElm.off();
 		this.attachedEventNames = null;
 		this.eventHandlers = null;
 	}
-	attachElmEventHandlers(elmId: string, eventHandlers: JQueryEventHandlerMap): void
+	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap): void
 	{
 		//console.group('attached events for: %s: %o', elmId, eventHandlers);
 
@@ -301,7 +301,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	private updateEventSubscriptions(): void
 	{
-		var jqElm = JQ(this.htmlElement);
+		var jqElm = jQuery(this.htmlElement);
 
 		var currentEventNames: { [eventName: string]: boolean } = {};
 		var currentEventNamesCount = 0;
@@ -358,7 +358,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			{
 				//console.log('on event: %o for: %o id: %s; %s', e.type, e.target, elmId, htmlElm.tagName);
 
-				if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a') //  && JQ(htmlElm).attr('href') == "#"
+				if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a') //  && jQuery(htmlElm).attr('href') == "#"
 				{
 					e.preventDefault();
 				}
@@ -462,7 +462,7 @@ export class CtxUpdatableAttr extends CtxUpdatable
 
 		//console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
 
-		var jqElement = JQ(htmlElement);
+		var jqElement = jQuery(htmlElement);
 
 		// attributes checked and value can be changed only by $.prop()
 
@@ -508,7 +508,7 @@ export class CtxUpdatableValue extends CtxUpdatable
 		var val = CtxScope.use(this, () => this.renderFn());
 		//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
 
-		var jqElement = JQ(htmlElement);
+		var jqElement = jQuery(htmlElement);
 		jqElement.prop(this.propName, val);
 	}
 	//		toString(): string // for DEBUG

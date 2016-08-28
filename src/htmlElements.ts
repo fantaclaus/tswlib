@@ -70,7 +70,7 @@ export class ElementWithValue extends ElementGeneric
 	/**
 	 * @internal
 	 */
-	z_getValuePropName(): string  // for JQ.prop
+	z_getValuePropName(): string  // for jQuery.prop
 	{
 		return null;
 	}

@@ -10,9 +10,9 @@ interface NameValue
 	name: string;
 	value: attrValType | StyleRule;
 }
-export interface JQueryEventHandlerMap
+export interface EventHandlerMap
 {
-	[eventName: string]: JQueryEventHandler;
+	[eventName: string]: EventHandler;
 }
 
 export type attrValSimpleType = string | number | boolean;
@@ -20,7 +20,7 @@ export type attrValType = attrValSimpleType | (() => attrValSimpleType) | PropDe
 export type stringValType = string | (() => string) | PropDefReadable<string>;
 export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
 
-export interface JQueryEventHandler
+export interface EventHandler
 {
 	(e: JQueryEventObject, target: HTMLElement): void;
 }
@@ -30,7 +30,7 @@ export class ElementGeneric
 	private tagName: string = null;
 	private _attrs: NameValue[] = null;
 	private _children: NameValue[] = null;
-	private eventHandlers: JQueryEventHandlerMap = null;
+	private eventHandlers: EventHandlerMap = null;
 	private _refs: Ref[] = null;
 
 	constructor(tagName: string)
@@ -91,16 +91,16 @@ export class ElementGeneric
 		}
 		return this;
 	}
-	onclick(handler: JQueryEventHandler)
+	onclick(handler: EventHandler)
 	{
 		return this.on('click', handler);
 	}
-	onEvents(eventNames: string[], handler: JQueryEventHandler)
+	onEvents(eventNames: string[], handler: EventHandler)
 	{
 		eventNames.forEach(e => this.on(e, handler));
 		return this;
 	}
-	on(eventName: string, handler: JQueryEventHandler)
+	on(eventName: string, handler: EventHandler)
 	{
 		if (eventName && handler instanceof Function)
 		{
@@ -156,7 +156,7 @@ export class ElementGeneric
 	/**
 	 * @internal
 	 */
-	z_getEventHandlers(): JQueryEventHandlerMap
+	z_getEventHandlers(): EventHandlerMap
 	{
 		return this.eventHandlers;
 	}

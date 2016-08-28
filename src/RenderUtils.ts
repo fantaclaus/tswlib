@@ -2,9 +2,9 @@
 import * as elements from './elm';
 import { utils } from './utils';
 import { RawHtml, ElementWithValue } from './htmlElements';
-import { JQueryEventHandlerMap } from './elm';
+import { EventHandlerMap } from './elm';
 import { PropDefReadable } from './props';
-import JQ from "jquery";
+import jQuery from "jquery";
 
 interface MapStringToArray
 {
@@ -124,12 +124,11 @@ export class RenderUtils
 				attrs[valAttrName] = [valData2.value];
 			}
 
-			valData =
-				{
-					value: valData2.value,
-					ctx: valData2.ctx,
-					valPropName: valPropName,
-				};
+			valData = {
+				value: valData2.value,
+				ctx: valData2.ctx,
+				valPropName: valPropName,
+			};
 		}
 
 		var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
@@ -153,13 +152,13 @@ export class RenderUtils
 		{
 			eventHanders = eventHanders || {};
 
-			var savedHandlers: JQueryEventHandlerMap = {};
+			var savedHandlers: EventHandlerMap = {};
 			savedHandlers['change'] = eventHanders['change'];
 			savedHandlers['input'] = eventHanders['input'];
 
 			var handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
 			{
-				var v = JQ(htmlElement).prop(valData.valPropName);
+				var v = jQuery(htmlElement).prop(valData.valPropName);
 
 				// pass ctx to CtxUtils.update for optimization: to skip it during update.
 				CtxScope.use(valData.ctx, () =>
