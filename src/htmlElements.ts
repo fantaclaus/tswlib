@@ -1,5 +1,7 @@
 import { ElementGeneric, stringValType, boolValType } from './elm';
-import { PropDef, Ref, PropVal } from './props';
+import { Ref } from './ref';
+import { PropDef } from './propDefs';
+import { PropVal } from './propVals';
 import * as elements from './htmlElements';
 import { arrayUtils } from './utils';
 

@@ -3,7 +3,7 @@ import * as elements from './elm';
 import { utils } from './utils';
 import { RawHtml, ElementWithValue } from './htmlElements';
 import { EventHandlerMap } from './elm';
-import { PropDefReadable } from './props';
+import { PropDefReadable } from './propDefs';
 import jQuery from "jquery";
 
 interface MapStringToArray

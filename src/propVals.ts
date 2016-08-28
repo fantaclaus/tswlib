@@ -1,15 +1,7 @@
 import * as CtxUtils from './CtxUtils';
 import { utils } from './utils';
 import jQuery from "jquery";
-
-export interface PropDefReadable<T>
-{
-	get: () => T;
-}
-export interface PropDef<T> extends PropDefReadable<T>
-{
-	set: (v: T) => void;
-}
+import { PropDef, PropDefReadable } from './propDefs';
 
 export class PropVal<T> implements PropDef<T>
 {
@@ -119,35 +111,5 @@ export class PropValArray<T> extends PropVal<T[]>
 		}
 
 		CtxUtils.update(this);
-	}
-}
-
-export class Ref implements PropDef<string>
-{
-	private refId: string;
-
-	get(): string
-	{
-		CtxUtils.attach(this);
-
-		return this.refId;
-	}
-	set(v: string): void
-	{
-		if (this.refId !== v)
-		{
-			//console.group('ref %s %o: set value %o', this.name, this, v);
-
-			this.refId = v;
-
-			CtxUtils.update(this);
-
-			//console.groupEnd();
-		}
-	}
-
-	asJQuery(): JQuery
-	{
-		return jQuery('#' + this.refId);
 	}
 }
