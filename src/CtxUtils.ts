@@ -11,11 +11,6 @@ let propKeyToCtxMap: PropKeyContext[] = null;
 let ctxUpdateQueue: CtxUpdatable[] = null;
 let timerId: number = null;
 
-function getCtx(): CtxUpdatable
-{
-	var ctx = CtxScope.getCurrent();
-	return ctx ? ctx.getParentUpdatableCtx() : null;
-}
 export function attach(propKey: any): void
 {
 	var ctx = getCtx();
@@ -77,6 +72,11 @@ export function update(propKey: any): void
 			timerId = window.setTimeout(() => processQueue(), 0);
 		}
 	}
+}
+function getCtx(): CtxUpdatable
+{
+	var ctx = CtxScope.getCurrent();
+	return ctx ? ctx.getParentUpdatableCtx() : null;
 }
 function processQueue(): void
 {

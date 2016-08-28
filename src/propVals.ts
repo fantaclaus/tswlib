@@ -1,7 +1,6 @@
 import * as CtxUtils from './CtxUtils';
 import { utils } from './utils';
-import jQuery from "jquery";
-import { PropDef, PropDefReadable } from './propDefs';
+import { PropDef, PropDefReadable } from './PropDefs';
 
 export class PropVal<T> implements PropDef<T>
 {

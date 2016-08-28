@@ -1,5 +1,5 @@
-﻿import { Ref } from './ref';
-import { PropDef, PropDefReadable } from './propDefs';
+﻿import { Ref } from './Ref';
+import { PropDef, PropDefReadable } from './PropDefs';
 
 export class StyleRule
 {
