@@ -24,7 +24,7 @@ namespace tsw
 		}
 		get(): T
 		{
-			tsw.global.attachContext(this);
+			tsw.internal.CtxUtils.attach(this);
 
 			return this.val;
 		}
@@ -41,7 +41,7 @@ namespace tsw
 				{
 					this.val = v;
 
-					tsw.global.updateContext(this);
+					tsw.internal.CtxUtils.update(this);
 
 					if (this.onChanged) this.onChanged();
 				}
@@ -119,7 +119,7 @@ namespace tsw
 				a.splice(index, 0, item);
 			}
 
-			tsw.global.updateContext(this);
+			tsw.internal.CtxUtils.update(this);
 		}
 	}
 
@@ -129,7 +129,7 @@ namespace tsw
 
 		get(): string
 		{
-			tsw.global.attachContext(this);
+			tsw.internal.CtxUtils.attach(this);
 
 			return this.refId;
 		}
@@ -141,7 +141,7 @@ namespace tsw
 
 				this.refId = v;
 
-				tsw.global.updateContext(this);
+				tsw.internal.CtxUtils.update(this);
 
 				//console.groupEnd();
 			}

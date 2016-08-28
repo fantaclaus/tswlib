@@ -13,13 +13,13 @@ namespace tsw
 	}
 }
 
-namespace tsw.global
+namespace tsw.ctxUtils
 {
-	export function attachContext(propKey: any): void
+	export function attach(propKey: any): void
 	{
 		tsw.internal.CtxUtils.attach(propKey);
 	}
-	export function updateContext(propKey: any): void
+	export function update(propKey: any): void
 	{
 		tsw.internal.CtxUtils.update(propKey);
 	}
