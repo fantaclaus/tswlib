@@ -15,11 +15,6 @@ namespace tsw.internal
 		private static ctxUpdateQueue: CtxUpdatable[] = null;
 		private static timerId: number = null;
 
-		private static getCtx(): CtxUpdatable
-		{
-			var ctx = CtxScope.getCurrent();
-			return ctx ? ctx.getParentUpdatableCtx() : null;
-		}
 		public static attach(propKey: any): void
 		{
 			var ctx = this.getCtx();
@@ -81,6 +76,11 @@ namespace tsw.internal
 					this.timerId = window.setTimeout(() => this.processQueue(), 0);
 				}
 			}
+		}
+		private static getCtx(): CtxUpdatable
+		{
+			var ctx = CtxScope.getCurrent();
+			return ctx ? ctx.getParentUpdatableCtx() : null;
 		}
 		private static processQueue(): void
 		{
