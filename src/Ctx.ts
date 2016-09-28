@@ -26,13 +26,13 @@ interface HtmlElementEvents
 
 export class Ctx
 {
-	private lastChildId: number;
-	private childCtxs: Ctx[];
-	private parentCtx: Ctx;
+	private lastChildId: number | null;
+	private childCtxs: Ctx[] | null;
+	private parentCtx: Ctx | null;
 
 	id: string;
 
-	getParent(): Ctx
+	getParent()
 	{
 		return this.parentCtx;
 	}
@@ -48,9 +48,9 @@ export class Ctx
 	{
 		return <CtxRoot>this.findSelfOrParent(ctx => ctx instanceof CtxRoot);
 	}
-	private findSelfOrParent(predicate: (ctx: Ctx) => boolean): Ctx
+	private findSelfOrParent(predicate: (ctx: Ctx) => boolean)
 	{
-		var ctx: Ctx = this;
+		var ctx: Ctx | null = this;
 
 		while (ctx != null)
 		{
@@ -143,7 +143,7 @@ export class Ctx
 
 		this.afterAttach();
 	}
-	protected _renderHtml(content: any): string
+	protected _renderHtml(content: any): string | null
 	{
 		return null;
 	}
@@ -179,7 +179,7 @@ export class Ctx
 }
 export class CtxHtmlElementOwner extends Ctx
 {
-	getTagName(): string
+	getTagName(): string | null
 	{
 		return null;
 	}
@@ -187,9 +187,9 @@ export class CtxHtmlElementOwner extends Ctx
 export class CtxElement extends CtxHtmlElementOwner
 {
 	private tagName: string;
-	private refs: Ref[];
+	private refs: Ref[] | null;
 
-	constructor(id: string, tagName: string, refs: Ref[])
+	constructor(id: string, tagName: string, refs: Ref[] | null)
 	{
 		super();
 
@@ -234,8 +234,8 @@ export class CtxElement extends CtxHtmlElementOwner
 export class CtxRoot extends CtxHtmlElementOwner
 {
 	private htmlElement: HTMLElement;
-	private attachedEventNames: { [eventName: string]: boolean };
-	private eventHandlers: { [elmId: string]: EventHandlerMap };
+	private attachedEventNames: { [eventName: string]: boolean } | null;
+	private eventHandlers: { [elmId: string]: EventHandlerMap } | null;
 
 	getHtmlElement(): HTMLElement
 	{
@@ -256,7 +256,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 		this._update(content);
 	}
-	protected _renderHtml(content: any): string
+	protected _renderHtml(content: any): string | null
 	{
 		return RenderUtils.renderHtml(content);
 	}
@@ -308,9 +308,11 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 		if (this.eventHandlers)
 		{
-			objUtils.forEachKey(this.eventHandlers, elmId =>
+			let eventHandlers = this.eventHandlers; // remove null from the type
+
+			objUtils.forEachKey(eventHandlers, elmId =>
 			{
-				var elmEventHandlers = this.eventHandlers[elmId];
+				var elmEventHandlers = eventHandlers[elmId];
 				objUtils.forEachKey(elmEventHandlers, eventName =>
 				{
 					currentEventNames[eventName] = true;
@@ -358,7 +360,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			{
 				//console.log('on event: %o for: %o id: %s; %s', e.type, e.target, elmId, htmlElm.tagName);
 
-				if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a') //  && jQuery(htmlElm).attr('href') == "#"
+				if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a')
 				{
 					e.preventDefault();
 				}
@@ -367,13 +369,13 @@ export class CtxRoot extends CtxHtmlElementOwner
 			}
 		}
 	}
-	private findEventHandlers(htmlElement: HTMLElement): HtmlElementEvents
+	private findEventHandlers(htmlElement: HTMLElement): HtmlElementEvents | null
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{
 			var elmId = htmlElement.id;
 
-			var elmEventHandlers = elmId && this.eventHandlers[elmId];
+			var elmEventHandlers = elmId && this.eventHandlers && this.eventHandlers[elmId];
 			if (elmEventHandlers) return ({
 				htmlElm: htmlElement,
 				ehMap: elmEventHandlers,
@@ -414,7 +416,7 @@ export class CtxUpdatableChild extends CtxUpdatable
 	{
 		this._update(this.content);
 	}
-	protected _renderHtml(content: any): string
+	protected _renderHtml(content: any)
 	{
 		return RenderUtils.getRenderedHtml(content);
 	}
@@ -525,7 +527,14 @@ export class CtxScope
 {
 	private static contexts: Ctx[] = [];
 
-	static getCurrent(): Ctx
+	static getCurrentSafe()
+	{
+		let ctx = this.getCurrent();
+		if (ctx == null) throw new Error("No current context.");
+
+		return ctx;
+	}
+	static getCurrent()
 	{
 		var contexts = this.contexts;
 		return contexts.length == 0 ? null : contexts[contexts.length - 1];

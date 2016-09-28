@@ -9,9 +9,9 @@ interface PropKeyContext
 
 export class CtxUtils
 {
-	private static propKeyToCtxMap: PropKeyContext[] = null;
-	private static ctxUpdateQueue: CtxUpdatable[] = null;
-	private static timerId: number = null;
+	private static propKeyToCtxMap: PropKeyContext[] | null = null;
+	private static ctxUpdateQueue: CtxUpdatable[] | null = null;
+	private static timerId: number | null = null;
 
 	public static attach(propKey: any): void
 	{
@@ -75,7 +75,7 @@ export class CtxUtils
 			}
 		}
 	}
-	private static getCtx(): CtxUpdatable
+	private static getCtx()
 	{
 		var ctx = CtxScope.getCurrent();
 		return ctx ? ctx.getParentUpdatableCtx() : null;
@@ -89,7 +89,9 @@ export class CtxUtils
 
 		if (contexts)
 		{
-			var contextsToUpdate = contexts.filter(ctx => !this.isAnyParentInList(ctx, contexts)); // do it before ctx.update(), since parents will be set to null
+			let contexts2 = contexts;  // remove null from the type
+
+			var contextsToUpdate = contexts2.filter(ctx => !this.isAnyParentInList(ctx, contexts2)); // do it before ctx.update(), since parents will be set to null
 
 			contextsToUpdate.forEach(ctx =>
 			{
@@ -103,15 +105,16 @@ export class CtxUtils
 	}
 	private static isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[]): boolean
 	{
-		if (!ctx) return false;
+		if (!ctx) throw new Error("ctx is null");
 
 		while (true)
 		{
-			ctx = ctx.getParent();
+			let ctxParent = ctx.getParent();
+			if (!ctxParent) return false;
 
-			if (!ctx) return false;
+			if (arrayUtils.contains(contexts, ctxParent)) return true;
 
-			if (arrayUtils.contains(contexts, ctx)) return true;
+			ctx = ctxParent;
 		}
 	}
 }

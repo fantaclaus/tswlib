@@ -10,7 +10,7 @@ export class PropVal<T> implements PropDef<T>
 
 	constructor(initialValue?: T)
 	{
-		this.val = initialValue;
+		if (!utils.isUndefined(initialValue)) this.val = initialValue;
 	}
 	get(): T
 	{

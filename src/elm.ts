@@ -16,7 +16,7 @@ export interface EventHandlerMap
 	[eventName: string]: EventHandler;
 }
 
-export type attrValSimpleType = string | number | boolean;
+export type attrValSimpleType = string | number | boolean | null;
 export type attrValType = attrValSimpleType | (() => attrValSimpleType) | PropDefReadable<attrValSimpleType>;
 export type stringValType = string | (() => string) | PropDefReadable<string>;
 export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
@@ -28,11 +28,11 @@ export interface EventHandler
 
 export class ElementGeneric
 {
-	private tagName: string = null;
-	private _attrs: NameValue[] = null;
-	private _children: NameValue[] = null;
-	private eventHandlers: EventHandlerMap = null;
-	private _refs: Ref[] = null;
+	private tagName: string | null = null;
+	private _attrs: NameValue[] | null = null;
+	private _children: NameValue[] | null = null;
+	private eventHandlers: EventHandlerMap | null = null;
+	private _refs: Ref[] | null = null;
 
 	constructor(tagName: string)
 	{
@@ -136,35 +136,35 @@ export class ElementGeneric
 	/**
 	 * @internal
 	 */
-	z_getTagName(): string
+	z_getTagName()
 	{
 		return this.tagName;
 	}
 	/**
 	 * @internal
 	 */
-	z_getChildren(): any[]
+	z_getChildren()
 	{
 		return this._children;
 	}
 	/**
 	 * @internal
 	 */
-	z_getAttrs(): NameValue[]
+	z_getAttrs()
 	{
 		return this._attrs;
 	}
 	/**
 	 * @internal
 	 */
-	z_getEventHandlers(): EventHandlerMap
+	z_getEventHandlers()
 	{
 		return this.eventHandlers;
 	}
 	/**
 	 * @internal
 	 */
-	z_getRefs(): Ref[]
+	z_getRefs()
 	{
 		return this._refs;
 	}

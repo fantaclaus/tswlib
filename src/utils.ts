@@ -15,11 +15,11 @@
 
 		return s2;
 	}
-	static join<T>(items: T[], delim: string, selector: (item: T) => string): string
+	static join<T>(items: T[], delim: string, selector: (item: T) => string | null)
 	{
 		// if all items are null, return null
 
-		var result: string = null;
+		var result: string | null = null;
 
 		if (items)
 		{
@@ -44,18 +44,18 @@
 
 		return result;
 	}
-	static isUndefined(v: any): boolean
+	static isUndefined(v: any): v is undefined
 	{
 		return v === void 0;
 	}
-	static toStringSafe(s: string): string
+	static toStringSafe(s: string | null): string
 	{
 		return s == null ? '' : s;
 	}
 }
 export class arrayUtils
 {
-	static find<T>(array: T[], predicate: (value: T, index: number) => boolean): T
+	static find<T>(array: T[], predicate: (value: T, index: number) => boolean)
 	{
 		if (array)
 		{
@@ -75,17 +75,17 @@ export class arrayUtils
 }
 export class objUtils
 {
-	static forEachKey(obj: any, action: (key: string) => void): void
+	static forEachKey(obj: Object, action: (key: string) => void): void
 	{
-		if (obj)
+		if (!obj) throw new Error("obj == null");
+
+		for (var key in obj)
 		{
-			for (var key in obj)
+			if (obj.hasOwnProperty(key))
 			{
-				if (obj.hasOwnProperty(key))
-				{
-					action(key);
-				}
+				action(key);
 			}
 		}
 	}
 }
+

@@ -5,7 +5,8 @@
 		"outDir": "tmp",
 		"stripInternal": true,
 		"noImplicitAny": true,
-		"removeComments": true
+		"removeComments": true,
+		"strictNullChecks": true
 	},
 	"exclude": [
 		"out",

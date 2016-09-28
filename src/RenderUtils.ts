@@ -24,14 +24,14 @@ interface ValueData2
 
 export class RenderUtils
 {
-	public static renderHtml(content: any): string
+	public static renderHtml(content: any)
 	{
 		var items: any[] = [];
 		this.addExpanded(items, content);
 
-		return utils.join(items, null, item => this.renderItem(item));
+		return utils.join(items, '', item => this.renderItem(item));
 	}
-	private static renderItem(item: any): string
+	private static renderItem(item: any): string | null
 	{
 		if (item === true || item === false) return '';
 
@@ -39,7 +39,7 @@ export class RenderUtils
 		if (item instanceof elements.ElementGeneric) return this.renderElement(item);
 
 		// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
-		var ctxCurrent = CtxScope.getCurrent();
+		var ctxCurrent = CtxScope.getCurrentSafe();
 		var ctxElm = ctxCurrent.getParentHtmlElmOwnerCtx();
 		var tagName = ctxElm ? ctxElm.getTagName() : null;
 
@@ -55,7 +55,7 @@ export class RenderUtils
 	}
 	private static renderUpdatableChild(item: any): string
 	{
-		var ctxCurrent = CtxScope.getCurrent();
+		var ctxCurrent = CtxScope.getCurrentSafe();
 
 		var id = ctxCurrent.generateNextChildId();
 
@@ -69,7 +69,7 @@ export class RenderUtils
 		var markers = new HtmlBlockMarkers(ctx.id);
 		return markers.getHtml(innerHtml);
 	}
-	private static renderElement(elm: elements.ElementGeneric): string
+	private static renderElement(elm: elements.ElementGeneric)
 	{
 		var tagName = elm.z_getTagName();
 		//console.log(elm, tagName);
@@ -87,7 +87,7 @@ export class RenderUtils
 
 		var elmRefs = elm.z_getRefs();
 
-		var ctxCurrent = CtxScope.getCurrent();
+		var ctxCurrent = CtxScope.getCurrentSafe();
 
 		var attrId = this.getRenderedLastAttrValue(attrs['id']);
 		delete attrs['id'];
@@ -104,15 +104,16 @@ export class RenderUtils
 		var propDef = elmWithVal && elmWithVal.z_getPropDef();
 
 		var useVal = propDef && propDef.get instanceof Function;
-		var updateVal = useVal && propDef.set instanceof Function;
+		var updateVal = useVal && propDef && propDef.set instanceof Function;
 
-		var valData: ValueData = null;
-		if (useVal)
+		var valData: ValueData | null = null;
+		if (elmWithVal && propDef && useVal)
 		{
 			var valAttrName = elmWithVal.z_getValueAttrName();
 			var valPropName = elmWithVal.z_getValuePropName();
+			let propDef2 = propDef; // remove null from type
 
-			var valData2 = CtxScope.use(ctx, () => this.getValue(propDef, valPropName));
+			var valData2 = CtxScope.use(ctx, () => this.getValue(propDef2, valPropName));
 
 			// replace attributes with value of propdef (checked or value)
 
@@ -134,9 +135,9 @@ export class RenderUtils
 		var attrsHtml = CtxScope.use(ctx, () => this.getElmAttrHtml(attrs));
 		//console.log(`attrsHtml: [${attrsHtml}]`);
 
-		var innerHtml: string;
+		var innerHtml: string | null;
 
-		if (useVal && tagName == 'textarea')
+		if (valData && tagName == 'textarea')
 		{
 			innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
 		}
@@ -148,8 +149,11 @@ export class RenderUtils
 
 		var eventHanders = elm.z_getEventHandlers();
 
-		if (updateVal)
+		if (updateVal && propDef && valData)
 		{
+			let propDef2 = propDef; // remove null from type
+			let valData2 = valData; // remove null from type
+
 			eventHanders = eventHanders || {};
 
 			var savedHandlers: EventHandlerMap = {};
@@ -158,12 +162,12 @@ export class RenderUtils
 
 			var handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
 			{
-				var v = jQuery(htmlElement).prop(valData.valPropName);
+				var v = jQuery(htmlElement).prop(valData2.valPropName);
 
 				// pass ctx to CtxUtils.update for optimization: to skip it during update.
-				CtxScope.use(valData.ctx, () =>
+				CtxScope.use(valData2.ctx, () =>
 				{
-					propDef.set(v);
+					propDef2.set(v);
 				});
 
 				var userHandler = savedHandlers[e.type];
@@ -272,7 +276,7 @@ export class RenderUtils
 
 		if (canBeUpdated)
 		{
-			var ctxCurrent = CtxScope.getCurrent();
+			var ctxCurrent = CtxScope.getCurrentSafe();
 
 			var ctx = new CtxUpdatableAttr();
 			ctxCurrent.addChildCtx(ctx);
@@ -286,7 +290,7 @@ export class RenderUtils
 			return fn();
 		}
 	}
-	protected static getRenderedLastAttrValue(attrVals: any[]): string
+	protected static getRenderedLastAttrValue(attrVals: any[])
 	{
 		// it returns last value to support overwriting of attr values
 		// for example, bs.btnLink() returns <A href="#"> by default, and href could be re-assigned to another
@@ -357,7 +361,7 @@ export class RenderUtils
 
 		return false;
 	}
-	public static getRenderedHtml(item: any): string
+	public static getRenderedHtml(item: any)
 	{
 		var content = this.getRenderedContent(item);
 		return this.renderHtml(content);
@@ -424,7 +428,7 @@ export class RenderUtils
 			return this.getRenderedAttrValue(item);
 		}
 	}
-	private static asElmWithValue(elm: elements.ElementGeneric): ElementWithValue
+	private static asElmWithValue(elm: elements.ElementGeneric)
 	{
 		if (elm instanceof ElementWithValue)
 		{
@@ -437,7 +441,7 @@ export class RenderUtils
 	}
 	private static getValue(propDef: PropDefReadable<any>, valPropName: string): ValueData2
 	{
-		var ctxCurrent = CtxScope.getCurrent();
+		var ctxCurrent = CtxScope.getCurrentSafe();
 
 		var ctx = new CtxUpdatableValue();
 		ctxCurrent.addChildCtx(ctx);
@@ -483,7 +487,7 @@ class HtmlBlockMarkers
 		this.begin = `B:${id}`;
 		this.end = `E:${id}`;
 	}
-	getHtml(innerHtml: string)
+	getHtml(innerHtml: string | null)
 	{
 		let html = utils.toStringSafe(innerHtml);
 		return `<!--${this.begin}-->${html}<!--${this.end}-->`;
@@ -502,8 +506,8 @@ class DOMUtils
 
 		var COMMENT_NODE = 8; // on IE8 Node is undefined
 
-		var nodeBeginMarker: Node = null;
-		var nodeEndMarker: Node = null;
+		var nodeBeginMarker: Node | null = null;
+		var nodeEndMarker: Node | null = null;
 		var isFirst = false;
 		var isLast = false;
 

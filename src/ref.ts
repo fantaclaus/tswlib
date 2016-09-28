@@ -1,17 +1,17 @@
 import { CtxUtils } from './CtxUtils';
 import { PropDef } from './propDefs';
 
-export class Ref implements PropDef<string>
+export class Ref implements PropDef<string | null>
 {
-	private refId: string;
+	private refId: string | null;
 
-	get(): string
+	get(): string | null
 	{
 		CtxUtils.attach(this);
 
 		return this.refId;
 	}
-	set(v: string): void
+	set(v: string | null): void
 	{
 		if (this.refId !== v)
 		{
