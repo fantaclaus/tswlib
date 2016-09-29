@@ -3,7 +3,6 @@ import { Ref } from './Ref';
 import { PropDef } from './PropDefs';
 import { PropVal } from './PropVals';
 import * as elements from './htmlElements';
-import { arrayUtils } from './utils';
 
 export class RawHtml
 {
@@ -265,7 +264,7 @@ export class RadioGroup<T>
 	}
 	private getRefFor(v: T): Ref
 	{
-		var keyRef = arrayUtils.find(this.refs, kr => kr.key == v);
+		var keyRef = this.refs.find(kr => kr.key == v);
 		if (keyRef == null)
 		{
 			keyRef = { key: v, ref: new Ref() };

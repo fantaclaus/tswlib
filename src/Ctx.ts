@@ -3,7 +3,7 @@ import { CtxUtils } from './CtxUtils';
 import { Ref } from './Ref';
 import { utils, objUtils } from './utils';
 import { RenderUtils } from './RenderUtils';
-import jQuery from "jquery";
+import "jquery";
 
 export function setContent(htmlElement: HTMLElement, content: any): void
 {
@@ -116,7 +116,7 @@ export class Ctx
 	generateNextChildId(): string
 	{
 		this.lastChildId = (this.lastChildId || 0) + 1;
-		return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
+		return utils.appendDelimited(this.id, '.', this.lastChildId.toString());
 	}
 	protected resetNextChildId(): void
 	{
@@ -138,7 +138,7 @@ export class Ctx
 		if (htmlElement)
 		{
 			var innerHtml = CtxScope.use(this, () => this._renderHtml(content));
-			this.setInnerHtml(htmlElement, utils.toStringSafe(innerHtml));
+			this.setInnerHtml(htmlElement, innerHtml || '');
 		}
 
 		this.afterAttach();

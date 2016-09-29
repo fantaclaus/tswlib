@@ -4,7 +4,7 @@ import { utils } from './utils';
 import { RawHtml, ElementWithValue } from './htmlElements';
 import { EventHandlerMap } from './elm';
 import { PropDefReadable } from './PropDefs';
-import jQuery from "jquery";
+import "jquery";
 
 interface MapStringToArray
 {
@@ -489,7 +489,7 @@ class HtmlBlockMarkers
 	}
 	getHtml(innerHtml: string | null)
 	{
-		let html = utils.toStringSafe(innerHtml);
+		let html = innerHtml || '';
 		return `<!--${this.begin}-->${html}<!--${this.end}-->`;
 	}
 }
@@ -559,12 +559,12 @@ class DOMUtils
 
 		if ((isFirst && isLast) || (!nodeBeginMarker && !nodeEndMarker))
 		{
-			//				utils.log('html: replace complete');
+			// utils.log('html: replace complete');
 			targetElement.innerHTML = markers.getHtml(html);
 		}
 		else
 		{
-			//				utils.log('html: replace between markers');
+			// utils.log('html: replace between markers');
 
 			// replace between markers
 
@@ -594,9 +594,9 @@ class DOMUtils
 				targetElement.removeChild(tmpHtmlElement);
 
 				// doesn't work on IE
-				//					var tmp = document.createElement('template');
-				//					tmp.innerHTML = html;
-				//					targetElement.insertBefore(tmp.content, nodeEndMarker);
+				// var tmp = document.createElement('template');
+				// tmp.innerHTML = html;
+				// targetElement.insertBefore(tmp.content, nodeEndMarker);
 
 			}
 		}

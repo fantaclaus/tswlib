@@ -11,9 +11,7 @@
 	{
 		if (s1 && s2) return s1 + delim + s2;
 
-		if (s1) return s1;
-
-		return s2;
+		return s1 || s2;
 	}
 	static join<T>(items: T[], delim: string, selector: (item: T) => string | null)
 	{
@@ -43,34 +41,6 @@
 		}
 
 		return result;
-	}
-	static isUndefined(v: any): v is undefined
-	{
-		return v === void 0;
-	}
-	static toStringSafe(s: string | null): string
-	{
-		return s == null ? '' : s;
-	}
-}
-export class arrayUtils
-{
-	static find<T>(array: T[], predicate: (value: T, index: number) => boolean)
-	{
-		if (array)
-		{
-			for (var i = 0, len = array.length; i < len; ++i)
-			{
-				var item = array[i];
-				if (predicate(item, i)) return item;
-			}
-		}
-
-		return null;
-	}
-	static contains(array: any[], item: any): boolean
-	{
-		return array.indexOf(item) >= 0;
 	}
 }
 export class objUtils

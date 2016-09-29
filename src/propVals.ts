@@ -1,5 +1,4 @@
 import { CtxUtils } from './CtxUtils';
-import { utils } from './utils';
 import { PropDef, PropDefReadable } from './PropDefs';
 
 export class PropVal<T> implements PropDef<T>
@@ -10,7 +9,7 @@ export class PropVal<T> implements PropDef<T>
 
 	constructor(initialValue?: T)
 	{
-		if (!utils.isUndefined(initialValue)) this.val = initialValue;
+		if (initialValue !== undefined) this.val = initialValue;
 	}
 	get(): T
 	{
@@ -100,7 +99,7 @@ export class PropValArray<T> extends PropVal<T[]>
 	{
 		let a = this.get();
 
-		if (utils.isUndefined(index))
+		if (index == null)
 		{
 			a.push(item);
 		}

@@ -1,5 +1,4 @@
 ﻿import { CtxUpdatable, CtxScope, Ctx } from './Ctx';
-import { arrayUtils } from './utils';
 
 interface PropKeyContext
 {
@@ -34,10 +33,10 @@ export class CtxUtils
 		if (this.propKeyToCtxMap)
 		{
 			//var removedKeys = this.propKeyToCtxMap
-			//	.filter(p => arrayUtils.contains(ctxs, p.ctx))
+			//	.filter(p => ctxs.includes(p.ctx))
 			//	.map(p => p.propKey);
 
-			this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !arrayUtils.contains(ctxs, p.ctx));
+			this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !ctxs.includes(p.ctx));
 
 			//console.log('removed: ', removedKeys, this.propKeyToCtxMap && this.propKeyToCtxMap.map(p => p.propKey));
 		}
@@ -59,7 +58,7 @@ export class CtxUtils
 
 		propKeyContexts.forEach(p =>
 		{
-			if (p.ctx !== currentCtx && !arrayUtils.contains(newQueue, p.ctx))
+			if (p.ctx !== currentCtx && !newQueue.includes(p.ctx))
 			{
 				newQueue.push(p.ctx);
 			}
@@ -112,7 +111,7 @@ export class CtxUtils
 			let ctxParent = ctx.getParent();
 			if (!ctxParent) return false;
 
-			if (arrayUtils.contains(contexts, ctxParent)) return true;
+			if (ctxParent instanceof CtxUpdatable && contexts.includes(ctxParent)) return true;
 
 			ctx = ctxParent;
 		}

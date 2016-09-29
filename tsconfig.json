@@ -1,12 +1,17 @@
 {
 	"compilerOptions": {
 		"target": "es6",
-		"module": "system",
-		"outDir": "tmp",
-		"stripInternal": true,
+		"module": "amd",
+
 		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"strictNullChecks": true,
+
+		"stripInternal": true,
 		"removeComments": true,
-		"strictNullChecks": true
+
+		"outDir": "tmp"
 	},
 	"exclude": [
 		"out",
