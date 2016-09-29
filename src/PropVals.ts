@@ -8,7 +8,7 @@ namespace tsw
 
 		constructor(initialValue?: T)
 		{
-			this.val = initialValue;
+			if (initialValue !== undefined) this.val = initialValue;
 		}
 		get(): T
 		{
@@ -98,7 +98,7 @@ namespace tsw
 		{
 			let a = this.get();
 
-			if (tsw.internal.utils.isUndefined(index))
+			if (index == null)
 			{
 				a.push(item);
 			}

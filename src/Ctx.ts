@@ -139,7 +139,7 @@ namespace tsw.internal
 			if (htmlElement)
 			{
 				var innerHtml = CtxScope.use(this, () => this._renderHtml(content));
-				this.setInnerHtml(htmlElement, utils.toStringSafe(innerHtml));
+				this.setInnerHtml(htmlElement, innerHtml || '');
 			}
 
 			this.afterAttach();
@@ -359,7 +359,7 @@ namespace tsw.internal
 				{
 					//console.log('on event: %o for: %o id: %s; %s', e.type, e.target, elmId, htmlElm.tagName);
 
-					if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a') //  && jQuery(htmlElm).attr('href') == "#"
+					if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a')
 					{
 						e.preventDefault();
 					}

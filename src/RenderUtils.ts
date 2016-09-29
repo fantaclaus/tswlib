@@ -26,7 +26,7 @@ namespace tsw.internal
 			var items: any[] = [];
 			this.addExpanded(items, content);
 
-			return utils.join(items, null, item => this.renderItem(item));
+			return utils.join(items, '', item => this.renderItem(item));
 		}
 		private static renderItem(item: any): string
 		{
@@ -482,7 +482,7 @@ namespace tsw.internal
 		}
 		getHtml(innerHtml: string)
 		{
-			let html = utils.toStringSafe(innerHtml);
+			let html = innerHtml || '';
 			return `<!--${this.begin}-->${html}<!--${this.end}-->`;
 		}
 	}
@@ -552,12 +552,12 @@ namespace tsw.internal
 
 			if ((isFirst && isLast) || (!nodeBeginMarker && !nodeEndMarker))
 			{
-				//				utils.log('html: replace complete');
+				// utils.log('html: replace complete');
 				targetElement.innerHTML = markers.getHtml(html);
 			}
 			else
 			{
-				//				utils.log('html: replace between markers');
+				// utils.log('html: replace between markers');
 
 				// replace between markers
 
@@ -587,9 +587,9 @@ namespace tsw.internal
 					targetElement.removeChild(tmpHtmlElement);
 
 					// doesn't work on IE
-					//					var tmp = document.createElement('template');
-					//					tmp.innerHTML = html;
-					//					targetElement.insertBefore(tmp.content, nodeEndMarker);
+					// var tmp = document.createElement('template');
+					// tmp.innerHTML = html;
+					// targetElement.insertBefore(tmp.content, nodeEndMarker);
 
 				}
 			}

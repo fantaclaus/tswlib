@@ -263,7 +263,7 @@ namespace tsw.elements
 		}
 		private getRefFor(v: T): Ref
 		{
-			var keyRef = tsw.internal.arrayUtils.find(this.refs, kr => kr.key == v);
+			var keyRef = this.refs.find(kr => kr.key == v);
 			if (keyRef == null)
 			{
 				keyRef = { key: v, ref: new Ref() };

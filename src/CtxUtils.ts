@@ -36,10 +36,10 @@ namespace tsw.internal
 			if (this.propKeyToCtxMap)
 			{
 				//var removedKeys = this.propKeyToCtxMap
-				//	.filter(p => arrayUtils.contains(ctxs, p.ctx))
+				//	.filter(p => ctxs.includes(p.ctx))
 				//	.map(p => p.propKey);
 
-				this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !arrayUtils.contains(ctxs, p.ctx));
+				this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !ctxs.includes(p.ctx));
 
 				//console.log('removed: ', removedKeys, this.propKeyToCtxMap && this.propKeyToCtxMap.map(p => p.propKey));
 			}
@@ -61,7 +61,7 @@ namespace tsw.internal
 
 			propKeyContexts.forEach(p =>
 			{
-				if (p.ctx !== currentCtx && !arrayUtils.contains(newQueue, p.ctx))
+				if (p.ctx !== currentCtx && !newQueue.includes(p.ctx))
 				{
 					newQueue.push(p.ctx);
 				}
@@ -113,7 +113,7 @@ namespace tsw.internal
 
 				if (!ctx) return false;
 
-				if (arrayUtils.contains(contexts, ctx)) return true;
+				if (ctx instanceof CtxUpdatable && contexts.includes(ctx)) return true;
 			}
 		}
 	}
