@@ -2,15 +2,16 @@
 	"compilerOptions": {
 		"target": "es6",
 		"module": "amd",
-
+		"lib": [
+			"es2016",
+			"dom"
+		],
 		"noImplicitAny": true,
 		"noImplicitReturns": true,
 		"noImplicitThis": true,
 		"strictNullChecks": true,
-
 		"stripInternal": true,
 		"removeComments": true,
-
 		"outDir": "tmp"
 	},
 	"exclude": [
