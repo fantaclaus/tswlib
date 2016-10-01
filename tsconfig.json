@@ -15,7 +15,7 @@
 		"removeComments": true,
 		"declaration": true,
 		//"outDir": "tmp"
-		"outFile": "tmp/tsw.js"
+		"outFile": "tmp/tswlib.js"
 	},
 	"exclude": [
 		"out",
