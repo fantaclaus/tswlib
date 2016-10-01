@@ -116,7 +116,7 @@ export class Ctx
 	generateNextChildId(): string
 	{
 		this.lastChildId = (this.lastChildId || 0) + 1;
-		return utils.appendDelimited(this.id, '.', this.lastChildId.toString());
+		return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 	}
 	protected resetNextChildId(): void
 	{
