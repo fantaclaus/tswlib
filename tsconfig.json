@@ -9,10 +9,13 @@
 		"noImplicitAny": true,
 		"noImplicitReturns": true,
 		"noImplicitThis": true,
+		"noUnusedLocals": true,
 		"strictNullChecks": true,
 		"stripInternal": true,
 		"removeComments": true,
-		"outDir": "tmp"
+		"declaration": true,
+		//"outDir": "tmp"
+		"outFile": "tmp/tsw.js"
 	},
 	"exclude": [
 		"out",
