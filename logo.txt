@@ -1,5 +1,5 @@
 /*!
- * tswlib v0.14
+ * tswlib v0.15 modular beta
  * https://github.com/fantaclaus/tswlib
  * Copyright {year} fantaclaus
  */

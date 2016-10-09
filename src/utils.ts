@@ -13,7 +13,7 @@
 
 		return s1 || s2;
 	}
-	static join<T>(items: T[], delim: string, selector: (item: T) => string | null)
+	static join(items: any[], delim: string, selector: (item: any) => string | null)
 	{
 		// if all items are null, return null
 

@@ -92,7 +92,7 @@ export class ElementInput<T> extends ElementWithValue
 		return 'value';
 	}
 }
-export class ElementInputText extends ElementInput<string>
+export class ElementInputText extends ElementInput<string | null>
 {
 	constructor()
 	{
@@ -174,14 +174,14 @@ export class ElementSelect extends ElementWithValue
 		super('select')
 	}
 
-	value(propDef: PropDef<string>)
+	value(propDef: PropDef<string | null>)
 	{
 		this.propDef = propDef;
 		this.valuePropName = "value";
 
 		return this;
 	}
-	selectedIndex(propDef: PropDef<number>)
+	selectedIndex(propDef: PropDef<number | null>)
 	{
 		this.propDef = propDef;
 		this.valuePropName = "selectedIndex";

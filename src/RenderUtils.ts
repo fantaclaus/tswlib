@@ -4,7 +4,7 @@ import { utils } from './utils';
 import { RawHtml, ElementWithValue } from './htmlElements';
 import { EventHandlerMap } from './elm';
 import { PropDefReadable } from './PropDefs';
-import "jquery";
+//import "jquery";
 
 interface MapStringToArray
 {
@@ -31,6 +31,22 @@ export class RenderUtils
 
 		return utils.join(items, '', item => this.renderItem(item));
 	}
+	private static addExpanded(target: any[], v: any): void
+	{
+		if (v == null) return;
+
+		if (v instanceof Array)
+		{
+			for (var i = 0; i < v.length; i++)
+			{
+				this.addExpanded(target, v[i]);
+			}
+		}
+		else
+		{
+			target.push(v);
+		}
+	}
 	private static renderItem(item: any): string | null
 	{
 		if (item === true || item === false) return '';
@@ -41,7 +57,7 @@ export class RenderUtils
 		// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
 		var ctxCurrent = CtxScope.getCurrentSafe();
 		var ctxElm = ctxCurrent.getParentHtmlElmOwnerCtx();
-		var tagName = ctxElm ? ctxElm.getTagName() : null;
+		var tagName = ctxElm && ctxElm.getTagName();
 
 		//console.log('ctxElm: ', ctxElm);
 		if (tagName != 'textarea')
@@ -452,23 +468,6 @@ export class RenderUtils
 		var val = CtxScope.use(ctx, ctx.renderFn);
 
 		return { value: val, ctx: ctx };
-	}
-
-	private static addExpanded(target: any[], v: any): void
-	{
-		if (v == null) return;
-
-		if (v instanceof Array)
-		{
-			for (var i = 0; i < v.length; i++)
-			{
-				this.addExpanded(target, v[i]);
-			}
-		}
-		else
-		{
-			target.push(v);
-		}
 	}
 
 	public static updateInnerHtml(htmlElement: HTMLElement, id: string, html: string): void

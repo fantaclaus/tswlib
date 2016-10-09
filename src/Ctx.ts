@@ -3,7 +3,7 @@ import { CtxUtils } from './CtxUtils';
 import { Ref } from './Ref';
 import { utils, objUtils } from './utils';
 import { RenderUtils } from './RenderUtils';
-import "jquery";
+//import "jquery";
 
 export function setContent(htmlElement: HTMLElement, content: any): void
 {

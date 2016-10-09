@@ -7,6 +7,7 @@
 			"dom"
 		],
 		"noImplicitAny": true,
+		"noFallthroughCasesInSwitch": true,
 		"noImplicitReturns": true,
 		"noImplicitThis": true,
 		"noUnusedLocals": true,
@@ -14,7 +15,6 @@
 		"stripInternal": true,
 		"removeComments": true,
 		"declaration": true,
-		//"outDir": "tmp"
 		"outFile": "tmp/tswlib.js"
 	},
 	"exclude": [
