@@ -13,7 +13,7 @@ export class RadioGroup<T>
 		this.propVal = propVal;
 		this.groupName = groupName;
 	}
-	item(v: T): elements.ElementInputRadio
+	item(v: T)
 	{
 		var p =
 			{
@@ -25,13 +25,13 @@ export class RadioGroup<T>
 		elm.value(p).attr('name', this.groupName).addRef(this.getRefFor(v));
 		return elm;
 	}
-	label(v: T): elements.ElementLabel
+	label(v: T)
 	{
 		var elm = new elements.ElementLabel();
 		elm.forRef(this.getRefFor(v));
 		return elm;
 	}
-	private getRefFor(v: T): Ref
+	private getRefFor(v: T)
 	{
 		var keyRef = this.refs.find(kr => kr.key == v);
 		if (keyRef == null)
