@@ -81,7 +81,7 @@ export class PropVal<T> implements PropDef<T>
 			set: v => this.set(from(v)),
 		};
 	}
-	select<U>(to: (v: T) => U): PropDefReadable<U>
+	to<U>(to: (v: T) => U): PropDefReadable<U>
 	{
 		return {
 			get: () => to(this.get()),
