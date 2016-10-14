@@ -1,22 +1,10 @@
 ﻿import { EventHandlerMap } from './elm';
-import { CtxUtils } from './CtxUtils';
+import * as CtxUtils from './CtxUtils';
 import { Ref } from './Ref';
-import { utils, objUtils } from './utils';
-import { RenderUtils } from './RenderUtils';
+import * as utils from './utils';
+import * as RenderUtils from './RenderUtils';
+import { Renderer } from './tswlib';
 //import "jquery";
-
-export function setContent(htmlElement: HTMLElement, content: any): void
-{
-	var ctxRoot = new CtxRoot();
-	ctxRoot.render(content, htmlElement);
-}
-
-export interface Renderer
-{
-	render: () => any;
-	afterAttach?: () => void;
-	beforeDetach?: () => void;
-}
 
 interface HtmlElementEvents
 {
@@ -177,7 +165,7 @@ export class Ctx
 	//	console.log.apply(console, dbgArgs);
 	//}
 }
-export class CtxHtmlElementOwner extends Ctx
+export abstract class CtxHtmlElementOwner extends Ctx
 {
 	getTagName(): string | null
 	{
@@ -241,18 +229,15 @@ export class CtxRoot extends CtxHtmlElementOwner
 	{
 		return this.htmlElement;
 	}
-	render(content: any, htmlElement?: HTMLElement): void
+	render(content: any, htmlElement: HTMLElement): void
 	{
-		if (htmlElement != null)
+		if (this.htmlElement !== htmlElement)
 		{
-			if (this.htmlElement && this.htmlElement !== htmlElement)
-			{
-				this._update(null);
-			}
-
-			this.htmlElement = htmlElement;
-			this.id = htmlElement.id;
+			this._update(null);
 		}
+
+		this.htmlElement = htmlElement;
+		this.id = htmlElement.id;
 
 		this._update(content);
 	}
@@ -310,10 +295,10 @@ export class CtxRoot extends CtxHtmlElementOwner
 		{
 			let eventHandlers = this.eventHandlers; // remove null from the type
 
-			objUtils.forEachKey(eventHandlers, elmId =>
+			utils.forEachKey(eventHandlers, elmId =>
 			{
 				var elmEventHandlers = eventHandlers[elmId];
-				objUtils.forEachKey(elmEventHandlers, eventName =>
+				utils.forEachKey(elmEventHandlers, eventName =>
 				{
 					currentEventNames[eventName] = true;
 					currentEventNamesCount++;
@@ -323,7 +308,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 		if (this.attachedEventNames)
 		{
-			objUtils.forEachKey(this.attachedEventNames, eventName =>
+			utils.forEachKey(this.attachedEventNames, eventName =>
 			{
 				if (!(eventName in currentEventNames))
 				{
@@ -333,7 +318,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			});
 		}
 
-		objUtils.forEachKey(currentEventNames, eventName =>
+		utils.forEachKey(currentEventNames, eventName =>
 		{
 			if (!this.attachedEventNames || !(eventName in this.attachedEventNames))
 			{
@@ -395,7 +380,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 	//	return ['%o', this];
 	//}
 }
-export class CtxUpdatable extends Ctx
+export abstract class CtxUpdatable extends Ctx
 {
 	update(): void
 	{

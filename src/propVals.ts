@@ -1,4 +1,4 @@
-import { CtxUtils } from './CtxUtils';
+import * as CtxUtils from './CtxUtils';
 import { PropDef, PropDefReadable } from './PropDefs';
 
 export class PropVal<T> implements PropDef<T>

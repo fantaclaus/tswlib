@@ -18,7 +18,7 @@ export interface EventHandlerMap
 
 export type attrValSimpleType = string | number | boolean | null;
 export type attrValType = attrValSimpleType | (() => attrValSimpleType) | PropDefReadable<attrValSimpleType>;
-export type stringValType = string | (() => string) | PropDefReadable<string>;
+export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
 export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
 
 export interface EventHandler
@@ -48,7 +48,7 @@ export class ElementGeneric
 
 		return this;
 	}
-	cls(val: stringValType)
+	cls(val: attrValType)
 	{
 		this.attr('class', val);
 		return this;
@@ -72,7 +72,7 @@ export class ElementGeneric
 
 		return this;
 	}
-	data(name: string, val: stringValType)
+	data(name: string, val: attrValType)
 	{
 		this.attr('data-' + name, val);
 

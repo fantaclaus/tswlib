@@ -6,114 +6,109 @@ interface PropKeyContext
 	ctx: CtxUpdatable;
 }
 
-export class CtxUtils
+let _propKeyToCtxMap: PropKeyContext[] | null = null;
+let _ctxUpdateQueue: CtxUpdatable[] | null = null;
+let _timerId: number | null = null;
+
+export function attach(propKey: any): void
 {
-	private static propKeyToCtxMap: PropKeyContext[] | null = null;
-	private static ctxUpdateQueue: CtxUpdatable[] | null = null;
-	private static timerId: number | null = null;
-
-	public static attach(propKey: any): void
+	const ctx = getCtx();
+	if (ctx)
 	{
-		var ctx = this.getCtx();
-		if (ctx)
+		_propKeyToCtxMap = _propKeyToCtxMap || [];
+
+		const exists = _propKeyToCtxMap.some(p => p.propKey === propKey && p.ctx == ctx);
+		if (!exists)
 		{
-			this.propKeyToCtxMap = this.propKeyToCtxMap || [];
+			_propKeyToCtxMap.push({ propKey: propKey, ctx: ctx });
 
-			var exists = this.propKeyToCtxMap.some(p => p.propKey === propKey && p.ctx == ctx);
-			if (!exists)
-			{
-				this.propKeyToCtxMap.push({ propKey: propKey, ctx: ctx });
-
-				//console.log('attached:', propKey.toString(), this.propKeyToCtxMap && this.propKeyToCtxMap.map(p => p.propKey));
-			}
+			//console.log('attached:', propKey.toString(), propKeyToCtxMap && propKeyToCtxMap.map(p => p.propKey));
 		}
 	}
-	public static removeCtxs(ctxs: Ctx[]): void
+}
+export function removeCtxs(ctxs: Ctx[]): void
+{
+	if (_propKeyToCtxMap)
 	{
-		if (this.propKeyToCtxMap)
+		//const removedKeys = propKeyToCtxMap
+		//	.filter(p => ctxs.includes(p.ctx))
+		//	.map(p => p.propKey);
+
+		_propKeyToCtxMap = _propKeyToCtxMap.filter(p => !ctxs.includes(p.ctx));
+
+		//console.log('removed: ', removedKeys, propKeyToCtxMap && propKeyToCtxMap.map(p => p.propKey));
+	}
+}
+export function update(propKey: any): void
+{
+	const propKeyContexts = _propKeyToCtxMap && _propKeyToCtxMap.filter(p => p.propKey === propKey);
+	//console.log('update req: %o; found: %o', propKey, propKeyContexts);
+
+	if (propKeyContexts == null || propKeyContexts.length == 0) return;
+
+	const currentCtx = getCtx(); // context that has been set in event handler for 'change' or 'input' event
+
+	// currentCtx is checked for optimization: don't update context whose value is just set by user action
+
+	// add contexts to ctxUpdateQueue
+
+	const newQueue = _ctxUpdateQueue || [];
+
+	propKeyContexts.forEach(p =>
+	{
+		if (p.ctx !== currentCtx && !newQueue.includes(p.ctx))
 		{
-			//var removedKeys = this.propKeyToCtxMap
-			//	.filter(p => ctxs.includes(p.ctx))
-			//	.map(p => p.propKey);
+			newQueue.push(p.ctx);
+		}
+	});
 
-			this.propKeyToCtxMap = this.propKeyToCtxMap.filter(p => !ctxs.includes(p.ctx));
+	if (newQueue.length > 0)
+	{
+		_ctxUpdateQueue = newQueue;
 
-			//console.log('removed: ', removedKeys, this.propKeyToCtxMap && this.propKeyToCtxMap.map(p => p.propKey));
+		if (!_timerId)
+		{
+			_timerId = window.setTimeout(() => processQueue(), 0);
 		}
 	}
-	public static update(propKey: any): void
+}
+function getCtx()
+{
+	const ctx = CtxScope.getCurrent();
+	return ctx ? ctx.getParentUpdatableCtx() : null;
+}
+function processQueue(): void
+{
+	const contexts = _ctxUpdateQueue;
+
+	_timerId = null;
+	_ctxUpdateQueue = null;
+
+	if (contexts)
 	{
-		var propKeyContexts = this.propKeyToCtxMap && this.propKeyToCtxMap.filter(p => p.propKey === propKey);
-		//console.log('update req: %o; found: %o', propKey, propKeyContexts);
+		const contextsToUpdate = contexts.filter(ctx => !isAnyParentInList(ctx, contexts)); // do it before ctx.update(), since parents will be set to null
 
-		if (propKeyContexts == null || propKeyContexts.length == 0) return;
-
-		var currentCtx = this.getCtx(); // context that has been set in event handler for 'change' or 'input' event
-
-		// currentCtx is checked for optimization: don't update context whose value is just set by user action
-
-		// add contexts to this.ctxUpdateQueue
-
-		var newQueue = this.ctxUpdateQueue || [];
-
-		propKeyContexts.forEach(p =>
+		contextsToUpdate.forEach(ctx =>
 		{
-			if (p.ctx !== currentCtx && !newQueue.includes(p.ctx))
-			{
-				newQueue.push(p.ctx);
-			}
+			//console.group('update:', ctx, ctx.id);
+
+			ctx.update();
+
+			//console.groupEnd();
 		});
-
-		if (newQueue.length > 0)
-		{
-			this.ctxUpdateQueue = newQueue;
-
-			if (!this.timerId)
-			{
-				this.timerId = window.setTimeout(() => this.processQueue(), 0);
-			}
-		}
 	}
-	private static getCtx()
+}
+function isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[]): boolean
+{
+	if (!ctx) throw new Error("ctx is null");
+
+	while (true)
 	{
-		var ctx = CtxScope.getCurrent();
-		return ctx ? ctx.getParentUpdatableCtx() : null;
-	}
-	private static processQueue(): void
-	{
-		var contexts = this.ctxUpdateQueue;
+		const ctxParent = ctx.getParent();
+		if (!ctxParent) return false;
 
-		this.timerId = null;
-		this.ctxUpdateQueue = null;
+		if (ctxParent instanceof CtxUpdatable && contexts.includes(ctxParent)) return true;
 
-		if (contexts)
-		{
-			let contexts2 = contexts;  // remove null from the type
-
-			var contextsToUpdate = contexts2.filter(ctx => !this.isAnyParentInList(ctx, contexts2)); // do it before ctx.update(), since parents will be set to null
-
-			contextsToUpdate.forEach(ctx =>
-			{
-				//console.group('update:', ctx, ctx.id);
-
-				ctx.update();
-
-				//console.groupEnd();
-			});
-		}
-	}
-	private static isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[]): boolean
-	{
-		if (!ctx) throw new Error("ctx is null");
-
-		while (true)
-		{
-			let ctxParent = ctx.getParent();
-			if (!ctxParent) return false;
-
-			if (ctxParent instanceof CtxUpdatable && contexts.includes(ctxParent)) return true;
-
-			ctx = ctxParent;
-		}
+		ctx = ctxParent;
 	}
 }
