@@ -180,10 +180,7 @@ export class Ctx
 }
 export abstract class CtxHtmlElementOwner extends Ctx
 {
-	getTagName(): string | null
-	{
-		return null;
-	}
+	abstract getTagName(): string | null;
 }
 export class CtxElement extends CtxHtmlElementOwner
 {
@@ -238,6 +235,10 @@ export class CtxRoot extends CtxHtmlElementOwner
 	private attachedEventNames: { [eventName: string]: boolean } | null;
 	private eventHandlers: { [elmId: string]: EventHandlerMap } | null;
 
+	getTagName()
+	{
+		return this.htmlElement.tagName;
+	}
 	getHtmlElement(): HTMLElement
 	{
 		return this.htmlElement;
@@ -395,9 +396,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 }
 export abstract class CtxUpdatable extends Ctx
 {
-	update(): void
-	{
-	}
+	abstract update(): void;
 }
 export class CtxUpdatableChild extends CtxUpdatable
 {
