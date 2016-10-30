@@ -14,6 +14,9 @@ interface HtmlElementEvents
 
 export class Ctx
 {
+	private static useHierarchicalIds = false;
+	private static lastId: number | null;
+
 	private lastChildId: number | null;
 	private childCtxs: Ctx[] | null;
 	private parentCtx: Ctx | null;
@@ -103,12 +106,22 @@ export class Ctx
 
 	generateNextChildId(): string
 	{
-		this.lastChildId = (this.lastChildId || 0) + 1;
-		return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
+		if (Ctx.useHierarchicalIds)
+		{
+			this.lastChildId = (this.lastChildId || 0) + 1;
+			return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
+		}
+		else
+		{
+			Ctx.lastId = (Ctx.lastId || 0) + 1;
+
+			let rootCtx = this.getParentRootCtx();
+			return utils.appendDelimited(rootCtx.id, '-', Ctx.lastId.toString());
+		}
 	}
 	protected resetNextChildId(): void
 	{
-		this.lastChildId = null;
+		if (Ctx.useHierarchicalIds) this.lastChildId = null;
 	}
 
 	protected _update(content: any): void
