@@ -89,7 +89,6 @@ function renderItem(item: any): string | null
 function renderUpdatableChild(item: any): string
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
-
 	const id = ctxCurrent.generateNextChildId();
 
 	const ctx = new CtxUpdatableChild(id, item);
@@ -120,11 +119,10 @@ function renderElement(elm: elements.ElementGeneric)
 
 	const elmRefs = elm.z_getRefs();
 
-	const ctxCurrent = CtxScope.getCurrentSafe();
-
 	const attrId = getRenderedLastAttrValue(attrs['id']);
 	delete attrs['id'];
 
+	const ctxCurrent = CtxScope.getCurrentSafe();
 	const id = attrId || ctxCurrent.generateNextChildId();
 	//console.log('id: ', id);
 
@@ -212,6 +210,8 @@ function renderElement(elm: elements.ElementGeneric)
 	if (eventHanders)
 	{
 		const ctxRoot = ctxCurrent.getParentRootCtx();
+		if (!ctxRoot) throw new Error("root ctx is null");
+
 		ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
 	}
 
@@ -226,7 +226,7 @@ function renderElement(elm: elements.ElementGeneric)
 	let htmlStartTag = '<' + tagName;
 
 	const isCtxUsed = ctx.hasChildren() || eventHanders != null || elmRefs != null;
-	if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + quoteAttrVal(id));
+	if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + quote(id));
 
 	htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
 	htmlStartTag += '>';
@@ -274,20 +274,20 @@ function getElmAttrHtml(attrs: MapStringToArray): string
 		.reduce((attrsHtml, a) =>
 		{
 			let attrHtml = a.attrName;
-			if (a.attrVal) attrHtml += '=' + quoteAttrVal(a.attrVal);
+			if (a.attrVal) attrHtml += '=' + quote(encodeAttrVal(a.attrVal));
 
 			return utils.appendDelimited(attrsHtml, ' ', attrHtml);
 		}, '');
 
 	return attrsHtml;
 }
-function getAttrVal(attrs: MapStringToArray, attrName: string): string
+function getAttrVal(attrs: MapStringToArray, attrName: string): string | null
 {
 	const attrVals: any[] = attrs[attrName];
 	//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
 
 	let canBeUpdated: boolean;
-	let fn: () => any;
+	let fn: () => string | null;
 
 	if (attrName == 'class')
 	{
@@ -355,7 +355,7 @@ function getElmAttrs(elm: elements.ElementGeneric): MapStringToArray
 
 	return attrs;
 }
-function quoteAttrVal(s: string)
+function encodeAttrVal(s: string)
 {
 	let encoded = '';
 
@@ -378,9 +378,12 @@ function quoteAttrVal(s: string)
 		encoded += ch2;
 	}
 
-	return '"' + encoded + '"';
+	return encoded;
 }
-
+function quote(s: string)
+{
+	return '"' + s + '"';
+}
 function canItemBeUpdated(item: any): boolean
 {
 	if (item != null)
@@ -397,7 +400,7 @@ export function getRenderedHtml(item: any)
 	const content = getRenderedContent(item);
 	return renderHtml(content);
 }
-function getRenderedContent(item: any): any
+function getRenderedContent(item: any)
 {
 	if (item != null)
 	{
@@ -408,7 +411,7 @@ function getRenderedContent(item: any): any
 
 	return item;
 }
-function getRenderedAttrValue(item: any): any
+function getRenderedAttrValue(item: any)
 {
 	const v = getRenderedAttrValueRaw(item);
 	if (v === true) return '';
@@ -424,7 +427,7 @@ function canBeUpdatedAttr(item: any): boolean
 	}
 	return false;
 }
-function getRenderedAttrValueRaw(item: any): any
+function getRenderedAttrValueRaw(item: any)
 {
 	if (item != null)
 	{
@@ -444,7 +447,7 @@ function canBeUpdatedStyle(item: elements.attrValType | elements.StyleRule): boo
 		return canBeUpdatedAttr(item);
 	}
 }
-function getRenderedStyleValue(item: elements.attrValType | elements.StyleRule): any
+function getRenderedStyleValue(item: elements.attrValType | elements.StyleRule)
 {
 	if (typeof item === "object" && item instanceof elements.StyleRule)
 	{

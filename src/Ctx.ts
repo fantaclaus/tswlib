@@ -15,55 +15,55 @@ interface HtmlElementEvents
 export class Ctx
 {
 	private static useHierarchicalIds = false;
-	private static lastId: number | null;
 
 	private lastChildId: number | null;
 	private childCtxs: Ctx[] | null;
 	private parentCtx: Ctx | null;
 
-	id: string;
+	public rootCtx: CtxRoot;
+	public id: string;
 
 	getParent()
 	{
 		return this.parentCtx;
 	}
-	getParentHtmlElmOwnerCtx(): CtxHtmlElementOwner
+	getParentHtmlElmOwnerCtx()
 	{
-		return <CtxHtmlElementOwner>this.findSelfOrParent(ctx => ctx instanceof CtxHtmlElementOwner);
+		return this.findSelfOrParent<CtxHtmlElementOwner>(ctx => ctx instanceof CtxHtmlElementOwner);
 	}
-	getParentUpdatableCtx(): CtxUpdatable
+	getParentUpdatableCtx()
 	{
-		return <CtxUpdatable>this.findSelfOrParent(ctx => ctx instanceof CtxUpdatable);
+		return this.findSelfOrParent<CtxUpdatable>(ctx => ctx instanceof CtxUpdatable);
 	}
-	getParentRootCtx(): CtxRoot
+	getParentRootCtx()
 	{
-		return <CtxRoot>this.findSelfOrParent(ctx => ctx instanceof CtxRoot);
+		return this.findSelfOrParent<CtxRoot>(ctx => ctx instanceof CtxRoot);
 	}
-	private findSelfOrParent(predicate: (ctx: Ctx) => boolean)
+	private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean): T | null
 	{
 		var ctx: Ctx | null = this;
 
 		while (ctx != null)
 		{
-			if (predicate(ctx)) return ctx;
+			if (predicate(ctx)) return <T>ctx;
 
 			ctx = ctx.parentCtx;
 		}
 
 		return null;
 	}
-	protected forEachChild(action: (ctx: Ctx) => void): void
+	protected forEachChild(action: (ctx: Ctx) => void)
 	{
 		if (this.childCtxs) this.childCtxs.forEach(ctx => action(ctx));
 	}
 
-	addChildCtx(ctx: Ctx): void
+	addChildCtx(ctx: Ctx)
 	{
 		this.childCtxs = this.childCtxs || [];
 		this.childCtxs.push(ctx);
 		ctx.parentCtx = this;
 	}
-	protected removeChildren(): void
+	protected removeChildren()
 	{
 		if (this.childCtxs)
 		{
@@ -81,50 +81,49 @@ export class Ctx
 	{
 		return this.childCtxs != null && this.childCtxs.length > 0;
 	}
-	protected unregisterEventHandlers(): void
+	protected unregisterEventHandlers()
 	{
 		var ctxRoot = this.getParentRootCtx();
+		if (!ctxRoot) throw new Error("root ctx is null");
+
 		this.unregisterEventHandlersFromRoot(ctxRoot);
 	}
-	unregisterEventHandlersFromRoot(ctxRoot: CtxRoot): void
+	unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
 	{
 		this.forEachChild(ctx => ctx.unregisterEventHandlersFromRoot(ctxRoot));
 	}
-	protected afterAttach(): void
+	protected afterAttach()
 	{
 		this.forEachChild(ctx => ctx.afterAttach());
 	}
-	protected beforeDetach(): void
+	protected beforeDetach()
 	{
 		this.forEachChild(ctx => ctx.beforeDetach());
 	}
-	protected getHtmlElement(): HTMLElement
+	protected getHtmlElement(): HTMLElement | null
 	{
 		var ctxElm = this.getParentHtmlElmOwnerCtx();
-		return ctxElm.getHtmlElement();
+		return ctxElm && ctxElm.getHtmlElement();
 	}
 
-	generateNextChildId(): string
+	private getNextChildId()
 	{
-		if (Ctx.useHierarchicalIds)
-		{
-			this.lastChildId = (this.lastChildId || 0) + 1;
-			return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
-		}
-		else
-		{
-			Ctx.lastId = (Ctx.lastId || 0) + 1;
-
-			let rootCtx = this.getParentRootCtx();
-			return utils.appendDelimited(rootCtx.id, '-', Ctx.lastId.toString());
-		}
+		this.lastChildId = (this.lastChildId || 0) + 1;
+		return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 	}
-	protected resetNextChildId(): void
+	generateNextChildId()
+	{
+		const ctx: Ctx | null = Ctx.useHierarchicalIds ? this : this.getParentRootCtx();
+		if (!ctx) throw new Error("root ctx is null");
+
+		return ctx.getNextChildId();
+	}
+	protected resetNextChildId()
 	{
 		if (Ctx.useHierarchicalIds) this.lastChildId = null;
 	}
 
-	protected _update(content: any): void
+	protected _update(content: any)
 	{
 		this.beforeDetach();
 
@@ -148,18 +147,18 @@ export class Ctx
 	{
 		return null;
 	}
-	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 	{
 
 	}
-	private detachPropKeys(): void
+	private detachPropKeys()
 	{
 		var ctxs: Ctx[] = [];
 		this.collectChildContexts(ctxs);
 
 		CtxUtils.removeCtxs(ctxs);
 	}
-	private collectChildContexts(ctxs: Ctx[]): void
+	private collectChildContexts(ctxs: Ctx[])
 	{
 		ctxs.push(this);
 
@@ -170,7 +169,7 @@ export class Ctx
 	//{
 	//	return ['%o #%s', this, this.id];
 	//}
-	//log(fmt: string, ...args: any[]): void
+	//log(fmt: string, ...args: any[])
 	//{
 	//	var dbgArgs = this.getDbgArgs();
 	//	dbgArgs[0] = utils.appendDelimited(dbgArgs[0], ': ', fmt);
@@ -207,13 +206,13 @@ export class CtxElement extends CtxHtmlElementOwner
 		return this.tagName;
 	}
 
-	unregisterEventHandlersFromRoot(ctxRoot: CtxRoot): void
+	unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
 	{
 		ctxRoot.detachElmEventHandlers(this.id);
 
 		super.unregisterEventHandlersFromRoot(ctxRoot);
 	}
-	removeChildren(): void
+	removeChildren()
 	{
 		if (this.refs)
 		{
@@ -243,7 +242,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 	{
 		return this.htmlElement;
 	}
-	render(content: any, htmlElement: HTMLElement): void
+	render(content: any, htmlElement: HTMLElement)
 	{
 		if (this.htmlElement !== htmlElement)
 		{
@@ -259,19 +258,19 @@ export class CtxRoot extends CtxHtmlElementOwner
 	{
 		return RenderUtils.renderHtml(content);
 	}
-	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 	{
 		htmlElement.innerHTML = innerHtml;
 	}
 
-	protected unregisterEventHandlers(): void
+	protected unregisterEventHandlers()
 	{
 		var jqElm = jQuery(this.htmlElement);
 		jqElm.off();
 		this.attachedEventNames = null;
 		this.eventHandlers = null;
 	}
-	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap): void
+	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap)
 	{
 		//console.group('attached events for: %s: %o', elmId, eventHandlers);
 
@@ -282,7 +281,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 		//console.groupEnd();
 	}
-	detachElmEventHandlers(elmId: string): void
+	detachElmEventHandlers(elmId: string)
 	{
 		if (this.eventHandlers)
 		{
@@ -298,7 +297,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			//console.groupEnd();
 		}
 	}
-	private updateEventSubscriptions(): void
+	private updateEventSubscriptions()
 	{
 		var jqElm = jQuery(this.htmlElement);
 
@@ -409,7 +408,7 @@ export class CtxUpdatableChild extends CtxUpdatable
 		this.id = id;
 		this.content = content;
 	}
-	update(): void
+	update()
 	{
 		this._update(this.content);
 	}
@@ -417,20 +416,20 @@ export class CtxUpdatableChild extends CtxUpdatable
 	{
 		return RenderUtils.getRenderedHtml(content);
 	}
-	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 	{
 		//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
 		RenderUtils.updateInnerHtml(htmlElement, this.id, innerHtml);
 	}
-	protected afterAttach(): void
+	protected afterAttach()
 	{
 		var renderer = <Renderer>this.content;
 		if (renderer.afterAttach) renderer.afterAttach();
 
 		super.afterAttach();
 	}
-	protected beforeDetach(): void
+	protected beforeDetach()
 	{
 		super.beforeDetach();
 
@@ -450,14 +449,15 @@ export class CtxUpdatableChild extends CtxUpdatable
 export class CtxUpdatableAttr extends CtxUpdatable
 {
 	attrName: string;
-	renderFn: () => any;
+	renderFn: () => string | null;
 
-	update(): void
+	update()
 	{
 		var htmlElement = this.getHtmlElement();
+		if (!htmlElement) throw new Error("htmlElement is null");
 		//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
-		var v: string = CtxScope.use(this, () => this.renderFn());
+		var v = CtxScope.use(this, () => this.renderFn());
 
 		//console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
 
@@ -471,7 +471,7 @@ export class CtxUpdatableAttr extends CtxUpdatable
 		}
 		else if (this.attrName == 'value')
 		{
-			jqElement.prop('value', v);
+			jqElement.prop('value', v || '');
 		}
 		else
 		{
@@ -500,9 +500,10 @@ export class CtxUpdatableValue extends CtxUpdatable
 	propName: string;
 	renderFn: () => any;
 
-	update(): void
+	update()
 	{
 		var htmlElement = this.getHtmlElement();
+		if (!htmlElement) throw new Error("htmlElement is null");
 
 		var val = CtxScope.use(this, () => this.renderFn());
 		//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
