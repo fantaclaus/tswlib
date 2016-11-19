@@ -63,7 +63,7 @@ export class ElementGeneric
 	{
 		if (name != null && val != null)
 		{
-			var v = new StyleRule();
+			const v = new StyleRule();
 			v.propName = name;
 			v.propValue = val;
 

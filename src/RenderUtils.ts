@@ -1,4 +1,4 @@
-﻿import { CtxUpdatable, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableAttr, CtxUpdatableValue } from './Ctx';
+﻿import { CtxUpdatable, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableAttr, CtxUpdatableValue, CtxRoot } from './Ctx';
 import * as elements from './elm';
 import * as utils from './utils';
 import { RawHtml, ElementWithValue } from './htmlElements';
@@ -41,35 +41,42 @@ class HtmlBlockMarkers
 
 let _tmpHtmlElement: HTMLElement;
 
-export function renderHtml(content: any)
+export function renderHtml(rootCtx: CtxRoot, content: any)
 {
-	const items: any[] = [];
-	addExpanded(items, content);
+	let result = '';
 
-	return utils.join(items, '', item => renderItem(item));
-}
-function addExpanded(target: any[], v: any): void
-{
-	if (v == null) return;
+	addExpanded(content);
 
-	if (v instanceof Array)
+	return result;
+
+	function addExpanded(item: any): void
 	{
-		for (let i = 0; i < v.length; i++)
+		if (item == null) return;
+
+		if (item instanceof Array)
 		{
-			addExpanded(target, v[i]);
+			for (let i = 0; i < item.length; i++)
+			{
+				addExpanded(item[i]);
+			}
+		}
+		else
+		{
+			const s = renderItem(rootCtx, item);
+
+			if (s != null && s !== '') // don't add nulls and empty strings. but zero (number) value must be added.
+			{
+				result = result + s;
+			}
 		}
 	}
-	else
-	{
-		target.push(v);
-	}
 }
-function renderItem(item: any): string | null
+function renderItem(rootCtx: CtxRoot, item: any): string
 {
-	if (item === true || item === false) return '';
+	if (item == null || item === true || item === false) return '';
 
 	if (item instanceof RawHtml) return item.value;
-	if (item instanceof elements.ElementGeneric) return renderElement(item);
+	if (item instanceof elements.ElementGeneric) return renderElement(rootCtx, item);
 
 	// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
 	const ctxCurrent = CtxScope.getCurrentSafe();
@@ -80,28 +87,28 @@ function renderItem(item: any): string | null
 	if (tagName != 'textarea')
 	{
 		const canBeUpdated = canItemBeUpdated(item);
-		if (canBeUpdated) return renderUpdatableChild(item);
+		if (canBeUpdated) return renderUpdatableChild(rootCtx, item);
 	}
 
 	const s = item.toString();
 	return utils.htmlEncode(s);
 }
-function renderUpdatableChild(item: any): string
+function renderUpdatableChild(rootCtx: CtxRoot, item: any): string
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 	const id = ctxCurrent.generateNextChildId();
 
-	const ctx = new CtxUpdatableChild(id, item);
+	const ctx = new CtxUpdatableChild(rootCtx, id, item);
 	ctxCurrent.addChildCtx(ctx);
 
 	//console.log('getElmCtx: %o', ctx.getElmCtx());
 
-	const innerHtml = CtxScope.use(ctx, () => getRenderedHtml(item));
+	const innerHtml = CtxScope.use(ctx, () => getRenderedHtml(rootCtx, item));
 
 	const markers = new HtmlBlockMarkers(ctx.id);
 	return markers.getHtml(innerHtml);
 }
-function renderElement(elm: elements.ElementGeneric)
+function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
 {
 	const tagName = elm.z_getTagName();
 	//console.log(elm, tagName);
@@ -111,7 +118,7 @@ function renderElement(elm: elements.ElementGeneric)
 		const children = elm.z_getChildren();
 		//console.log('children: ', children);
 
-		return renderHtml(children);
+		return renderHtml(rootCtx, children);
 	}
 
 	const attrs = getElmAttrs(elm); // attr names in lower case
@@ -126,7 +133,7 @@ function renderElement(elm: elements.ElementGeneric)
 	const id = attrId || ctxCurrent.generateNextChildId();
 	//console.log('id: ', id);
 
-	const ctx = new CtxElement(id, tagName, elmRefs);
+	const ctx = new CtxElement(rootCtx, id, tagName, elmRefs);
 	ctxCurrent.addChildCtx(ctx);
 
 	//logElmAttrs(elm);
@@ -143,7 +150,7 @@ function renderElement(elm: elements.ElementGeneric)
 		const valAttrName = elmWithVal.z_getValueAttrName();
 		const valPropName = elmWithVal.z_getValuePropName();
 
-		const valData2 = CtxScope.use(ctx, () => getValue(propDef, valPropName));
+		const valData2 = CtxScope.use(ctx, () => getValue(rootCtx, propDef, valPropName));
 
 		// replace attributes with value of propdef (checked or value)
 
@@ -162,19 +169,25 @@ function renderElement(elm: elements.ElementGeneric)
 		};
 	}
 
-	const attrsHtml = CtxScope.use(ctx, () => getElmAttrHtml(attrs));
+	const attrsHtml = CtxScope.use(ctx, () => getElmAttrHtml(rootCtx, attrs));
 	//console.log(`attrsHtml: [${attrsHtml}]`);
 
-	let innerHtml: string | null;
+	let innerHtml: string;
 
 	if (valData && tagName == 'textarea')
 	{
-		innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
+		if (valData.value == null)
+		{
+			innerHtml = '';
+		}
+		else
+		{
+			innerHtml = utils.htmlEncode(valData.value);
+		}
 	}
 	else
 	{
-		const children = elm.z_getChildren();
-		innerHtml = CtxScope.use(ctx, () => renderHtml(children));
+		innerHtml = CtxScope.use(ctx, () => renderHtml(rootCtx, elm.z_getChildren()));
 	}
 
 	let eventHanders = elm.z_getEventHandlers();
@@ -209,10 +222,10 @@ function renderElement(elm: elements.ElementGeneric)
 
 	if (eventHanders)
 	{
-		const ctxRoot = ctxCurrent.getParentRootCtx();
+		const ctxRoot = ctxCurrent.getRootCtx();
 		if (!ctxRoot) throw new Error("root ctx is null");
 
-		ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
+		ctxRoot.attachElmEventHandlers(id, eventHanders);
 	}
 
 	if (elmRefs)
@@ -229,30 +242,14 @@ function renderElement(elm: elements.ElementGeneric)
 	if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + quote(id));
 
 	htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
-	htmlStartTag += '>';
+	htmlStartTag = htmlStartTag + '>';
 
+	const hasInnerHtml = !!innerHtml;
 	let html = htmlStartTag;
-
-	if (innerHtml) html += innerHtml;
-
-	if (innerHtml || elmNeedsCloseTag(tagName))
-	{
-		html += '</' + tagName + '>';
-	}
-
+	if (hasInnerHtml) html = html + innerHtml;
+	if (hasInnerHtml || elmNeedsCloseTag(tagName)) html = html + '</' + tagName + '>';
 	return html;
 }
-
-//function logElmAttrs(elm)
-//{
-//	const elmAttrs = elm.z_getAttrs();
-//	const ss = elmAttrs.reduce((s, ea) =>
-//	{
-//		return utils.appendDelimited(s, ', ', utils.format('{${name}=${value}}', ea));
-//	}, '');
-//	console.log('attrs: ', ss);
-//}
-
 function elmNeedsCloseTag(tagName: string): boolean
 {
 	const tagNameUpper = tagName.toUpperCase();
@@ -263,25 +260,25 @@ function elmNeedsCloseTag(tagName: string): boolean
 
 	return !needNoClosingTag;
 }
-function getElmAttrHtml(attrs: MapStringToArray): string
+function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArray): string
 {
-	const attrsHtml = Object.keys(attrs)
-		.map(attrName => ({
-			attrName: attrName,
-			attrVal: getAttrVal(attrs, attrName)
-		}))
-		.filter(a => a.attrVal != null)
-		.reduce((attrsHtml, a) =>
-		{
-			let attrHtml = a.attrName;
-			if (a.attrVal) attrHtml += '=' + quote(encodeAttrVal(a.attrVal));
+	let attrsHtml = '';
 
-			return utils.appendDelimited(attrsHtml, ' ', attrHtml);
-		}, '');
+	utils.forEachKey(attrs, attrName =>
+	{
+		const attrVal = getAttrVal(rootCtx, attrs, attrName);
+		if (attrVal != null)
+		{
+			let attrHtml = attrName;
+			if (attrVal) attrHtml = attrHtml + '=' + quote(encodeAttrVal(attrVal));
+
+			attrsHtml = utils.appendDelimited(attrsHtml, ' ', attrHtml);
+		}
+	});
 
 	return attrsHtml;
 }
-function getAttrVal(attrs: MapStringToArray, attrName: string): string | null
+function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArray, attrName: string): string | null
 {
 	const attrVals: any[] = attrs[attrName];
 	//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
@@ -309,7 +306,7 @@ function getAttrVal(attrs: MapStringToArray, attrName: string): string | null
 	{
 		const ctxCurrent = CtxScope.getCurrentSafe();
 
-		const ctx = new CtxUpdatableAttr();
+		const ctx = new CtxUpdatableAttr(rootCtx);
 		ctxCurrent.addChildCtx(ctx);
 		ctx.attrName = attrName;
 		ctx.renderFn = fn;
@@ -375,7 +372,7 @@ function encodeAttrVal(s: string)
 			ch2 = ch;
 		}
 
-		encoded += ch2;
+		encoded = encoded + ch2;
 	}
 
 	return encoded;
@@ -395,10 +392,10 @@ function canItemBeUpdated(item: any): boolean
 
 	return false;
 }
-export function getRenderedHtml(item: any)
+export function getRenderedHtml(rootCtx: CtxRoot, item: any)
 {
 	const content = getRenderedContent(item);
-	return renderHtml(content);
+	return renderHtml(rootCtx, content);
 }
 function getRenderedContent(item: any)
 {
@@ -473,11 +470,11 @@ function asElmWithValue(elm: elements.ElementGeneric)
 		return null;
 	}
 }
-function getValue(propDef: PropDefReadable<any>, valPropName: string): ValueData2
+function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<any>, valPropName: string): ValueData2
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 
-	const ctx = new CtxUpdatableValue();
+	const ctx = new CtxUpdatableValue(rootCtx);
 	ctxCurrent.addChildCtx(ctx);
 	//ctx.tagName = tagName;
 	ctx.propName = valPropName;

@@ -15,25 +15,25 @@ export class RadioGroup<T>
 	}
 	item(v: T)
 	{
-		var p =
+		const p =
 			{
 				get: () => this.propVal.get() == v,
 				set: () => this.propVal.set(v),
 			};
 
-		var elm = new elements.ElementInputRadio();
+		const elm = new elements.ElementInputRadio();
 		elm.value(p).attr('name', this.groupName).addRef(this.getRefFor(v));
 		return elm;
 	}
 	label(v: T)
 	{
-		var elm = new elements.ElementLabel();
+		const elm = new elements.ElementLabel();
 		elm.forRef(this.getRefFor(v));
 		return elm;
 	}
 	private getRefFor(v: T)
 	{
-		var keyRef = this.refs.find(kr => kr.key == v);
+		let keyRef = this.refs.find(kr => kr.key == v);
 		if (keyRef == null)
 		{
 			keyRef = { key: v, ref: new Ref() };

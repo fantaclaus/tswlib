@@ -16,7 +16,7 @@ export function setContent(htmlElement: HTMLElement | null, content: any): void
 {
 	if (htmlElement != null)
 	{
-		var ctxRoot = new CtxRoot();
+		const ctxRoot = new CtxRoot();
 		ctxRoot.render(content, htmlElement);
 	}
 }

@@ -15,24 +15,24 @@ export function join(items: any[], delim: string, selector: (item: any) => strin
 {
 	// if all items are null, return null
 
-	var result: string | null = null;
+	let result: string | null = null;
 
 	if (items)
 	{
-		for (var i = 0; i < items.length; i++)
+		for (let i = 0; i < items.length; i++)
 		{
-			var item = items[i];
+			const item = items[i];
 			if (item != null)
 			{
-				var s = selector(item);
+				const s = selector(item);
 
 				if (s != null && result == null) result = ''; // if at least one item is converted to non-null, result is not null
 
 				if (s != null && s !== '') // don't add nulls and empty strings. but zero-number value must be added.
 				{
-					if (delim && result) result += delim;
+					if (delim && result) result = result + delim;
 
-					result += s;
+					result = result + s;
 				}
 			}
 		}

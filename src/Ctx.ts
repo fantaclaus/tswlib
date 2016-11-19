@@ -12,7 +12,7 @@ interface HtmlElementEvents
 	ehMap: EventHandlerMap;
 }
 
-export class Ctx
+export abstract class Ctx
 {
 	private static useHierarchicalIds = false;
 
@@ -20,7 +20,7 @@ export class Ctx
 	private childCtxs: Ctx[] | null;
 	private parentCtx: Ctx | null;
 
-	public rootCtx: CtxRoot;
+	public rootCtx: CtxRoot | undefined;
 	public id: string;
 
 	getParent()
@@ -35,9 +35,9 @@ export class Ctx
 	{
 		return this.findSelfOrParent<CtxUpdatable>(ctx => ctx instanceof CtxUpdatable);
 	}
-	getParentRootCtx()
+	getRootCtx()
 	{
-		return this.findSelfOrParent<CtxRoot>(ctx => ctx instanceof CtxRoot);
+		return this.rootCtx;
 	}
 	private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean): T | null
 	{
@@ -83,7 +83,7 @@ export class Ctx
 	}
 	protected unregisterEventHandlers()
 	{
-		var ctxRoot = this.getParentRootCtx();
+		var ctxRoot = this.getRootCtx();
 		if (!ctxRoot) throw new Error("root ctx is null");
 
 		this.unregisterEventHandlersFromRoot(ctxRoot);
@@ -111,9 +111,9 @@ export class Ctx
 		this.lastChildId = (this.lastChildId || 0) + 1;
 		return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 	}
-	generateNextChildId()
+	generateNextChildId(): string
 	{
-		const ctx: Ctx | null = Ctx.useHierarchicalIds ? this : this.getParentRootCtx();
+		const ctx = Ctx.useHierarchicalIds ? <Ctx>this : this.getRootCtx();
 		if (!ctx) throw new Error("root ctx is null");
 
 		return ctx.getNextChildId();
@@ -143,13 +143,13 @@ export class Ctx
 
 		this.afterAttach();
 	}
-	protected _renderHtml(content: any): string | null
+	protected _renderHtml(content: any): string
 	{
-		return null;
+		throw new Error("_renderHtml is not supported by this class");
 	}
 	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 	{
-
+		throw new Error("setInnerHtml is not supported by this class");
 	}
 	private detachPropKeys()
 	{
@@ -186,10 +186,11 @@ export class CtxElement extends CtxHtmlElementOwner
 	private tagName: string;
 	private refs: Ref[] | null;
 
-	constructor(id: string, tagName: string, refs: Ref[] | null)
+	constructor(rootCtx: CtxRoot, id: string, tagName: string, refs: Ref[] | null)
 	{
 		super();
 
+		this.rootCtx = rootCtx;
 		this.id = id;
 		this.tagName = tagName;
 		this.refs = refs;
@@ -234,6 +235,10 @@ export class CtxRoot extends CtxHtmlElementOwner
 	private attachedEventNames: { [eventName: string]: boolean } | null;
 	private eventHandlers: { [elmId: string]: EventHandlerMap } | null;
 
+	getRootCtx()
+	{
+		return this;
+	}
 	getTagName()
 	{
 		return this.htmlElement.tagName;
@@ -254,9 +259,9 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 		this._update(content);
 	}
-	protected _renderHtml(content: any): string | null
+	protected _renderHtml(content: any)
 	{
-		return RenderUtils.renderHtml(content);
+		return RenderUtils.renderHtml(this, content);
 	}
 	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 	{
@@ -401,10 +406,11 @@ export class CtxUpdatableChild extends CtxUpdatable
 {
 	content: any;
 
-	constructor(id: string, content: any)
+	constructor(rootCtx: CtxRoot, id: string, content: any)
 	{
 		super();
 
+		this.rootCtx = rootCtx;
 		this.id = id;
 		this.content = content;
 	}
@@ -414,7 +420,10 @@ export class CtxUpdatableChild extends CtxUpdatable
 	}
 	protected _renderHtml(content: any)
 	{
-		return RenderUtils.getRenderedHtml(content);
+		var ctxRoot = this.getRootCtx();
+		if (!ctxRoot) throw new Error("root ctx is null");
+
+		return RenderUtils.getRenderedHtml(ctxRoot, content);
 	}
 	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 	{
@@ -451,6 +460,12 @@ export class CtxUpdatableAttr extends CtxUpdatable
 	attrName: string;
 	renderFn: () => string | null;
 
+	constructor(rootCtx: CtxRoot)
+	{
+		super();
+
+		this.rootCtx = rootCtx;
+	}
 	update()
 	{
 		var htmlElement = this.getHtmlElement();
@@ -500,6 +515,12 @@ export class CtxUpdatableValue extends CtxUpdatable
 	propName: string;
 	renderFn: () => any;
 
+	constructor(rootCtx: CtxRoot)
+	{
+		super();
+
+		this.rootCtx = rootCtx;
+	}
 	update()
 	{
 		var htmlElement = this.getHtmlElement();
