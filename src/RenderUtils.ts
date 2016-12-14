@@ -507,14 +507,14 @@ function updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockM
 
 	if (targetElement.hasChildNodes())
 	{
-		const firstNode = targetElement.firstChild;
+		const firstNode = targetElement.firstChild!;
 		if (firstNode.nodeType == COMMENT_NODE && firstNode.nodeValue == markers.begin)
 		{
 			nodeBeginMarker = firstNode;
 			isFirst = true;
 		}
 
-		const lastNode = targetElement.lastChild;
+		const lastNode = targetElement.lastChild!;
 		if (lastNode.nodeType == COMMENT_NODE && lastNode.nodeValue == markers.end)
 		{
 			nodeEndMarker = lastNode;
@@ -523,7 +523,7 @@ function updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockM
 
 		if (!(isFirst && isLast))
 		{
-			let node = firstNode;
+			let node: Node | null = firstNode;
 
 			while (node)
 			{
@@ -564,11 +564,11 @@ function updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockM
 
 		if (nodeBeginMarker && nodeEndMarker)
 		{
-			let node = nodeBeginMarker.nextSibling;
+			let node = nodeBeginMarker.nextSibling!;
 
 			while (node !== nodeEndMarker)
 			{
-				const nodeNext = node.nextSibling;
+				const nodeNext = node.nextSibling!;
 
 				targetElement.removeChild(node);
 

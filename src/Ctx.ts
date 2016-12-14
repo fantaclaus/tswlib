@@ -361,7 +361,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			var eventHandler = r.ehMap[e.type];
 			if (eventHandler)
 			{
-				//console.log('on event: %o for: %o id: %s; %s', e.type, e.target, elmId, htmlElm.tagName);
+				// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
 
 				if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a')
 				{
@@ -372,7 +372,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			}
 		}
 	}
-	private findEventHandlers(htmlElement: HTMLElement): HtmlElementEvents | null
+	private findEventHandlers(htmlElement: HTMLElement | null): HtmlElementEvents | null
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{
