@@ -16,11 +16,11 @@ interface ValueData
 	ctx: CtxUpdatable;
 	valPropName: string;
 }
-interface ValueData2
-{
-	value: any;
-	ctx: CtxUpdatable;
-}
+// interface ValueData2
+// {
+// 	value: any;
+// 	ctx: CtxUpdatable;
+// }
 
 class HtmlBlockMarkers
 {
@@ -140,9 +140,7 @@ function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
 
 	const elmWithVal = asElmWithValue(elm);
 	const propDef = elmWithVal && elmWithVal.z_getPropDef();
-
 	const useVal = propDef && propDef.get instanceof Function;
-	const updateVal = useVal && propDef && propDef.set instanceof Function;
 
 	let valData: ValueData | null = null;
 	if (elmWithVal && propDef && useVal)
@@ -162,11 +160,7 @@ function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
 			attrs[valAttrName] = [valData2.value];
 		}
 
-		valData = {
-			value: valData2.value,
-			ctx: valData2.ctx,
-			valPropName: valPropName,
-		};
+		valData = valData2;
 	}
 
 	const attrsHtml = CtxScope.use(ctx, () => getElmAttrHtml(rootCtx, attrs));
@@ -192,6 +186,7 @@ function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
 
 	let eventHanders = elm.z_getEventHandlers();
 
+	const updateVal = useVal && propDef && propDef.set instanceof Function;
 	if (updateVal && propDef && valData)
 	{
 		const valData2 = valData; // remove null from type
@@ -470,7 +465,7 @@ function asElmWithValue(elm: elements.ElementGeneric)
 		return null;
 	}
 }
-function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<any>, valPropName: string): ValueData2
+function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<any>, valPropName: string) //: ValueData2
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 
@@ -482,7 +477,7 @@ function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<any>, valPropName: 
 
 	const val = CtxScope.use(ctx, ctx.renderFn);
 
-	return { value: val, ctx: ctx };
+	return { value: val, ctx: ctx, valPropName: valPropName };
 }
 
 export function updateInnerHtml(htmlElement: HTMLElement, id: string, html: string): void
