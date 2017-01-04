@@ -157,6 +157,12 @@ export class ElementTextArea extends ElementWithValue
 
 		return this;
 	}
+	placeholder(v: string)
+	{
+		this.attr('placeholder', v);
+
+		return this;
+	}
 	/**
 	 * @internal
 	 */
