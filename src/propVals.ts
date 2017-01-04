@@ -95,6 +95,11 @@ export class PropValArray<T> extends PropVal<T[]>
 	{
 		super(items);
 	}
+	getItem(index: number)
+	{
+		let a = this.get();
+		return a[index];
+	}
 	addItem(item: T, index?: number)
 	{
 		let a = this.get();
@@ -109,5 +114,16 @@ export class PropValArray<T> extends PropVal<T[]>
 		}
 
 		CtxUtils.update(this);
+	}
+	setLength(length: number)
+	{
+		let a = this.get();
+
+		if (a.length != length)
+		{
+			a.length = length;
+
+			CtxUtils.update(this);
+		}
 	}
 }
