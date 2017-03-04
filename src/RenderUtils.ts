@@ -516,7 +516,7 @@ function updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockM
 			isLast = true;
 		}
 
-		if (!(isFirst && isLast))
+		if (!isFirst || !isLast)
 		{
 			let node: Node | null = firstNode;
 
@@ -570,11 +570,11 @@ function updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockM
 				node = nodeNext;
 			}
 
-			if (!_tmpHtmlElement) _tmpHtmlElement = document.createElement('span');
+			if (!_tmpHtmlElement) _tmpHtmlElement = document.createElement('div');
 
 			// insert html into TABLE doesn't work on IE<10
 			targetElement.insertBefore(_tmpHtmlElement, nodeEndMarker);
-			_tmpHtmlElement.insertAdjacentHTML('beforeBegin', html);
+			_tmpHtmlElement.insertAdjacentHTML('beforeBegin', "\n" + html + "\n"); // IE9 needs something between a comment and a tag
 			targetElement.removeChild(_tmpHtmlElement);
 
 			// doesn't work on IE
