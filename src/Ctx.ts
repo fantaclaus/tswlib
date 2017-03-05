@@ -1,20 +1,4 @@
-﻿namespace tsw
-{
-	export function setContent(htmlElement: HTMLElement, content: any): void
-	{
-		var ctxRoot = new tsw.internal.CtxRoot();
-		ctxRoot.render(content, htmlElement);
-	}
-
-	export interface Renderer
-	{
-		render: () => any;
-		afterAttach?: () => void;
-		beforeDetach?: () => void;
-	}
-}
-
-/**
+﻿/**
  * @internal
  */
 namespace tsw.internal
@@ -62,18 +46,18 @@ namespace tsw.internal
 
 			return null;
 		}
-		protected forEachChild(action: (ctx: Ctx) => void): void
+		protected forEachChild(action: (ctx: Ctx) => void)
 		{
 			if (this.childCtxs) this.childCtxs.forEach(ctx => action(ctx));
 		}
 
-		addChildCtx(ctx: Ctx): void
+		addChildCtx(ctx: Ctx)
 		{
 			this.childCtxs = this.childCtxs || [];
 			this.childCtxs.push(ctx);
 			ctx.parentCtx = this;
 		}
-		protected removeChildren(): void
+		protected removeChildren()
 		{
 			if (this.childCtxs)
 			{
@@ -91,20 +75,20 @@ namespace tsw.internal
 		{
 			return this.childCtxs != null && this.childCtxs.length > 0;
 		}
-		protected unregisterEventHandlers(): void
+		protected unregisterEventHandlers()
 		{
 			var ctxRoot = this.getParentRootCtx();
 			this.unregisterEventHandlersFromRoot(ctxRoot);
 		}
-		unregisterEventHandlersFromRoot(ctxRoot: CtxRoot): void
+		unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
 		{
 			this.forEachChild(ctx => ctx.unregisterEventHandlersFromRoot(ctxRoot));
 		}
-		protected afterAttach(): void
+		protected afterAttach()
 		{
 			this.forEachChild(ctx => ctx.afterAttach());
 		}
-		protected beforeDetach(): void
+		protected beforeDetach()
 		{
 			this.forEachChild(ctx => ctx.beforeDetach());
 		}
@@ -114,17 +98,17 @@ namespace tsw.internal
 			return ctxElm.getHtmlElement();
 		}
 
-		generateNextChildId(): string
+		generateNextChildId()
 		{
 			this.lastChildId = (this.lastChildId || 0) + 1;
 			return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 		}
-		protected resetNextChildId(): void
+		protected resetNextChildId()
 		{
 			this.lastChildId = null;
 		}
 
-		protected _update(content: any): void
+		protected _update(content: any)
 		{
 			this.beforeDetach();
 
@@ -148,18 +132,18 @@ namespace tsw.internal
 		{
 			return null;
 		}
-		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
 
 		}
-		private detachPropKeys(): void
+		private detachPropKeys()
 		{
 			var ctxs: Ctx[] = [];
 			this.collectChildContexts(ctxs);
 
-			CtxUtils.removeCtxs(ctxs);
+			tsw.internal.removeCtxs(ctxs);
 		}
-		private collectChildContexts(ctxs: Ctx[]): void
+		private collectChildContexts(ctxs: Ctx[])
 		{
 			ctxs.push(this);
 
@@ -170,7 +154,7 @@ namespace tsw.internal
 		//{
 		//	return ['%o #%s', this, this.id];
 		//}
-		//log(fmt: string, ...args: any[]): void
+		//log(fmt: string, ...args: any[])
 		//{
 		//	var dbgArgs = this.getDbgArgs();
 		//	dbgArgs[0] = utils.appendDelimited(dbgArgs[0], ': ', fmt);
@@ -210,13 +194,13 @@ namespace tsw.internal
 			return this.tagName;
 		}
 
-		unregisterEventHandlersFromRoot(ctxRoot: CtxRoot): void
+		unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
 		{
 			ctxRoot.detachElmEventHandlers(this.id);
 
 			super.unregisterEventHandlersFromRoot(ctxRoot);
 		}
-		removeChildren(): void
+		removeChildren()
 		{
 			if (this.refs)
 			{
@@ -242,7 +226,7 @@ namespace tsw.internal
 		{
 			return this.htmlElement;
 		}
-		render(content: any, htmlElement?: HTMLElement): void
+		render(content: any, htmlElement?: HTMLElement)
 		{
 			if (htmlElement != null)
 			{
@@ -257,23 +241,23 @@ namespace tsw.internal
 
 			this._update(content);
 		}
-		protected _renderHtml(content: any): string
+		protected _renderHtml(content: any)
 		{
 			return RenderUtils.renderHtml(content);
 		}
-		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
 			htmlElement.innerHTML = innerHtml;
 		}
 
-		protected unregisterEventHandlers(): void
+		protected unregisterEventHandlers()
 		{
 			var jqElm = jQuery(this.htmlElement);
 			jqElm.off();
 			this.attachedEventNames = null;
 			this.eventHandlers = null;
 		}
-		attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap): void
+		attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap)
 		{
 			//console.group('attached events for: %s: %o', elmId, eventHandlers);
 
@@ -284,7 +268,7 @@ namespace tsw.internal
 
 			//console.groupEnd();
 		}
-		detachElmEventHandlers(elmId: string): void
+		detachElmEventHandlers(elmId: string)
 		{
 			if (this.eventHandlers)
 			{
@@ -300,7 +284,7 @@ namespace tsw.internal
 				//console.groupEnd();
 			}
 		}
-		private updateEventSubscriptions(): void
+		private updateEventSubscriptions()
 		{
 			var jqElm = jQuery(this.htmlElement);
 
@@ -396,7 +380,7 @@ namespace tsw.internal
 	}
 	export class CtxUpdatable extends Ctx
 	{
-		update(): void
+		update()
 		{
 		}
 	}
@@ -411,28 +395,28 @@ namespace tsw.internal
 			this.id = id;
 			this.content = content;
 		}
-		update(): void
+		update()
 		{
 			this._update(this.content);
 		}
-		protected _renderHtml(content: any): string
+		protected _renderHtml(content: any)
 		{
 			return RenderUtils.getRenderedHtml(content);
 		}
-		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
 			//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
 			RenderUtils.updateInnerHtml(htmlElement, this.id, innerHtml);
 		}
-		protected afterAttach(): void
+		protected afterAttach()
 		{
 			var renderer = <Renderer>this.content;
 			if (renderer.afterAttach) renderer.afterAttach();
 
 			super.afterAttach();
 		}
-		protected beforeDetach(): void
+		protected beforeDetach()
 		{
 			super.beforeDetach();
 
@@ -454,7 +438,7 @@ namespace tsw.internal
 		attrName: string;
 		renderFn: () => any;
 
-		update(): void
+		update()
 		{
 			var htmlElement = this.getHtmlElement();
 			//console.log("%o update: %o %s", this, htmlElement, this.attrName);
@@ -502,7 +486,7 @@ namespace tsw.internal
 		propName: string;
 		renderFn: () => any;
 
-		update(): void
+		update()
 		{
 			var htmlElement = this.getHtmlElement();
 
@@ -526,7 +510,7 @@ namespace tsw.internal
 	{
 		private static contexts: Ctx[] = [];
 
-		static getCurrent(): Ctx
+		static getCurrent()
 		{
 			var contexts = this.contexts;
 			return contexts.length == 0 ? null : contexts[contexts.length - 1];
