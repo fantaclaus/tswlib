@@ -6,7 +6,7 @@ namespace tsw
 
 		get(): string
 		{
-			tsw.internal.CtxUtils.attach(this);
+			tsw.internal.attach(this);
 
 			return this.refId;
 		}
@@ -18,7 +18,7 @@ namespace tsw
 
 				this.refId = v;
 
-				tsw.internal.CtxUtils.update(this);
+				tsw.internal.update(this);
 
 				//console.groupEnd();
 			}

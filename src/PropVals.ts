@@ -12,7 +12,7 @@ namespace tsw
 		}
 		get(): T
 		{
-			tsw.internal.CtxUtils.attach(this);
+			tsw.internal.attach(this);
 
 			return this.val;
 		}
@@ -29,7 +29,7 @@ namespace tsw
 				{
 					this.val = v;
 
-					tsw.internal.CtxUtils.update(this);
+					tsw.internal.update(this);
 
 					if (this.onChanged) this.onChanged();
 				}
@@ -107,7 +107,7 @@ namespace tsw
 				a.splice(index, 0, item);
 			}
 
-			tsw.internal.CtxUtils.update(this);
+			tsw.internal.update(this);
 		}
 	}
 }

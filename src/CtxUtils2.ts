@@ -2,10 +2,10 @@ namespace tsw.ctxUtils
 {
 	export function attach(propKey: any): void
 	{
-		tsw.internal.CtxUtils.attach(propKey);
+		tsw.internal.attach(propKey);
 	}
 	export function update(propKey: any): void
 	{
-		tsw.internal.CtxUtils.update(propKey);
+		tsw.internal.update(propKey);
 	}
 }
