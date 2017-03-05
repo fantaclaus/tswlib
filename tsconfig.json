@@ -1,11 +1,20 @@
 ﻿{
 	"compilerOptions": {
-		"stripInternal": true,
-		"declaration": true,
+		"target": "es5",
+		"lib": [
+			"es2016",
+			"dom"
+		],
 		"noImplicitAny": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
+		//"strictNullChecks": true,
+		"stripInternal": true,
 		"removeComments": true,
-		"outFile": "tmp/tswlib.js",
-		"target": "es5"
+		"declaration": true,
+		"outFile": "tmp/tswlib.js"
 	},
 	"exclude": [
 		"out",
