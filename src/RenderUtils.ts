@@ -16,11 +16,6 @@ interface ValueData
 	ctx: CtxUpdatable;
 	valPropName: string;
 }
-// interface ValueData2
-// {
-// 	value: any;
-// 	ctx: CtxUpdatable;
-// }
 
 class HtmlBlockMarkers
 {
@@ -32,9 +27,8 @@ class HtmlBlockMarkers
 		this.begin = `B:${id}`;
 		this.end = `E:${id}`;
 	}
-	getHtml(innerHtml: string | null)
+	getHtml(html: string)
 	{
-		let html = innerHtml || '';
 		return `<!--${this.begin}-->${html}<!--${this.end}-->`;
 	}
 }
@@ -170,24 +164,17 @@ function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
 
 	if (valData && tagName == 'textarea')
 	{
-		if (valData.value == null)
-		{
-			innerHtml = '';
-		}
-		else
-		{
-			innerHtml = utils.htmlEncode(valData.value);
-		}
+		innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
 	}
 	else
 	{
-		innerHtml = CtxScope.use(ctx, () => renderHtml(rootCtx, elm.z_getChildren()));
+		const children = elm.z_getChildren();
+		innerHtml = CtxScope.use(ctx, () => renderHtml(rootCtx, children));
 	}
 
 	let eventHanders = elm.z_getEventHandlers();
 
-	const updateVal = useVal && propDef && propDef.set instanceof Function;
-	if (updateVal && propDef && valData)
+	if (useVal && valData && propDef && propDef.set instanceof Function)
 	{
 		const valData2 = valData; // remove null from type
 
@@ -220,21 +207,21 @@ function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
 		const ctxRoot = ctxCurrent.getRootCtx();
 		if (!ctxRoot) throw new Error("root ctx is null");
 
-		ctxRoot.attachElmEventHandlers(id, eventHanders);
+		ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
 	}
 
 	if (elmRefs)
 	{
 		elmRefs.forEach(r =>
 		{
-			r.set(id);
+			r.set(ctx.id);
 		});
 	}
 
 	let htmlStartTag = '<' + tagName;
 
 	const isCtxUsed = ctx.hasChildren() || eventHanders != null || elmRefs != null;
-	if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + quote(id));
+	if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + quote(ctx.id));
 
 	htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
 	htmlStartTag = htmlStartTag + '>';
@@ -321,7 +308,7 @@ function getRenderedLastAttrValue(attrVals: any[])
 
 	return attrVals && utils.join(attrVals.slice(-1), ', ', av => getRenderedAttrValue(av));
 }
-function getElmAttrs(elm: elements.ElementGeneric): MapStringToArray
+function getElmAttrs(elm: elements.ElementGeneric)
 {
 	const attrs: MapStringToArray = {};
 
@@ -465,7 +452,7 @@ function asElmWithValue(elm: elements.ElementGeneric)
 		return null;
 	}
 }
-function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<any>, valPropName: string) //: ValueData2
+function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<any>, valPropName: string)
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 

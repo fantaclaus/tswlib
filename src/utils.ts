@@ -11,7 +11,7 @@ export function appendDelimited(s1: string, delim: string, s2: string): string
 
 	return s1 || s2;
 }
-export function join(items: any[], delim: string, selector: (item: any) => string | null)
+export function join<T>(items: T[], delim: string, selector: (item: T) => string | null)
 {
 	// if all items are null, return null
 

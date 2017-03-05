@@ -9,7 +9,7 @@ export class StyleRule
 interface NameValue
 {
 	name: string;
-	value: attrValType | StyleRule;
+	value: attrValType2;
 }
 export interface EventHandlerMap
 {
@@ -18,6 +18,7 @@ export interface EventHandlerMap
 
 export type attrValSimpleType = string | number | boolean | null;
 export type attrValType = attrValSimpleType | (() => attrValSimpleType) | PropDefReadable<attrValSimpleType>;
+export type attrValType2 = attrValType | StyleRule;
 export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
 export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
 
@@ -128,7 +129,7 @@ export class ElementGeneric
 		return this;
 	}
 
-	private addAttr(name: string, val: attrValType | StyleRule): void
+	private addAttr(name: string, val: attrValType2): void
 	{
 		this._attrs = this._attrs || [];
 		this._attrs.push({ name: name.toLowerCase(), value: val });

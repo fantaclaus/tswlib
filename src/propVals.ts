@@ -1,5 +1,5 @@
 import * as CtxUtils from './CtxUtils';
-import { PropDef, PropDefReadable } from './PropDefs';
+import { PropDef } from './PropDefs';
 
 export class PropVal<T> implements PropDef<T>
 {
@@ -81,7 +81,7 @@ export class PropVal<T> implements PropDef<T>
 			set: v => this.set(from(v)),
 		};
 	}
-	to<U>(to: (v: T) => U): PropDefReadable<U>
+	select<U>(to: (v: T) => U)
 	{
 		return {
 			get: () => to(this.get()),

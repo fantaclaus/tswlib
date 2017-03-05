@@ -179,7 +179,7 @@ export abstract class Ctx
 }
 export abstract class CtxHtmlElementOwner extends Ctx
 {
-	abstract getTagName(): string | null;
+	abstract getTagName(): string;
 }
 export class CtxElement extends CtxHtmlElementOwner
 {
@@ -309,10 +309,9 @@ export class CtxRoot extends CtxHtmlElementOwner
 		var currentEventNames: { [eventName: string]: boolean } = {};
 		var currentEventNamesCount = 0;
 
-		if (this.eventHandlers)
+		const eventHandlers = this.eventHandlers;
+		if (eventHandlers)
 		{
-			let eventHandlers = this.eventHandlers; // remove null from the type
-
 			utils.forEachKey(eventHandlers, elmId =>
 			{
 				var elmEventHandlers = eventHandlers[elmId];
@@ -548,14 +547,14 @@ export class CtxScope
 
 	static getCurrentSafe()
 	{
-		let ctx = this.getCurrent();
+		const ctx = this.getCurrent();
 		if (ctx == null) throw new Error("No current context.");
 
 		return ctx;
 	}
 	static getCurrent()
 	{
-		var contexts = this.contexts;
+		const contexts = this.contexts;
 		return contexts.length == 0 ? null : contexts[contexts.length - 1];
 	}
 
