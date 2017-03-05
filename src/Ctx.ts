@@ -39,7 +39,7 @@ export abstract class Ctx
 	{
 		return this.rootCtx;
 	}
-	private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean): T | null
+	private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean)
 	{
 		var ctx: Ctx | null = this;
 

@@ -12,7 +12,7 @@ export { components };
 export { Ref } from './Ref';
 export { PropVal, PropValArray } from './PropVals';
 
-export function setContent(htmlElement: HTMLElement | null, content: any): void
+export function setContent(htmlElement: HTMLElement | null, content: any)
 {
 	if (htmlElement != null)
 	{
