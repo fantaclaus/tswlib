@@ -9,7 +9,7 @@ namespace tsw.internal
 		ehMap: EventHandlerMap;
 	}
 
-	export class Ctx
+	export abstract class Ctx
 	{
 		private lastChildId: number;
 		private childCtxs: Ctx[];
@@ -17,7 +17,7 @@ namespace tsw.internal
 
 		id: string;
 
-		getParent(): Ctx
+		getParent()
 		{
 			return this.parentCtx;
 		}
@@ -33,7 +33,7 @@ namespace tsw.internal
 		{
 			return <CtxRoot>this.findSelfOrParent(ctx => ctx instanceof CtxRoot);
 		}
-		private findSelfOrParent(predicate: (ctx: Ctx) => boolean): Ctx
+		private findSelfOrParent(predicate: (ctx: Ctx) => boolean)
 		{
 			var ctx: Ctx = this;
 
@@ -130,11 +130,11 @@ namespace tsw.internal
 		}
 		protected _renderHtml(content: any): string
 		{
-			return null;
+			throw new Error("_renderHtml is not supported by this class");
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
-
+			throw new Error("setInnerHtml is not supported by this class");
 		}
 		private detachPropKeys()
 		{
@@ -162,12 +162,9 @@ namespace tsw.internal
 		//	console.log.apply(console, dbgArgs);
 		//}
 	}
-	export class CtxHtmlElementOwner extends Ctx
+	export abstract class CtxHtmlElementOwner extends Ctx
 	{
-		getTagName(): string
-		{
-			return null;
-		}
+		abstract getTagName(): string;
 	}
 	export class CtxElement extends CtxHtmlElementOwner
 	{
@@ -222,6 +219,10 @@ namespace tsw.internal
 		private attachedEventNames: { [eventName: string]: boolean };
 		private eventHandlers: { [elmId: string]: EventHandlerMap };
 
+	    getTagName()
+	    {
+		    return this.htmlElement.tagName;
+	    }
 		getHtmlElement(): HTMLElement
 		{
 			return this.htmlElement;
@@ -378,11 +379,9 @@ namespace tsw.internal
 		//	return ['%o', this];
 		//}
 	}
-	export class CtxUpdatable extends Ctx
+	export abstract class CtxUpdatable extends Ctx
 	{
-		update()
-		{
-		}
+		abstract update(): void;
 	}
 	export class CtxUpdatableChild extends CtxUpdatable
 	{
