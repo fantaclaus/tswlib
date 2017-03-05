@@ -1,66 +1,59 @@
 ﻿/**
  * @internal
  */
-namespace tsw.internal
+namespace tsw.utils
 {
-	export class utils
+	export function htmlEncode(s: string): string
 	{
-		static htmlEncode(s: string): string
-		{
-			return s
-				.replace(/&/g, '&amp;')
-				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;");
-		}
-		static appendDelimited(s1: string, delim: string, s2: string): string
-		{
-			if (s1 && s2) return s1 + delim + s2;
+		return s
+			.replace(/&/g, '&amp;')
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;");
+	}
+	export function appendDelimited(s1: string, delim: string, s2: string): string
+	{
+		if (s1 && s2) return s1 + delim + s2;
 
-			return s1 || s2;
-		}
-		static join<T>(items: T[], delim: string, selector: (item: T) => string): string
+		return s1 || s2;
+	}
+	export function join(items: any[], delim: string, selector: (item: any) => string)
+	{
+		// if all items are null, return null
+
+		let result: string = null;
+
+		if (items)
 		{
-			// if all items are null, return null
-
-			var result: string = null;
-
-			if (items)
+			for (let i = 0; i < items.length; i++)
 			{
-				for (var i = 0; i < items.length; i++)
+				const item = items[i];
+				if (item != null)
 				{
-					var item = items[i];
-					if (item != null)
+					const s = selector(item);
+
+					if (s != null && result == null) result = ''; // if at least one item is converted to non-null, result is not null
+
+					if (s != null && s !== '') // don't add nulls and empty strings. but zero-number value must be added.
 					{
-						var s = selector(item);
+						if (delim && result) result = result + delim;
 
-						if (s != null && result == null) result = ''; // if at least one item is converted to non-null, result is not null
-
-						if (s != null && s !== '') // don't add nulls and empty strings. but zero-number value must be added.
-						{
-							if (delim && result) result += delim;
-
-							result += s;
-						}
+						result = result + s;
 					}
 				}
 			}
-
-			return result;
 		}
+
+		return result;
 	}
-	export class objUtils
+	export function forEachKey(obj: Object, action: (key: string) => void): void
 	{
-		static forEachKey(obj: any, action: (key: string) => void): void
+		if (!obj) throw new Error("obj == null");
+
+		for (var key in obj)
 		{
-			if (obj)
+			if (obj.hasOwnProperty(key))
 			{
-				for (var key in obj)
-				{
-					if (obj.hasOwnProperty(key))
-					{
-						action(key);
-					}
-				}
+				action(key);
 			}
 		}
 	}

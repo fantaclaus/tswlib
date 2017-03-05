@@ -21,25 +21,25 @@ namespace tsw.internal
 		{
 			return this.parentCtx;
 		}
-		getParentHtmlElmOwnerCtx(): CtxHtmlElementOwner
+		getParentHtmlElmOwnerCtx()
 		{
-			return <CtxHtmlElementOwner>this.findSelfOrParent(ctx => ctx instanceof CtxHtmlElementOwner);
+			return this.findSelfOrParent<CtxHtmlElementOwner>(ctx => ctx instanceof CtxHtmlElementOwner);
 		}
-		getParentUpdatableCtx(): CtxUpdatable
+		getParentUpdatableCtx()
 		{
-			return <CtxUpdatable>this.findSelfOrParent(ctx => ctx instanceof CtxUpdatable);
+			return this.findSelfOrParent<CtxUpdatable>(ctx => ctx instanceof CtxUpdatable);
 		}
-		getParentRootCtx(): CtxRoot
+		getRootCtx()
 		{
-			return <CtxRoot>this.findSelfOrParent(ctx => ctx instanceof CtxRoot);
+			return this.findSelfOrParent<CtxRoot>(ctx => ctx instanceof CtxRoot);
 		}
-		private findSelfOrParent(predicate: (ctx: Ctx) => boolean)
+		private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean)
 		{
 			var ctx: Ctx = this;
 
 			while (ctx != null)
 			{
-				if (predicate(ctx)) return ctx;
+				if (predicate(ctx)) return <T>ctx;
 
 				ctx = ctx.parentCtx;
 			}
@@ -77,7 +77,7 @@ namespace tsw.internal
 		}
 		protected unregisterEventHandlers()
 		{
-			var ctxRoot = this.getParentRootCtx();
+			var ctxRoot = this.getRootCtx();
 			this.unregisterEventHandlersFromRoot(ctxRoot);
 		}
 		unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
@@ -219,10 +219,10 @@ namespace tsw.internal
 		private attachedEventNames: { [eventName: string]: boolean };
 		private eventHandlers: { [elmId: string]: EventHandlerMap };
 
-	    getTagName()
-	    {
-		    return this.htmlElement.tagName;
-	    }
+		getTagName()
+		{
+			return this.htmlElement.tagName;
+		}
 		getHtmlElement(): HTMLElement
 		{
 			return this.htmlElement;
@@ -244,7 +244,7 @@ namespace tsw.internal
 		}
 		protected _renderHtml(content: any)
 		{
-			return RenderUtils.renderHtml(content);
+			return renderHtml(content);
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
@@ -294,10 +294,10 @@ namespace tsw.internal
 
 			if (this.eventHandlers)
 			{
-				objUtils.forEachKey(this.eventHandlers, elmId =>
+				utils.forEachKey(this.eventHandlers, elmId =>
 				{
 					var elmEventHandlers = this.eventHandlers[elmId];
-					objUtils.forEachKey(elmEventHandlers, eventName =>
+					utils.forEachKey(elmEventHandlers, eventName =>
 					{
 						currentEventNames[eventName] = true;
 						currentEventNamesCount++;
@@ -307,7 +307,7 @@ namespace tsw.internal
 
 			if (this.attachedEventNames)
 			{
-				objUtils.forEachKey(this.attachedEventNames, eventName =>
+				utils.forEachKey(this.attachedEventNames, eventName =>
 				{
 					if (!(eventName in currentEventNames))
 					{
@@ -317,7 +317,7 @@ namespace tsw.internal
 				});
 			}
 
-			objUtils.forEachKey(currentEventNames, eventName =>
+			utils.forEachKey(currentEventNames, eventName =>
 			{
 				if (!this.attachedEventNames || !(eventName in this.attachedEventNames))
 				{
@@ -400,13 +400,13 @@ namespace tsw.internal
 		}
 		protected _renderHtml(content: any)
 		{
-			return RenderUtils.getRenderedHtml(content);
+			return getRenderedHtml(content);
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
 			//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
-			RenderUtils.updateInnerHtml(htmlElement, this.id, innerHtml);
+			updateInnerHtml(htmlElement, this.id, innerHtml);
 		}
 		protected afterAttach()
 		{

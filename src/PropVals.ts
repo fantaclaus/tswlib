@@ -66,21 +66,21 @@ namespace tsw
 			return () => this.get() == val && content;
 		}
 
-		convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): tsw.global.PropDef<U>
+	convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): global.PropDef<U>
 		{
 			return {
 				get: () => converter.to(this.get()),
 				set: v => this.set(converter.from(v)),
 			};
 		}
-		convert2<U>(to: (v: T) => U, from: (v: U) => T): tsw.global.PropDef<U>
+	convert2<U>(to: (v: T) => U, from: (v: U) => T): global.PropDef<U>
 		{
 			return {
 				get: () => to(this.get()),
 				set: v => this.set(from(v)),
 			};
 		}
-		select<U>(to: (v: T) => U): tsw.global.PropDefReadable<U>
+		select<U>(to: (v: T) => U)
 		{
 			return {
 				get: () => to(this.get()),
@@ -93,6 +93,11 @@ namespace tsw
 		constructor(items?: T[])
 		{
 			super(items);
+		}
+		getItem(index: number)
+		{
+			let a = this.get();
+			return a[index];
 		}
 		addItem(item: T, index?: number)
 		{
@@ -108,6 +113,17 @@ namespace tsw
 			}
 
 			tsw.internal.update(this);
+		}
+		setLength(length: number)
+		{
+			let a = this.get();
+
+			if (a.length != length)
+			{
+				a.length = length;
+
+				tsw.internal.update(this);
+			}
 		}
 	}
 }

@@ -141,35 +141,35 @@ namespace tsw.elements
 		/**
 		 * @internal
 		 */
-		z_getTagName(): string
+		z_getTagName()
 		{
 			return this.tagName;
 		}
 		/**
 		 * @internal
 		 */
-		z_getChildren(): any[]
+		z_getChildren()
 		{
 			return this._children;
 		}
 		/**
 		 * @internal
 		 */
-		z_getAttrs(): tsw.internal.NameValue[]
+		z_getAttrs()
 		{
 			return this._attrs;
 		}
 		/**
 		 * @internal
 		 */
-		z_getEventHandlers(): tsw.internal.EventHandlerMap
+		z_getEventHandlers()
 		{
 			return this.eventHandlers;
 		}
 		/**
 		 * @internal
 		 */
-		z_getRefs(): Ref[]
+		z_getRefs()
 		{
 			return this._refs;
 		}

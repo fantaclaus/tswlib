@@ -46,7 +46,7 @@ namespace tsw.elements
 			return this;
 		}
 	}
-	export class ElementWithValue extends ElementGeneric
+	export abstract class ElementWithValue extends ElementGeneric
 	{
 		protected propDef: tsw.global.PropDef<any>;
 
@@ -67,10 +67,7 @@ namespace tsw.elements
 		/**
 		 * @internal
 		 */
-		z_getValuePropName(): string  // for jQuery.prop
-		{
-			return null;
-		}
+		abstract z_getValuePropName(): string;  // for jQuery.prop
 	}
 	export class ElementInput<T> extends ElementWithValue
 	{
@@ -158,6 +155,12 @@ namespace tsw.elements
 
 			return this;
 		}
+		placeholder(v: string)
+		{
+			this.attr('placeholder', v);
+
+			return this;
+		}
 		/**
 		 * @internal
 		 */
@@ -229,47 +232,6 @@ namespace tsw.elements
 			this.attr('for', ref);
 
 			return this;
-		}
-	}
-
-	export class RadioGroup<T>
-	{
-		private propVal: PropVal<T>;
-		private groupName: string;
-		private refs: { key: T; ref: Ref }[] = [];
-
-		constructor(propVal: PropVal<T>, groupName: string)
-		{
-			this.propVal = propVal;
-			this.groupName = groupName;
-		}
-		item(v: T): ElementInputRadio
-		{
-			var p =
-			{
-				get: () => this.propVal.get() == v,
-				set: () => this.propVal.set(v),
-			};
-
-			var elm = new ElementInputRadio();
-			elm.value(p).attr('name', this.groupName).addRef(this.getRefFor(v));
-			return elm;
-		}
-		label(v: T): ElementLabel
-		{
-			var elm = new ElementLabel();
-			elm.forRef(this.getRefFor(v));
-			return elm;
-		}
-		private getRefFor(v: T): Ref
-		{
-			var keyRef = this.refs.find(kr => kr.key == v);
-			if (keyRef == null)
-			{
-				keyRef = { key: v, ref: new Ref() };
-				this.refs.push(keyRef);
-			}
-			return keyRef.ref;
 		}
 	}
 }
