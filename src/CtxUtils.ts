@@ -9,9 +9,9 @@ namespace tsw.internal
 		ctx: CtxUpdatable;
 	}
 
-	let _propKeyToCtxMap: PropKeyContext[] = null;
-	let _ctxUpdateQueue: CtxUpdatable[] = null;
-	let _timerId: number = null;
+	let _propKeyToCtxMap: PropKeyContext[] | null = null;
+	let _ctxUpdateQueue: CtxUpdatable[] | null = null;
+	let _timerId: number | null = null;
 
 	export function attach(propKey: any)
 	{

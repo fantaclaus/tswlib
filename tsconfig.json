@@ -10,7 +10,7 @@
 		"noImplicitReturns": true,
 		"noImplicitThis": true,
 		"noUnusedLocals": true,
-		//"strictNullChecks": true,
+		"strictNullChecks": true,
 		"stripInternal": true,
 		"removeComments": true,
 		"declaration": true,

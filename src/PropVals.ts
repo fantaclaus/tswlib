@@ -66,14 +66,14 @@ namespace tsw
 			return () => this.get() == val && content;
 		}
 
-	convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): global.PropDef<U>
+		convert<U>(converter: { to: (v: T) => U; from: (v: U) => T; }): global.PropDef<U>
 		{
 			return {
 				get: () => converter.to(this.get()),
 				set: v => this.set(converter.from(v)),
 			};
 		}
-	convert2<U>(to: (v: T) => U, from: (v: U) => T): global.PropDef<U>
+		convert2<U>(to: (v: T) => U, from: (v: U) => T): global.PropDef<U>
 		{
 			return {
 				get: () => to(this.get()),

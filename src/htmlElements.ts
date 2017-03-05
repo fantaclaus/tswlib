@@ -60,7 +60,7 @@ namespace tsw.elements
 		/**
 		 * @internal
 		 */
-		z_getValueAttrName(): string
+		z_getValueAttrName(): string | null
 		{
 			return null;
 		}
@@ -90,7 +90,7 @@ namespace tsw.elements
 			return 'value';
 		}
 	}
-	export class ElementInputText extends ElementInput<string>
+    export class ElementInputText extends ElementInput<string | null>
 	{
 		constructor()
 		{

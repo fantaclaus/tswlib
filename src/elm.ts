@@ -21,9 +21,9 @@ namespace tsw.internal
 
 namespace tsw.elements
 {
-	export type attrValSimpleType = string | number | boolean;
+	export type attrValSimpleType = string | number | boolean | null;
 	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | tsw.global.PropDefReadable<attrValSimpleType>;
-	export type stringValType = string | (() => string) | tsw.global.PropDefReadable<string>;
+	export type stringValType = string | null | (() => string | null) | tsw.global.PropDefReadable<string | null>;
 	export type boolValType = boolean | (() => boolean) | tsw.global.PropDefReadable<boolean>;
 
 	export interface EventHandler
@@ -33,11 +33,11 @@ namespace tsw.elements
 
 	export class ElementGeneric
 	{
-		private tagName: string = null;
-		private _attrs: tsw.internal.NameValue[] = null;
-		private _children: tsw.internal.NameValue[] = null;
-		private eventHandlers: tsw.internal.EventHandlerMap = null;
-		private _refs: Ref[] = null;
+		private tagName: string | null = null;
+		private _attrs: tsw.internal.NameValue[] | null = null;
+		private _children: tsw.internal.NameValue[] | null = null;
+		private eventHandlers: tsw.internal.EventHandlerMap | null = null;
+		private _refs: Ref[] | null = null;
 
 		constructor(tagName: string)
 		{
@@ -53,7 +53,7 @@ namespace tsw.elements
 
 			return this;
 		}
-		cls(val: stringValType)
+		cls(val: attrValType)
 		{
 			this.attr('class', val);
 			return this;
@@ -68,7 +68,7 @@ namespace tsw.elements
 		{
 			if (name != null && val != null)
 			{
-				var v = new tsw.internal.StyleRule();
+				const v = new tsw.internal.StyleRule();
 				v.propName = name;
 				v.propValue = val;
 
@@ -77,7 +77,7 @@ namespace tsw.elements
 
 			return this;
 		}
-		data(name: string, val: stringValType)
+		data(name: string, val: attrValType)
 		{
 			this.attr('data-' + name, val);
 

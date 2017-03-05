@@ -11,11 +11,11 @@ namespace tsw.internal
 
 	export abstract class Ctx
 	{
-		private lastChildId: number;
-		private childCtxs: Ctx[];
-		private parentCtx: Ctx;
+		private lastChildId: number | null;
+		private childCtxs: Ctx[] | null;
+		private parentCtx: Ctx | null;
 
-		id: string;
+		public id: string;
 
 		getParent()
 		{
@@ -35,7 +35,7 @@ namespace tsw.internal
 		}
 		private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean)
 		{
-			var ctx: Ctx = this;
+			var ctx: Ctx | null = this;
 
 			while (ctx != null)
 			{
@@ -78,6 +78,8 @@ namespace tsw.internal
 		protected unregisterEventHandlers()
 		{
 			var ctxRoot = this.getRootCtx();
+			if (!ctxRoot) throw new Error("root ctx is null");
+
 			this.unregisterEventHandlersFromRoot(ctxRoot);
 		}
 		unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
@@ -92,10 +94,10 @@ namespace tsw.internal
 		{
 			this.forEachChild(ctx => ctx.beforeDetach());
 		}
-		protected getHtmlElement(): HTMLElement
+		protected getHtmlElement(): HTMLElement | null
 		{
 			var ctxElm = this.getParentHtmlElmOwnerCtx();
-			return ctxElm.getHtmlElement();
+			return ctxElm && ctxElm.getHtmlElement();
 		}
 
 		generateNextChildId()
@@ -169,9 +171,9 @@ namespace tsw.internal
 	export class CtxElement extends CtxHtmlElementOwner
 	{
 		private tagName: string;
-		private refs: Ref[];
+		private refs: Ref[] | null;
 
-		constructor(id: string, tagName: string, refs: Ref[])
+		constructor(id: string, tagName: string, refs: Ref[] | null)
 		{
 			super();
 
@@ -216,8 +218,8 @@ namespace tsw.internal
 	export class CtxRoot extends CtxHtmlElementOwner
 	{
 		private htmlElement: HTMLElement;
-		private attachedEventNames: { [eventName: string]: boolean };
-		private eventHandlers: { [elmId: string]: EventHandlerMap };
+		private attachedEventNames: { [eventName: string]: boolean } | null;
+		private eventHandlers: { [elmId: string]: EventHandlerMap } | null;
 
 		getTagName()
 		{
@@ -227,24 +229,21 @@ namespace tsw.internal
 		{
 			return this.htmlElement;
 		}
-		render(content: any, htmlElement?: HTMLElement)
-		{
-			if (htmlElement != null)
-			{
-				if (this.htmlElement && this.htmlElement !== htmlElement)
-				{
-					this._update(null);
-				}
+	    render(content: any, htmlElement: HTMLElement)
+	    {
+		    if (this.htmlElement !== htmlElement)
+		    {
+			    this._update(null);
+		    }
 
-				this.htmlElement = htmlElement;
-				this.id = htmlElement.id;
-			}
+		    this.htmlElement = htmlElement;
+		    this.id = htmlElement.id;
 
-			this._update(content);
-		}
+		    this._update(content);
+	    }
 		protected _renderHtml(content: any)
 		{
-			return renderHtml(content);
+			return internal.renderHtml(content);
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
@@ -292,11 +291,12 @@ namespace tsw.internal
 			var currentEventNames: { [eventName: string]: boolean } = {};
 			var currentEventNamesCount = 0;
 
-			if (this.eventHandlers)
+			const eventHandlers = this.eventHandlers;
+			if (eventHandlers)
 			{
-				utils.forEachKey(this.eventHandlers, elmId =>
+				utils.forEachKey(eventHandlers, elmId =>
 				{
-					var elmEventHandlers = this.eventHandlers[elmId];
+					var elmEventHandlers = eventHandlers[elmId];
 					utils.forEachKey(elmEventHandlers, eventName =>
 					{
 						currentEventNames[eventName] = true;
@@ -342,7 +342,7 @@ namespace tsw.internal
 				var eventHandler = r.ehMap[e.type];
 				if (eventHandler)
 				{
-					//console.log('on event: %o for: %o id: %s; %s', e.type, e.target, elmId, htmlElm.tagName);
+					// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
 
 					if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a')
 					{
@@ -353,13 +353,13 @@ namespace tsw.internal
 				}
 			}
 		}
-		private findEventHandlers(htmlElement: HTMLElement): HtmlElementEvents
+		private findEventHandlers(htmlElement: HTMLElement | null): HtmlElementEvents | null
 		{
 			while (htmlElement && htmlElement != this.htmlElement)
 			{
 				var elmId = htmlElement.id;
 
-				var elmEventHandlers = elmId && this.eventHandlers[elmId];
+				var elmEventHandlers = elmId && this.eventHandlers && this.eventHandlers[elmId];
 				if (elmEventHandlers) return ({
 					htmlElm: htmlElement,
 					ehMap: elmEventHandlers,
@@ -400,13 +400,13 @@ namespace tsw.internal
 		}
 		protected _renderHtml(content: any)
 		{
-			return getRenderedHtml(content);
+			return internal.getRenderedHtml(content);
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
 			//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
-			updateInnerHtml(htmlElement, this.id, innerHtml);
+			internal.updateInnerHtml(htmlElement, this.id, innerHtml);
 		}
 		protected afterAttach()
 		{
@@ -435,14 +435,15 @@ namespace tsw.internal
 	export class CtxUpdatableAttr extends CtxUpdatable
 	{
 		attrName: string;
-		renderFn: () => any;
+		renderFn: () => string | null;
 
 		update()
 		{
 			var htmlElement = this.getHtmlElement();
+			if (!htmlElement) throw new Error("htmlElement is null");
 			//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
-			var v: string = CtxScope.use(this, () => this.renderFn());
+			var v = CtxScope.use(this, () => this.renderFn());
 
 			//console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
 
@@ -456,7 +457,7 @@ namespace tsw.internal
 			}
 			else if (this.attrName == 'value')
 			{
-				jqElement.prop('value', v);
+				jqElement.prop('value', v || '');
 			}
 			else
 			{
@@ -488,6 +489,7 @@ namespace tsw.internal
 		update()
 		{
 			var htmlElement = this.getHtmlElement();
+			if (!htmlElement) throw new Error("htmlElement is null");
 
 			var val = CtxScope.use(this, () => this.renderFn());
 			//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
@@ -509,9 +511,16 @@ namespace tsw.internal
 	{
 		private static contexts: Ctx[] = [];
 
+		static getCurrentSafe()
+		{
+			const ctx = this.getCurrent();
+			if (ctx == null) throw new Error("No current context.");
+
+			return ctx;
+		}
 		static getCurrent()
 		{
-			var contexts = this.contexts;
+			const contexts = this.contexts;
 			return contexts.length == 0 ? null : contexts[contexts.length - 1];
 		}
 

@@ -1,16 +1,16 @@
 namespace tsw
 {
-	export class Ref implements tsw.global.PropDef<string>
+	export class Ref implements tsw.global.PropDef<string | null>
 	{
-		private refId: string;
+		private refId: string | null;
 
-		get(): string
+		get(): string | null
 		{
 			tsw.internal.attach(this);
 
 			return this.refId;
 		}
-		set(v: string): void
+		set(v: string | null): void
 		{
 			if (this.refId !== v)
 			{

@@ -13,11 +13,6 @@ namespace tsw.internal
 		ctx: CtxUpdatable;
 		valPropName: string;
 	}
-	interface ValueData2
-	{
-		value: any;
-		ctx: CtxUpdatable;
-	}
 
 	class HtmlBlockMarkers
 	{
@@ -29,9 +24,8 @@ namespace tsw.internal
 			this.begin = `B:${id}`;
 			this.end = `E:${id}`;
 		}
-		getHtml(innerHtml: string)
+		getHtml(html: string)
 		{
-			let html = innerHtml || '';
 			return `<!--${this.begin}-->${html}<!--${this.end}-->`;
 		}
 	}
@@ -40,38 +34,43 @@ namespace tsw.internal
 
 	export function renderHtml(content: any)
 	{
-		const items: any[] = [];
-		addExpanded(items, content);
+		let result = '';
 
-		return utils.join(items, '', item => renderItem(item));
+		addExpanded(content);
 
-		function addExpanded(target: any[], v: any): void
+		return result;
+
+		function addExpanded(item: any): void
 		{
-			if (v == null) return;
+			if (item == null) return;
 
-			if (v instanceof Array)
+			if (item instanceof Array)
 			{
-				for (let i = 0; i < v.length; i++)
+				for (let i = 0; i < item.length; i++)
 				{
-					addExpanded(target, v[i]);
+					addExpanded(item[i]);
 				}
 			}
 			else
 			{
-				target.push(v);
+				const s = renderItem(item);
+
+				if (s != null && s !== '') // don't add nulls and empty strings. but zero (number) value must be added.
+				{
+					result = result + s;
+				}
 			}
 		}
-
 	}
 	function renderItem(item: any): string
 	{
-		if (item === true || item === false) return '';
+		if (item == null || item === true || item === false) return '';
 
 		if (item instanceof elements.RawHtml) return item.value;
 		if (item instanceof elements.ElementGeneric) return renderElement(item);
 
 		// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
-		const ctxCurrent = CtxScope.getCurrent();
+		const ctxCurrent = CtxScope.getCurrentSafe();
 		const ctxElm = ctxCurrent.getParentHtmlElmOwnerCtx();
 		const tagName = ctxElm && ctxElm.getTagName();
 
@@ -87,8 +86,7 @@ namespace tsw.internal
 	}
 	function renderUpdatableChild(item: any): string
 	{
-		const ctxCurrent = CtxScope.getCurrent();
-
+		const ctxCurrent = CtxScope.getCurrentSafe();
 		const id = ctxCurrent.generateNextChildId();
 
 		const ctx = new CtxUpdatableChild(id, item);
@@ -119,11 +117,10 @@ namespace tsw.internal
 
 		const elmRefs = elm.z_getRefs();
 
-		const ctxCurrent = CtxScope.getCurrent();
-
 		const attrId = getRenderedLastAttrValue(attrs['id']);
 		delete attrs['id'];
 
+		const ctxCurrent = CtxScope.getCurrentSafe();
 		const id = attrId || ctxCurrent.generateNextChildId();
 		//console.log('id: ', id);
 
@@ -135,10 +132,9 @@ namespace tsw.internal
 		const elmWithVal = asElmWithValue(elm);
 		const propDef = elmWithVal && elmWithVal.z_getPropDef();
 		const useVal = propDef && propDef.get instanceof Function;
-		const updateVal = useVal && propDef.set instanceof Function;
 
-		let valData: ValueData = null;
-		if (useVal)
+		let valData: ValueData | null = null;
+		if (elmWithVal && propDef && useVal)
 		{
 			const valAttrName = elmWithVal.z_getValueAttrName();
 			const valPropName = elmWithVal.z_getValuePropName();
@@ -155,11 +151,7 @@ namespace tsw.internal
 				attrs[valAttrName] = [valData2.value];
 			}
 
-			valData = {
-				value: valData2.value,
-				ctx: valData2.ctx,
-				valPropName: valPropName,
-			};
+			valData = valData2;
 		}
 
 		const attrsHtml = CtxScope.use(ctx, () => getElmAttrHtml(attrs));
@@ -167,7 +159,7 @@ namespace tsw.internal
 
 		let innerHtml: string;
 
-		if (useVal && tagName == 'textarea')
+		if (valData && tagName == 'textarea')
 		{
 			innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
 		}
@@ -179,8 +171,10 @@ namespace tsw.internal
 
 		let eventHanders = elm.z_getEventHandlers();
 
-		if (updateVal)
+		if (useVal && valData && propDef && propDef.set instanceof Function)
 		{
+			const valData2 = valData; // remove null from type
+
 			eventHanders = eventHanders || {};
 
 			const savedHandlers: EventHandlerMap = {};
@@ -189,10 +183,10 @@ namespace tsw.internal
 
 			const handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
 			{
-				const v = jQuery(htmlElement).prop(valData.valPropName);
+				const v = jQuery(htmlElement).prop(valData2.valPropName);
 
 				// pass ctx to CtxUtils.update for optimization: to skip it during update.
-				CtxScope.use(valData.ctx, () =>
+				CtxScope.use(valData2.ctx, () =>
 				{
 					propDef.set(v);
 				});
@@ -208,6 +202,8 @@ namespace tsw.internal
 		if (eventHanders)
 		{
 			const ctxRoot = ctxCurrent.getRootCtx();
+			if (!ctxRoot) throw new Error("root ctx is null");
+
 			ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
 		}
 
@@ -215,27 +211,22 @@ namespace tsw.internal
 		{
 			elmRefs.forEach(r =>
 			{
-				r.set(id);
+				r.set(ctx.id);
 			});
 		}
 
 		let htmlStartTag = '<' + tagName;
 
 		const isCtxUsed = ctx.hasChildren() || eventHanders != null || elmRefs != null;
-		if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + encodeAttrVal(id));
+		if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + quote(ctx.id));
 
 		htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
-		htmlStartTag += '>';
+		htmlStartTag = htmlStartTag + '>';
 
+		const hasInnerHtml = !!innerHtml;
 		let html = htmlStartTag;
-
-		if (innerHtml) html += innerHtml;
-
-		if (innerHtml || elmNeedsCloseTag(tagName))
-		{
-			html += '</' + tagName + '>';
-		}
-
+		if (hasInnerHtml) html = html + innerHtml;
+		if (hasInnerHtml || elmNeedsCloseTag(tagName)) html = html + '</' + tagName + '>';
 		return html;
 	}
 	function elmNeedsCloseTag(tagName: string): boolean
@@ -250,29 +241,29 @@ namespace tsw.internal
 	}
 	function getElmAttrHtml(attrs: MapStringToArray): string
 	{
-		const attrsHtml = Object.keys(attrs)
-			.map(attrName => ({
-				attrName: attrName,
-				attrVal: getAttrVal(attrs, attrName)
-			}))
-			.filter(a => a.attrVal != null)
-			.reduce((attrsHtml, a) =>
-			{
-				let attrHtml = a.attrName;
-				if (a.attrVal) attrHtml += '=' + encodeAttrVal(a.attrVal);
+		let attrsHtml = '';
 
-				return utils.appendDelimited(attrsHtml, ' ', attrHtml);
-			}, '');
+		utils.forEachKey(attrs, attrName =>
+		{
+			const attrVal = getAttrVal(attrs, attrName);
+			if (attrVal != null)
+			{
+				let attrHtml = attrName;
+				if (attrVal) attrHtml = attrHtml + '=' + quote(encodeAttrVal(attrVal));
+
+				attrsHtml = utils.appendDelimited(attrsHtml, ' ', attrHtml);
+			}
+		});
 
 		return attrsHtml;
 	}
-	function getAttrVal(attrs: MapStringToArray, attrName: string): string
+	function getAttrVal(attrs: MapStringToArray, attrName: string): string | null
 	{
 		const attrVals: any[] = attrs[attrName];
 		//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
 
 		let canBeUpdated: boolean;
-		let fn: () => any;
+		let fn: () => string | null;
 
 		if (attrName == 'class')
 		{
@@ -292,7 +283,7 @@ namespace tsw.internal
 
 		if (canBeUpdated)
 		{
-			const ctxCurrent = CtxScope.getCurrent();
+			const ctxCurrent = CtxScope.getCurrentSafe();
 
 			const ctx = new CtxUpdatableAttr();
 			ctxCurrent.addChildCtx(ctx);
@@ -360,10 +351,14 @@ namespace tsw.internal
 				ch2 = ch;
 			}
 
-			encoded += ch2;
+			encoded = encoded + ch2;
 		}
 
-		return '"' + encoded + '"';
+		return encoded;
+	}
+	function quote(s: string)
+	{
+		return '"' + s + '"';
 	}
 	function canItemBeUpdated(item: any): boolean
 	{
@@ -454,9 +449,9 @@ namespace tsw.internal
 			return null;
 		}
 	}
-	function getValue(propDef: global.PropDefReadable<any>, valPropName: string): ValueData2
+	function getValue(propDef: global.PropDefReadable<any>, valPropName: string)
 	{
-		const ctxCurrent = CtxScope.getCurrent();
+		const ctxCurrent = CtxScope.getCurrentSafe();
 
 		const ctx = new CtxUpdatableValue();
 		ctxCurrent.addChildCtx(ctx);
@@ -466,7 +461,7 @@ namespace tsw.internal
 
 		const val = CtxScope.use(ctx, ctx.renderFn);
 
-		return { value: val, ctx: ctx };
+		return { value: val, ctx: ctx, valPropName: valPropName };
 	}
 
 	export function updateInnerHtml(htmlElement: HTMLElement, id: string, html: string): void
@@ -484,21 +479,21 @@ namespace tsw.internal
 
 		const COMMENT_NODE = 8; // on IE8 Node is undefined
 
-		let nodeBeginMarker: Node = null;
-		let nodeEndMarker: Node = null;
+		let nodeBeginMarker: Node | null = null;
+		let nodeEndMarker: Node | null = null;
 		let isFirst = false;
 		let isLast = false;
 
 		if (targetElement.hasChildNodes())
 		{
-			const firstNode = targetElement.firstChild;
+			const firstNode = targetElement.firstChild!;
 			if (firstNode.nodeType == COMMENT_NODE && firstNode.nodeValue == markers.begin)
 			{
 				nodeBeginMarker = firstNode;
 				isFirst = true;
 			}
 
-			const lastNode = targetElement.lastChild;
+			const lastNode = targetElement.lastChild!;
 			if (lastNode.nodeType == COMMENT_NODE && lastNode.nodeValue == markers.end)
 			{
 				nodeEndMarker = lastNode;
@@ -507,7 +502,7 @@ namespace tsw.internal
 
 			if (!isFirst || !isLast)
 			{
-				let node = firstNode;
+				let node: Node | null = firstNode;
 
 				while (node)
 				{
@@ -548,11 +543,11 @@ namespace tsw.internal
 
 			if (nodeBeginMarker && nodeEndMarker)
 			{
-				let node = nodeBeginMarker.nextSibling;
+				let node = nodeBeginMarker.nextSibling!;
 
 				while (node !== nodeEndMarker)
 				{
-					const nodeNext = node.nextSibling;
+					const nodeNext = node.nextSibling!;
 
 					targetElement.removeChild(node);
 

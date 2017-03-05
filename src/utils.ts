@@ -20,7 +20,7 @@ namespace tsw.utils
 	{
 		// if all items are null, return null
 
-		let result: string = null;
+		let result: string | null = null;
 
 		if (items)
 		{
