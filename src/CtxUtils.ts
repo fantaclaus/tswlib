@@ -10,7 +10,7 @@ let _propKeyToCtxMap: PropKeyContext[] | null = null;
 let _ctxUpdateQueue: CtxUpdatable[] | null = null;
 let _timerId: number | null = null;
 
-export function attach(propKey: any): void
+export function attach(propKey: any)
 {
 	const ctx = getCtx();
 	if (ctx)
@@ -26,7 +26,7 @@ export function attach(propKey: any): void
 		}
 	}
 }
-export function removeCtxs(ctxs: Ctx[]): void
+export function removeCtxs(ctxs: Ctx[])
 {
 	if (_propKeyToCtxMap)
 	{
@@ -39,7 +39,7 @@ export function removeCtxs(ctxs: Ctx[]): void
 		//console.log('removed: ', removedKeys, propKeyToCtxMap && propKeyToCtxMap.map(p => p.propKey));
 	}
 }
-export function update(propKey: any): void
+export function update(propKey: any)
 {
 	const propKeyContexts = _propKeyToCtxMap && _propKeyToCtxMap.filter(p => p.propKey === propKey);
 	//console.log('update req: %o; found: %o', propKey, propKeyContexts);
@@ -77,7 +77,7 @@ function getCtx()
 	const ctx = CtxScope.getCurrent();
 	return ctx ? ctx.getParentUpdatableCtx() : null;
 }
-function processQueue(): void
+function processQueue()
 {
 	const contexts = _ctxUpdateQueue;
 
@@ -98,7 +98,7 @@ function processQueue(): void
 		});
 	}
 }
-function isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[]): boolean
+function isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[])
 {
 	if (!ctx) throw new Error("ctx is null");
 
