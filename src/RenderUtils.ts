@@ -3,9 +3,9 @@
  */
 namespace tsw.internal
 {
-	interface MapStringToArray
+	interface MapStringToArrayOfAttrValType2
 	{
-		[name: string]: any[];
+		[name: string]: elements.attrValType2[];
 	}
 	interface ValueData
 	{
@@ -32,7 +32,7 @@ namespace tsw.internal
 
 	let _tmpHtmlElement: HTMLElement;
 
-	export function renderHtml(rootCtx: CtxRoot, content: any)
+	export function renderHtml(rootCtx: CtxRoot, content: elements.childValType | elements.childValType[] | null)
 	{
 		let result = '';
 
@@ -40,7 +40,7 @@ namespace tsw.internal
 
 		return result;
 
-		function addExpanded(item: any): void
+		function addExpanded(item: elements.childValType | elements.childValType[] | null): void
 		{
 			if (item == null) return;
 
@@ -62,7 +62,7 @@ namespace tsw.internal
 			}
 		}
 	}
-	function renderItem(rootCtx: CtxRoot, item: any): string
+	function renderItem(rootCtx: CtxRoot, item: elements.childValType): string
 	{
 		if (item == null || item === true || item === false) return '';
 
@@ -239,7 +239,7 @@ namespace tsw.internal
 
 		return !needNoClosingTag;
 	}
-	function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArray): string
+	function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType2): string
 	{
 		let attrsHtml = '';
 
@@ -257,9 +257,9 @@ namespace tsw.internal
 
 		return attrsHtml;
 	}
-	function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArray, attrName: string): string | null
+	function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType2, attrName: string): string | null
 	{
-		const attrVals: any[] = attrs[attrName];
+		const attrVals = attrs[attrName];
 		//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
 
 		let canBeUpdated: boolean;
@@ -268,12 +268,12 @@ namespace tsw.internal
 		if (attrName == 'class')
 		{
 			canBeUpdated = attrVals.some(av => canBeUpdatedAttr(av));
-			fn = () => utils.join(attrVals, ' ', av => getRenderedAttrValue(av));
+			fn = () => joinAttrVals(attrVals, ' ', av => getRenderedAttrValue(av));
 		}
 		else if (attrName == 'style')
 		{
 			canBeUpdated = attrVals.some(av => canBeUpdatedStyle(av));
-			fn = () => utils.join(attrVals, '; ', av => getRenderedStyleValue(av));
+			fn = () => joinAttrVals(attrVals, '; ', av => getRenderedStyleValue(av));
 		}
 		else
 		{
@@ -297,34 +297,66 @@ namespace tsw.internal
 			return fn();
 		}
 	}
-	function getRenderedLastAttrValue(attrVals: any[])
+	function getRenderedLastAttrValue(attrVals: elements.attrValType2[])
 	{
 		// it returns last value to support overwriting of attr values
 		// for example, bs.btnLink() returns <A href="#"> by default, and href could be re-assigned to another
 		// value this way: bs.btnLink().href("some url")
 
-		return attrVals && utils.join(attrVals.slice(-1), ', ', av => getRenderedAttrValue(av));
+		return attrVals && joinAttrVals(attrVals.slice(-1), ', ', av => getRenderedAttrValue(av));
+	}
+	function joinAttrVals(attrVals: elements.attrValType2[], delim: string, selector: (av: elements.attrValType2) => elements.attrValType2)
+	{
+		// if all items are null, return null
+
+		let result: string | null = null;
+
+		if (attrVals)
+		{
+			for (let i = 0; i < attrVals.length; i++)
+			{
+				const attrVal = attrVals[i];
+				if (attrVal != null)
+				{
+					const attrVal2 = selector(attrVal);
+
+					if (attrVal2 != null)
+					{
+						if (result == null) result = ''; // if at least one attrVal is converted to non-null, result is not null
+
+						if (attrVal2 !== '') // don't append nulls and empty strings. but zero-number value must be appended.
+						{
+							if (delim && result) result = result + delim;
+
+							result = result + attrVal2;
+						}
+					}
+				}
+			}
+		}
+
+		return result;
 	}
 	function getElmAttrs(elm: elements.ElementGeneric)
 	{
-		const attrs: MapStringToArray = {};
+		const attrs: MapStringToArrayOfAttrValType2 = {};
 
 		const elmAttrs = elm.z_getAttrs();
 		if (elmAttrs)
 		{
 			elmAttrs.forEach(a =>
 			{
-				const attrName = a.name;
+				const attrName = a.attrName;
 				if (attrName)
 				{
-					let vals: any[] = attrs[attrName];
+					let vals = attrs[attrName];
 					if (!vals)
 					{
 						vals = [];
 						attrs[attrName] = vals;
 					}
 
-					vals.push(a.value);
+					vals.push(a.attrValue);
 				}
 			});
 		}
@@ -360,82 +392,90 @@ namespace tsw.internal
 	{
 		return '"' + s + '"';
 	}
-	function canItemBeUpdated(item: any): boolean
+	function canItemBeUpdated(item: elements.childValType): boolean
 	{
 		if (item != null)
 		{
 			if (item instanceof Function) return true;
-			if (item.render instanceof Function) return true; // macro element
-			if (item.get instanceof Function) return true; // PropVal
+			if (isRenderer(item)) return true; // macro element
+			if ((<any>item).get instanceof Function) return true; // PropVal
 		}
 
 		return false;
 	}
-	export function getRenderedHtml(rootCtx: CtxRoot, item: any)
+	export function getRenderedHtml(rootCtx: CtxRoot, item: elements.childValType)
 	{
 		const content = getRenderedContent(item);
 		return renderHtml(rootCtx, content);
 	}
-	function getRenderedContent(item: any)
+	function getRenderedContent(item: elements.childValType)
 	{
 		if (item != null)
 		{
 			if (item instanceof Function) return item();
-			if (item.render instanceof Function) return item.render();
-			if (item.get instanceof Function) return item.get();
+			if (isRenderer(item)) return item.render();
+			if (isPropDefReadable(item)) return item.get();
 		}
 
 		return item;
 	}
-	function getRenderedAttrValue(item: any)
+	function isRenderer(attrVal: any): attrVal is Renderer
 	{
-		const v = getRenderedAttrValueRaw(item);
+		return attrVal.render instanceof Function;
+	}
+	function getRenderedAttrValue(attrVal: elements.attrValType2)
+	{
+		const v = getRenderedAttrValueRaw(attrVal);
 		if (v === true) return '';
 		if (v === false) return null;
 		return v;
 	}
-	function canBeUpdatedAttr(item: any): boolean
+	function canBeUpdatedAttr(attrVal: elements.attrValType2): boolean
 	{
-		if (item != null)
+		if (attrVal != null)
 		{
-			if (item instanceof Function) return true;
-			if (item.get instanceof Function) return true; // PropVal
+			if (attrVal instanceof Function) return true;
+			if (isPropDefReadable(attrVal)) return true; // PropVal
 		}
 		return false;
 	}
-	function getRenderedAttrValueRaw(item: any)
+	function isPropDefReadable(attrVal: elements.attrValType2 | elements.childValType): attrVal is global.PropDefReadable<elements.attrValSimpleType>
 	{
-		if (item != null)
-		{
-			if (item instanceof Function) return item();
-			if (item.get instanceof Function) return item.get();
-		}
-		return item;
+		return (<any>attrVal).get instanceof Function;
 	}
-	function canBeUpdatedStyle(item: elements.attrValType | StyleRule): boolean
+	function getRenderedAttrValueRaw(attrVal: elements.attrValType2)
 	{
-		if (typeof item === "object" && item instanceof StyleRule)
+		if (attrVal != null)
 		{
-			return canBeUpdatedAttr(item.propValue);
+			if (attrVal instanceof Function) return attrVal();
+			if (isPropDefReadable(attrVal)) return attrVal.get();
+		}
+		return attrVal;
+	}
+	function canBeUpdatedStyle(attrVal: elements.attrValType2): boolean
+	{
+		if (typeof attrVal === "object" && attrVal instanceof StyleRule)
+		{
+			return canBeUpdatedAttr(attrVal.propValue);
 		}
 		else
 		{
-			return canBeUpdatedAttr(item);
+			return canBeUpdatedAttr(attrVal);
 		}
 	}
-	function getRenderedStyleValue(item: elements.attrValType | StyleRule)
+	function getRenderedStyleValue(attrVal: elements.attrValType2)
 	{
-		if (typeof item === "object" && item instanceof StyleRule)
+		if (typeof attrVal === "object" && attrVal instanceof StyleRule)
 		{
-			const v = getRenderedAttrValue(item.propValue);
+			const v = getRenderedAttrValue(attrVal.propValue);
 
 			if (v == null || v == '') return null;
 
-			return item.propName + ": " + v;
+			return attrVal.propName + ": " + v;
 		}
 		else
 		{
-			return getRenderedAttrValue(item);
+			return getRenderedAttrValue(attrVal);
 		}
 	}
 	function asElmWithValue(elm: elements.ElementGeneric)

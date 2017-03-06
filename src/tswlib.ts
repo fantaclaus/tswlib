@@ -11,7 +11,7 @@ namespace tsw
 
 	export interface Renderer
 	{
-		render: () => any;
+		render: () => elements.childValType;
 		afterAttach?: () => void;
 		beforeDetach?: () => void;
 	}

@@ -8,11 +8,6 @@ namespace tsw.internal
 		propName: string;
 		propValue: elements.attrValType;
 	}
-	export interface NameValue
-	{
-		name: string;
-		value: elements.attrValType | StyleRule;
-	}
 	export interface EventHandlerMap
 	{
 		[eventName: string]: elements.EventHandler;
@@ -23,8 +18,19 @@ namespace tsw.elements
 {
 	export type attrValSimpleType = string | number | boolean | null;
 	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | global.PropDefReadable<attrValSimpleType>;
+	export type attrValType2 = attrValType | internal.StyleRule;
 	export type stringValType = string | null | (() => string | null) | global.PropDefReadable<string | null>;
 	export type boolValType = boolean | (() => boolean) | global.PropDefReadable<boolean>;
+
+	export type childSimpleValType = string | number | boolean | null;
+	export type childComplexValType = childSimpleValType | childSimpleValType[];
+	export type childValType = childComplexValType | (() => childComplexValType) | global.PropDefReadable<childComplexValType> | Renderer;
+
+	interface AttrNameValue
+	{
+		attrName: string;
+		attrValue: elements.attrValType2;
+	}
 
 	export interface EventHandler
 	{
@@ -34,8 +40,8 @@ namespace tsw.elements
 	export class ElementGeneric
 	{
 		private tagName: string | null = null;
-		private _attrs: internal.NameValue[] | null = null;
-		private _children: internal.NameValue[] | null = null;
+		private _attrs: AttrNameValue[] | null = null;
+		private _children: childValType[] | null = null;
 		private eventHandlers: internal.EventHandlerMap | null = null;
 		private _refs: Ref[] | null = null;
 
@@ -88,7 +94,7 @@ namespace tsw.elements
 			this.attr('disabled', val);
 			return this;
 		}
-		children(items: any)
+		children(items: childValType)
 		{
 			if (items != null)
 			{
@@ -133,10 +139,10 @@ namespace tsw.elements
 			return this;
 		}
 
-		private addAttr(name: string, val: attrValType | internal.StyleRule): void
+		private addAttr(name: string, val: attrValType2): void
 		{
 			this._attrs = this._attrs || [];
-			this._attrs.push({ name: name.toLowerCase(), value: val });
+			this._attrs.push({ attrName: name.toLowerCase(), attrValue: val });
 		}
 		/**
 		 * @internal
