@@ -90,7 +90,7 @@ namespace tsw.elements
 			return 'value';
 		}
 	}
-    export class ElementInputText extends ElementInput<string | null>
+	export class ElementInputText extends ElementInput<string | null>
 	{
 		constructor()
 		{
@@ -178,14 +178,14 @@ namespace tsw.elements
 			super('select')
 		}
 
-		value(propDef: tsw.global.PropDef<string>)
+		value(propDef: tsw.global.PropDef<string | null>)
 		{
 			this.propDef = propDef;
 			this.valuePropName = "value";
 
 			return this;
 		}
-		selectedIndex(propDef: tsw.global.PropDef<number>)
+		selectedIndex(propDef: tsw.global.PropDef<number | null>)
 		{
 			this.propDef = propDef;
 			this.valuePropName = "selectedIndex";
