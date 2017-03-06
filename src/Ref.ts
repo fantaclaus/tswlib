@@ -1,12 +1,12 @@
 namespace tsw
 {
-	export class Ref implements tsw.global.PropDef<string | null>
+	export class Ref implements global.PropDef<string | null>
 	{
 		private refId: string | null;
 
 		get(): string | null
 		{
-			tsw.internal.attach(this);
+			internal.attach(this);
 
 			return this.refId;
 		}
@@ -18,7 +18,7 @@ namespace tsw
 
 				this.refId = v;
 
-				tsw.internal.update(this);
+				internal.update(this);
 
 				//console.groupEnd();
 			}

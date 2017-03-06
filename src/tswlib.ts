@@ -4,7 +4,7 @@ namespace tsw
 	{
 		if (htmlElement != null)
 		{
-			const ctxRoot = new tsw.internal.CtxRoot();
+			const ctxRoot = new internal.CtxRoot();
 			ctxRoot.render(content, htmlElement);
 		}
 	}

@@ -153,7 +153,7 @@ namespace tsw.internal
 			var ctxs: Ctx[] = [];
 			this.collectChildContexts(ctxs);
 
-			tsw.internal.removeCtxs(ctxs);
+			internal.removeCtxs(ctxs);
 		}
 		private collectChildContexts(ctxs: Ctx[])
 		{
@@ -258,7 +258,7 @@ namespace tsw.internal
 		}
 		protected _renderHtml(content: any)
 		{
-			return tsw.internal.renderHtml(this, content);
+			return internal.renderHtml(this, content);
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
@@ -419,7 +419,7 @@ namespace tsw.internal
 			var ctxRoot = this.getRootCtx();
 			if (!ctxRoot) throw new Error("root ctx is null");
 
-			return tsw.internal.getRenderedHtml(ctxRoot, content);
+			return internal.getRenderedHtml(ctxRoot, content);
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{

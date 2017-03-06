@@ -48,12 +48,12 @@ namespace tsw.elements
 	}
 	export abstract class ElementWithValue extends ElementGeneric
 	{
-		protected propDef: tsw.global.PropDef<any>;
+		protected propDef: global.PropDef<any>;
 
 		/**
 		 * @internal
 		 */
-		z_getPropDef(): tsw.global.PropDef<any>
+		z_getPropDef(): global.PropDef<any>
 		{
 			return this.propDef;
 		}
@@ -76,7 +76,7 @@ namespace tsw.elements
 			super('input')
 			this.attr('type', type);
 		}
-		value(propDef: tsw.global.PropDef<T>)
+		value(propDef: global.PropDef<T>)
 		{
 			this.propDef = propDef;
 
@@ -149,7 +149,7 @@ namespace tsw.elements
 		{
 			super('textarea')
 		}
-		value(propDef: tsw.global.PropDef<string>)
+		value(propDef: global.PropDef<string>)
 		{
 			this.propDef = propDef;
 
@@ -178,14 +178,14 @@ namespace tsw.elements
 			super('select')
 		}
 
-		value(propDef: tsw.global.PropDef<string | null>)
+		value(propDef: global.PropDef<string | null>)
 		{
 			this.propDef = propDef;
 			this.valuePropName = "value";
 
 			return this;
 		}
-		selectedIndex(propDef: tsw.global.PropDef<number | null>)
+		selectedIndex(propDef: global.PropDef<number | null>)
 		{
 			this.propDef = propDef;
 			this.valuePropName = "selectedIndex";

@@ -6,25 +6,25 @@ namespace tsw.internal
 	export class StyleRule
 	{
 		propName: string;
-		propValue: tsw.elements.attrValType;
+		propValue: elements.attrValType;
 	}
 	export interface NameValue
 	{
 		name: string;
-		value: tsw.elements.attrValType | StyleRule;
+		value: elements.attrValType | StyleRule;
 	}
 	export interface EventHandlerMap
 	{
-		[eventName: string]: tsw.elements.EventHandler;
+		[eventName: string]: elements.EventHandler;
 	}
 }
 
 namespace tsw.elements
 {
 	export type attrValSimpleType = string | number | boolean | null;
-	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | tsw.global.PropDefReadable<attrValSimpleType>;
-	export type stringValType = string | null | (() => string | null) | tsw.global.PropDefReadable<string | null>;
-	export type boolValType = boolean | (() => boolean) | tsw.global.PropDefReadable<boolean>;
+	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | global.PropDefReadable<attrValSimpleType>;
+	export type stringValType = string | null | (() => string | null) | global.PropDefReadable<string | null>;
+	export type boolValType = boolean | (() => boolean) | global.PropDefReadable<boolean>;
 
 	export interface EventHandler
 	{
@@ -34,9 +34,9 @@ namespace tsw.elements
 	export class ElementGeneric
 	{
 		private tagName: string | null = null;
-		private _attrs: tsw.internal.NameValue[] | null = null;
-		private _children: tsw.internal.NameValue[] | null = null;
-		private eventHandlers: tsw.internal.EventHandlerMap | null = null;
+		private _attrs: internal.NameValue[] | null = null;
+		private _children: internal.NameValue[] | null = null;
+		private eventHandlers: internal.EventHandlerMap | null = null;
 		private _refs: Ref[] | null = null;
 
 		constructor(tagName: string)
@@ -68,7 +68,7 @@ namespace tsw.elements
 		{
 			if (name != null && val != null)
 			{
-				const v = new tsw.internal.StyleRule();
+				const v = new internal.StyleRule();
 				v.propName = name;
 				v.propValue = val;
 
@@ -133,7 +133,7 @@ namespace tsw.elements
 			return this;
 		}
 
-		private addAttr(name: string, val: attrValType | tsw.internal.StyleRule): void
+		private addAttr(name: string, val: attrValType | internal.StyleRule): void
 		{
 			this._attrs = this._attrs || [];
 			this._attrs.push({ name: name.toLowerCase(), value: val });

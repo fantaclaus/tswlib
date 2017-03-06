@@ -1,6 +1,6 @@
 namespace tsw
 {
-	export class PropVal<T> implements tsw.global.PropDef<T>
+	export class PropVal<T> implements global.PropDef<T>
 	{
 		val: T;
 		private insideSet = false; // to prevent infinite loops
@@ -12,7 +12,7 @@ namespace tsw
 		}
 		get(): T
 		{
-			tsw.internal.attach(this);
+			internal.attach(this);
 
 			return this.val;
 		}
@@ -29,7 +29,7 @@ namespace tsw
 				{
 					this.val = v;
 
-					tsw.internal.update(this);
+					internal.update(this);
 
 					if (this.onChanged) this.onChanged();
 				}
@@ -112,7 +112,7 @@ namespace tsw
 				a.splice(index, 0, item);
 			}
 
-			tsw.internal.update(this);
+			internal.update(this);
 		}
 		setLength(length: number)
 		{
@@ -122,7 +122,7 @@ namespace tsw
 			{
 				a.length = length;
 
-				tsw.internal.update(this);
+				internal.update(this);
 			}
 		}
 	}
