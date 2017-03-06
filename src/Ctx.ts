@@ -11,10 +11,13 @@ namespace tsw.internal
 
 	export abstract class Ctx
 	{
+		private static useHierarchicalIds = false;
+
 		private lastChildId: number | null;
 		private childCtxs: Ctx[] | null;
 		private parentCtx: Ctx | null;
 
+		public rootCtx: CtxRoot | undefined;
 		public id: string;
 
 		getParent()
@@ -31,7 +34,7 @@ namespace tsw.internal
 		}
 		getRootCtx()
 		{
-			return this.findSelfOrParent<CtxRoot>(ctx => ctx instanceof CtxRoot);
+			return this.rootCtx;
 		}
 		private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean)
 		{
@@ -100,14 +103,21 @@ namespace tsw.internal
 			return ctxElm && ctxElm.getHtmlElement();
 		}
 
-		generateNextChildId()
+		private getNextChildId()
 		{
 			this.lastChildId = (this.lastChildId || 0) + 1;
 			return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 		}
+		generateNextChildId(): string
+		{
+			const ctx = Ctx.useHierarchicalIds ? <Ctx>this : this.getRootCtx();
+			if (!ctx) throw new Error("root ctx is null");
+
+			return ctx.getNextChildId();
+		}
 		protected resetNextChildId()
 		{
-			this.lastChildId = null;
+			if (Ctx.useHierarchicalIds) this.lastChildId = null;
 		}
 
 		protected _update(content: any)
@@ -173,10 +183,11 @@ namespace tsw.internal
 		private tagName: string;
 		private refs: Ref[] | null;
 
-		constructor(id: string, tagName: string, refs: Ref[] | null)
+		constructor(rootCtx: CtxRoot, id: string, tagName: string, refs: Ref[] | null)
 		{
 			super();
 
+			this.rootCtx = rootCtx;
 			this.id = id;
 			this.tagName = tagName;
 			this.refs = refs;
@@ -221,6 +232,10 @@ namespace tsw.internal
 		private attachedEventNames: { [eventName: string]: boolean } | null;
 		private eventHandlers: { [elmId: string]: EventHandlerMap } | null;
 
+		getRootCtx()
+		{
+			return this;
+		}
 		getTagName()
 		{
 			return this.htmlElement.tagName;
@@ -229,21 +244,21 @@ namespace tsw.internal
 		{
 			return this.htmlElement;
 		}
-	    render(content: any, htmlElement: HTMLElement)
-	    {
-		    if (this.htmlElement !== htmlElement)
-		    {
-			    this._update(null);
-		    }
+		render(content: any, htmlElement: HTMLElement)
+		{
+			if (this.htmlElement !== htmlElement)
+			{
+				this._update(null);
+			}
 
-		    this.htmlElement = htmlElement;
-		    this.id = htmlElement.id;
+			this.htmlElement = htmlElement;
+			this.id = htmlElement.id;
 
-		    this._update(content);
-	    }
+			this._update(content);
+		}
 		protected _renderHtml(content: any)
 		{
-			return internal.renderHtml(content);
+			return tsw.internal.renderHtml(this, content);
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
@@ -387,10 +402,11 @@ namespace tsw.internal
 	{
 		content: any;
 
-		constructor(id: string, content: any)
+		constructor(rootCtx: CtxRoot, id: string, content: any)
 		{
 			super();
 
+			this.rootCtx = rootCtx;
 			this.id = id;
 			this.content = content;
 		}
@@ -400,7 +416,10 @@ namespace tsw.internal
 		}
 		protected _renderHtml(content: any)
 		{
-			return internal.getRenderedHtml(content);
+			var ctxRoot = this.getRootCtx();
+			if (!ctxRoot) throw new Error("root ctx is null");
+
+			return tsw.internal.getRenderedHtml(ctxRoot, content);
 		}
 		protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 		{
@@ -437,6 +456,12 @@ namespace tsw.internal
 		attrName: string;
 		renderFn: () => string | null;
 
+		constructor(rootCtx: CtxRoot)
+		{
+			super();
+
+			this.rootCtx = rootCtx;
+		}
 		update()
 		{
 			var htmlElement = this.getHtmlElement();
@@ -486,6 +511,12 @@ namespace tsw.internal
 		propName: string;
 		renderFn: () => any;
 
+		constructor(rootCtx: CtxRoot)
+		{
+			super();
+
+			this.rootCtx = rootCtx;
+		}
 		update()
 		{
 			var htmlElement = this.getHtmlElement();
