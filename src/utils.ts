@@ -16,7 +16,7 @@ namespace tsw.utils
 
 		return s1 || s2;
 	}
-	export function join(items: any[], delim: string, selector: (item: any) => string)
+	export function join<T>(items: T[], delim: string, selector: (item: T) => string)
 	{
 		// if all items are null, return null
 
