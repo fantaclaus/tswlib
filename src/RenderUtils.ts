@@ -1,18 +1,16 @@
-﻿import { CtxUpdatable, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableAttr, CtxUpdatableValue, CtxRoot } from './Ctx';
-import * as elements from './elm';
-import * as utils from './utils';
-import { RawHtml, ElementWithValue } from './htmlElements';
-import { EventHandlerMap } from './elm';
-import { PropDefReadable } from './PropDefs';
-//import "jquery";
+﻿import { attrValType, childValType, Renderer, ElementGeneric, EventHandlerMap, StyleRule, PropDefReadableChildValType, PropDefReadableAttrValType } from "./elm";
+import { elmValue, RawHtml, ElementWithValue } from "./htmlElements";
+import { CtxUpdatable, CtxRoot, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableValue, CtxUpdatableAttr } from "./Ctx";
+import { PropDefReadable } from "./propDefs";
+import * as utils from "./utils";
 
-interface MapStringToArray
+interface MapStringToArrayOfAttrValType
 {
-	[name: string]: any[];
+	[name: string]: attrValType[];
 }
 interface ValueData
 {
-	value: any;
+	value: elmValue;
 	ctx: CtxUpdatable;
 	valPropName: string;
 }
@@ -35,7 +33,20 @@ class HtmlBlockMarkers
 
 let _tmpHtmlElement: HTMLElement;
 
-export function renderHtml(rootCtx: CtxRoot, content: any)
+function isPropDefAttr(attrVal: attrValType): attrVal is PropDefReadableAttrValType
+{
+	return (<PropDefReadableAttrValType>attrVal).get instanceof Function;
+}
+function isPropDefChild(attrVal: childValType): attrVal is PropDefReadableChildValType
+{
+	return (<PropDefReadableChildValType>attrVal).get instanceof Function;
+}
+function isRenderer(item: childValType): item is Renderer
+{
+	return (<Renderer>item).render instanceof Function;
+}
+
+export function renderHtml(rootCtx: CtxRoot, content: childValType | childValType[] | null)
 {
 	let result = '';
 
@@ -43,7 +54,7 @@ export function renderHtml(rootCtx: CtxRoot, content: any)
 
 	return result;
 
-	function addExpanded(item: any): void
+	function addExpanded(item: childValType | childValType[] | null): void
 	{
 		if (item == null) return;
 
@@ -65,12 +76,12 @@ export function renderHtml(rootCtx: CtxRoot, content: any)
 		}
 	}
 }
-function renderItem(rootCtx: CtxRoot, item: any): string
+function renderItem(rootCtx: CtxRoot, item: childValType): string
 {
 	if (item == null || item === true || item === false) return '';
 
 	if (item instanceof RawHtml) return item.value;
-	if (item instanceof elements.ElementGeneric) return renderElement(rootCtx, item);
+	if (item instanceof ElementGeneric) return renderElement(rootCtx, item);
 
 	// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
 	const ctxCurrent = CtxScope.getCurrentSafe();
@@ -87,7 +98,7 @@ function renderItem(rootCtx: CtxRoot, item: any): string
 	const s = item.toString();
 	return utils.htmlEncode(s);
 }
-function renderUpdatableChild(rootCtx: CtxRoot, item: any): string
+function renderUpdatableChild(rootCtx: CtxRoot, item: childValType): string
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 	const id = ctxCurrent.generateNextChildId();
@@ -102,7 +113,7 @@ function renderUpdatableChild(rootCtx: CtxRoot, item: any): string
 	const markers = new HtmlBlockMarkers(ctx.id);
 	return markers.getHtml(innerHtml);
 }
-function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
+function renderElement(rootCtx: CtxRoot, elm: ElementGeneric)
 {
 	const tagName = elm.z_getTagName();
 	//console.log(elm, tagName);
@@ -164,7 +175,7 @@ function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
 
 	if (valData && tagName == 'textarea')
 	{
-		innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
+		innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value.toString());
 	}
 	else
 	{
@@ -176,13 +187,13 @@ function renderElement(rootCtx: CtxRoot, elm: elements.ElementGeneric)
 
 	if (useVal && valData && propDef && propDef.set instanceof Function)
 	{
-		const valData2 = valData; // remove null from type
-
 		eventHanders = eventHanders || {};
 
 		const savedHandlers: EventHandlerMap = {};
 		savedHandlers['change'] = eventHanders['change'];
 		savedHandlers['input'] = eventHanders['input'];
+
+		const valData2 = valData; // remove null from type
 
 		const handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
 		{
@@ -242,7 +253,7 @@ function elmNeedsCloseTag(tagName: string): boolean
 
 	return !needNoClosingTag;
 }
-function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArray): string
+function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType): string
 {
 	let attrsHtml = '';
 
@@ -260,9 +271,9 @@ function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArray): string
 
 	return attrsHtml;
 }
-function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArray, attrName: string): string | null
+function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType, attrName: string): string | null
 {
-	const attrVals: any[] = attrs[attrName];
+	const attrVals = attrs[attrName];
 	//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
 
 	let canBeUpdated: boolean;
@@ -271,12 +282,12 @@ function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArray, attrName: string)
 	if (attrName == 'class')
 	{
 		canBeUpdated = attrVals.some(av => canBeUpdatedAttr(av));
-		fn = () => utils.join(attrVals, ' ', av => getRenderedAttrValue(av));
+		fn = () => joinAttrVals(attrVals, ' ', av => getRenderedAttrValue(av));
 	}
 	else if (attrName == 'style')
 	{
 		canBeUpdated = attrVals.some(av => canBeUpdatedStyle(av));
-		fn = () => utils.join(attrVals, '; ', av => getRenderedStyleValue(av));
+		fn = () => joinAttrVals(attrVals, '; ', av => getRenderedStyleValue(av));
 	}
 	else
 	{
@@ -300,34 +311,66 @@ function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArray, attrName: string)
 		return fn();
 	}
 }
-function getRenderedLastAttrValue(attrVals: any[])
+function getRenderedLastAttrValue(attrVals: attrValType[])
 {
 	// it returns last value to support overwriting of attr values
 	// for example, bs.btnLink() returns <A href="#"> by default, and href could be re-assigned to another
 	// value this way: bs.btnLink().href("some url")
 
-	return attrVals && utils.join(attrVals.slice(-1), ', ', av => getRenderedAttrValue(av));
+	return attrVals && joinAttrVals(attrVals.slice(-1), ', ', av => getRenderedAttrValue(av));
 }
-function getElmAttrs(elm: elements.ElementGeneric)
+function joinAttrVals(attrVals: attrValType[], delim: string, selector: (av: attrValType) => attrValType)
 {
-	const attrs: MapStringToArray = {};
+	// if all items are null, return null
+
+	let result: string | null = null;
+
+	if (attrVals)
+	{
+		for (let i = 0; i < attrVals.length; i++)
+		{
+			const attrVal = attrVals[i];
+			if (attrVal != null)
+			{
+				const attrVal2 = selector(attrVal);
+
+				if (attrVal2 != null)
+				{
+					if (result == null) result = ''; // if at least one attrVal is converted to non-null, result is not null
+
+					if (attrVal2 !== '') // don't append nulls and empty strings. but zero-number value must be appended.
+					{
+						if (delim && result) result = result + delim;
+
+						result = result + attrVal2;
+					}
+				}
+			}
+		}
+	}
+
+	return result;
+}
+function getElmAttrs(elm: ElementGeneric)
+{
+	const attrs: MapStringToArrayOfAttrValType = {};
 
 	const elmAttrs = elm.z_getAttrs();
 	if (elmAttrs)
 	{
 		elmAttrs.forEach(a =>
 		{
-			const attrName = a.name;
+			const attrName = a.attrName;
 			if (attrName)
 			{
-				let vals: any[] = attrs[attrName];
+				let vals = attrs[attrName];
 				if (!vals)
 				{
 					vals = [];
 					attrs[attrName] = vals;
 				}
 
-				vals.push(a.value);
+				vals.push(a.attrValue);
 			}
 		});
 	}
@@ -363,85 +406,85 @@ function quote(s: string)
 {
 	return '"' + s + '"';
 }
-function canItemBeUpdated(item: any): boolean
+function canItemBeUpdated(item: childValType)
 {
 	if (item != null)
 	{
 		if (item instanceof Function) return true;
-		if (item.render instanceof Function) return true; // macro element
-		if (item.get instanceof Function) return true; // PropVal
+		if (isRenderer(item)) return true; // macro element
+		if (isPropDefChild(item)) return true;
 	}
 
 	return false;
 }
-export function getRenderedHtml(rootCtx: CtxRoot, item: any)
+export function getRenderedHtml(rootCtx: CtxRoot, item: childValType)
 {
 	const content = getRenderedContent(item);
 	return renderHtml(rootCtx, content);
 }
-function getRenderedContent(item: any)
+function getRenderedContent(item: childValType)
 {
 	if (item != null)
 	{
 		if (item instanceof Function) return item();
-		if (item.render instanceof Function) return item.render();
-		if (item.get instanceof Function) return item.get();
+		if (isRenderer(item)) return item.render();
+		if (isPropDefChild(item)) return item.get();
 	}
 
 	return item;
 }
-function getRenderedAttrValue(item: any)
+function getRenderedAttrValue(attrVal: attrValType)
 {
-	const v = getRenderedAttrValueRaw(item);
+	const v = getRenderedAttrValueRaw(attrVal);
 	if (v === true) return '';
 	if (v === false) return null;
 	return v;
 }
-function canBeUpdatedAttr(item: any): boolean
+function canBeUpdatedAttr(attrVal: attrValType)
 {
-	if (item != null)
+	if (attrVal != null)
 	{
-		if (item instanceof Function) return true;
-		if (item.get instanceof Function) return true; // PropVal
+		if (attrVal instanceof Function) return true;
+		if (isPropDefAttr(attrVal)) return true;
 	}
 	return false;
 }
-function getRenderedAttrValueRaw(item: any)
+function getRenderedAttrValueRaw(attrVal: attrValType)
 {
-	if (item != null)
+	if (attrVal != null)
 	{
-		if (item instanceof Function) return item();
-		if (item.get instanceof Function) return item.get();
+		if (attrVal instanceof Function) return attrVal();
+		if (isPropDefAttr(attrVal)) return attrVal.get();
 	}
-	return item;
+	return attrVal;
 }
-function canBeUpdatedStyle(item: elements.attrValType | elements.StyleRule): boolean
+function canBeUpdatedStyle(attrVal: attrValType)
 {
-	if (typeof item === "object" && item instanceof elements.StyleRule)
+	if (attrVal instanceof StyleRule)
 	{
-		return canBeUpdatedAttr(item.propValue);
+		return canBeUpdatedAttr(attrVal.propValue);
 	}
 	else
 	{
-		return canBeUpdatedAttr(item);
+		return canBeUpdatedAttr(attrVal);
 	}
 }
-function getRenderedStyleValue(item: elements.attrValType | elements.StyleRule)
+function getRenderedStyleValue(attrVal: attrValType)
 {
-	if (typeof item === "object" && item instanceof elements.StyleRule)
+	if (attrVal instanceof StyleRule)
 	{
-		const v = getRenderedAttrValue(item.propValue);
+		const v = getRenderedAttrValue(attrVal.propValue);
 
 		if (v == null || v == '') return null;
 
-		return item.propName + ": " + v;
+		return attrVal.propName + ": " + v;
 	}
 	else
 	{
-		return getRenderedAttrValue(item);
+		return getRenderedAttrValue(attrVal);
 	}
 }
-function asElmWithValue(elm: elements.ElementGeneric)
+function asElmWithValue(elm: ElementGeneric)
 {
 	if (elm instanceof ElementWithValue)
 	{
@@ -452,7 +495,7 @@ function asElmWithValue(elm: elements.ElementGeneric)
 		return null;
 	}
 }
-function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<any>, valPropName: string)
+function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<elmValue>, valPropName: string)
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 
@@ -535,13 +578,10 @@ function updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockM
 
 	if ((isFirst && isLast) || (!nodeBeginMarker && !nodeEndMarker))
 	{
-		// utils.log('html: replace complete');
 		targetElement.innerHTML = markers.getHtml(html);
 	}
 	else
 	{
-		// utils.log('html: replace between markers');
-
 		// replace between markers
 
 		if (nodeBeginMarker && nodeEndMarker)

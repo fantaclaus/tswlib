@@ -1,26 +1,44 @@
 ﻿import { Ref } from './Ref';
 import { PropDefReadable } from './PropDefs';
+import { RawHtml } from "./htmlElements";
+
+export interface PropDefReadableAttrValType extends PropDefReadable<attrValType> { }
+
+type attrValSimpleType = string | number | boolean | StyleRule | null;
+type attrValCompexType = attrValSimpleType | (() => attrValType) | PropDefReadableAttrValType;
+export type attrValType = attrValCompexType | attrValCompexType[];
+
+export interface PropDefReadableChildValType extends PropDefReadable<childValType> {}
+
+type childSimpleValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null;
+type childComplexValType = childSimpleValType | (() => childValType) | PropDefReadableChildValType;
+export type childValType = childComplexValType | childComplexValType[];
+
+export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
+export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
+
+interface AttrNameValue
+{
+	attrName: string;
+	attrValue: attrValType;
+}
+
+export interface Renderer
+{
+	render: () => childValType;
+	afterAttach?: () => void;
+	beforeDetach?: () => void;
+}
 
 export class StyleRule
 {
 	propName: string;
 	propValue: attrValType;
 }
-interface NameValue
-{
-	name: string;
-	value: attrValType2;
-}
 export interface EventHandlerMap
 {
 	[eventName: string]: EventHandler;
 }
-
-export type attrValSimpleType = string | number | boolean | null;
-export type attrValType = attrValSimpleType | (() => attrValSimpleType) | PropDefReadable<attrValSimpleType>;
-export type attrValType2 = attrValType | StyleRule;
-export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
-export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
 
 export interface EventHandler
 {
@@ -30,8 +48,8 @@ export interface EventHandler
 export class ElementGeneric
 {
 	private tagName: string | null = null;
-	private _attrs: NameValue[] | null = null;
-	private _children: NameValue[] | null = null;
+	private _attrs: AttrNameValue[] | null = null;
+	private _children: childValType[] | null = null;
 	private eventHandlers: EventHandlerMap | null = null;
 	private _refs: Ref[] | null = null;
 
@@ -40,7 +58,7 @@ export class ElementGeneric
 		this.tagName = tagName.toLowerCase();
 	}
 
-	attr(name: string, val: attrValType = true)
+	attr(name: string, val: attrValCompexType = true)
 	{
 		if (name != null)
 		{
@@ -49,12 +67,12 @@ export class ElementGeneric
 
 		return this;
 	}
-	cls(val: attrValType)
+	cls(val: attrValCompexType)
 	{
 		this.attr('class', val);
 		return this;
 	}
-	style(val: attrValType)
+	style(val: attrValCompexType)
 	{
 		this.attr('style', val);
 
@@ -73,7 +91,7 @@ export class ElementGeneric
 
 		return this;
 	}
-	data(name: string, val: attrValType)
+	data(name: string, val: attrValCompexType)
 	{
 		this.attr('data-' + name, val);
 
@@ -84,7 +102,7 @@ export class ElementGeneric
 		this.attr('disabled', val);
 		return this;
 	}
-	children(items: any)
+	children(items: childValType)
 	{
 		if (items != null)
 		{
@@ -129,10 +147,10 @@ export class ElementGeneric
 		return this;
 	}
 
-	private addAttr(name: string, val: attrValType2): void
+	private addAttr(name: string, val: attrValType): void
 	{
 		this._attrs = this._attrs || [];
-		this._attrs.push({ name: name.toLowerCase(), value: val });
+		this._attrs.push({ attrName: name.toLowerCase(), attrValue: val });
 	}
 	/**
 	 * @internal

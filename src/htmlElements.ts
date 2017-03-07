@@ -48,14 +48,17 @@ export class ElementImg extends ElementGeneric
 		return this;
 	}
 }
+
+export type elmValue = string | number | boolean | null;
+
 export abstract class ElementWithValue extends ElementGeneric
 {
-	protected propDef: PropDef<any>;
+	protected propDef: PropDef<elmValue>;
 
 	/**
 	 * @internal
 	 */
-	z_getPropDef(): PropDef<any>
+	z_getPropDef()
 	{
 		return this.propDef;
 	}
@@ -71,7 +74,7 @@ export abstract class ElementWithValue extends ElementGeneric
 	 */
 	abstract z_getValuePropName(): string;  // for jQuery.prop
 }
-export class ElementInput<T> extends ElementWithValue
+export class ElementInput<T extends elmValue> extends ElementWithValue
 {
 	constructor(type: string)
 	{
