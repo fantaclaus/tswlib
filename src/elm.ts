@@ -1,40 +1,9 @@
-﻿/**
- * @internal
- */
-namespace tsw.internal
+﻿namespace tsw.elements
 {
-	export class StyleRule
-	{
-		propName: string;
-		propValue: elements.attrValType;
-	}
-	export interface EventHandlerMap
-	{
-		[eventName: string]: elements.EventHandler;
-	}
-}
-
-namespace tsw.elements
-{
-	export type attrValSimpleType = string | number | boolean | null;
-	export type attrValType = attrValSimpleType | (() => attrValSimpleType) | global.PropDefReadable<attrValSimpleType>;
-	export type attrValType2 = attrValType | internal.StyleRule;
-	export type stringValType = string | null | (() => string | null) | global.PropDefReadable<string | null>;
-	export type boolValType = boolean | (() => boolean) | global.PropDefReadable<boolean>;
-
-	export type childSimpleValType = string | number | boolean | null;
-	export type childComplexValType = childSimpleValType | childSimpleValType[];
-	export type childValType = childComplexValType | (() => childComplexValType) | global.PropDefReadable<childComplexValType> | Renderer;
-
 	interface AttrNameValue
 	{
 		attrName: string;
-		attrValue: elements.attrValType2;
-	}
-
-	export interface EventHandler
-	{
-		(e: JQueryEventObject, target: HTMLElement): void;
+		attrValue: attrValType;
 	}
 
 	export class ElementGeneric
@@ -50,7 +19,7 @@ namespace tsw.elements
 			this.tagName = tagName.toLowerCase();
 		}
 
-		attr(name: string, val: attrValType = true)
+		attr(name: string, val: attrValCompexType = true)
 		{
 			if (name != null)
 			{
@@ -59,12 +28,12 @@ namespace tsw.elements
 
 			return this;
 		}
-		cls(val: attrValType)
+		cls(val: attrValCompexType)
 		{
 			this.attr('class', val);
 			return this;
 		}
-		style(val: attrValType)
+		style(val: attrValCompexType)
 		{
 			this.attr('style', val);
 
@@ -83,7 +52,7 @@ namespace tsw.elements
 
 			return this;
 		}
-		data(name: string, val: attrValType)
+		data(name: string, val: attrValCompexType)
 		{
 			this.attr('data-' + name, val);
 
@@ -139,7 +108,7 @@ namespace tsw.elements
 			return this;
 		}
 
-		private addAttr(name: string, val: attrValType2): void
+		private addAttr(name: string, val: attrValType): void
 		{
 			this._attrs = this._attrs || [];
 			this._attrs.push({ attrName: name.toLowerCase(), attrValue: val });

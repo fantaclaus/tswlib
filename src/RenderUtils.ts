@@ -3,13 +3,13 @@
  */
 namespace tsw.internal
 {
-	interface MapStringToArrayOfAttrValType2
+	interface MapStringToArrayOfAttrValType
 	{
-		[name: string]: elements.attrValType2[];
+		[name: string]: elements.attrValType[];
 	}
 	interface ValueData
 	{
-		value: any;
+		value: elements.elmValue;
 		ctx: CtxUpdatable;
 		valPropName: string;
 	}
@@ -31,6 +31,19 @@ namespace tsw.internal
 	}
 
 	let _tmpHtmlElement: HTMLElement;
+
+	function isPropDefAttr(attrVal: elements.attrValType): attrVal is elements.PropDefReadableAttrValType
+	{
+		return (<elements.PropDefReadableAttrValType>attrVal).get instanceof Function;
+	}
+	function isPropDefChild(attrVal: elements.childValType): attrVal is elements.PropDefReadableChildValType
+	{
+		return (<elements.PropDefReadableChildValType>attrVal).get instanceof Function;
+	}
+	function isRenderer(item: elements.childValType): item is Renderer
+	{
+		return (<Renderer>item).render instanceof Function;
+	}
 
 	export function renderHtml(rootCtx: CtxRoot, content: elements.childValType | elements.childValType[] | null)
 	{
@@ -62,7 +75,7 @@ namespace tsw.internal
 			}
 		}
 	}
-	function renderItem(rootCtx: CtxRoot, item: elements.childValType): string
+	function renderItem(rootCtx: CtxRoot, item: elements.childValType)
 	{
 		if (item == null || item === true || item === false) return '';
 
@@ -84,7 +97,7 @@ namespace tsw.internal
 		const s = item.toString();
 		return utils.htmlEncode(s);
 	}
-	function renderUpdatableChild(rootCtx: CtxRoot, item: any): string
+	function renderUpdatableChild(rootCtx: CtxRoot, item: elements.childValType)
 	{
 		const ctxCurrent = CtxScope.getCurrentSafe();
 		const id = ctxCurrent.generateNextChildId();
@@ -161,7 +174,7 @@ namespace tsw.internal
 
 		if (valData && tagName == 'textarea')
 		{
-			innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value);
+			innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value.toString());
 		}
 		else
 		{
@@ -173,13 +186,13 @@ namespace tsw.internal
 
 		if (useVal && valData && propDef && propDef.set instanceof Function)
 		{
-			const valData2 = valData; // remove null from type
-
 			eventHanders = eventHanders || {};
 
 			const savedHandlers: EventHandlerMap = {};
 			savedHandlers['change'] = eventHanders['change'];
 			savedHandlers['input'] = eventHanders['input'];
+
+			const valData2 = valData; // remove null from type
 
 			const handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
 			{
@@ -239,7 +252,7 @@ namespace tsw.internal
 
 		return !needNoClosingTag;
 	}
-	function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType2): string
+	function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType): string
 	{
 		let attrsHtml = '';
 
@@ -257,7 +270,7 @@ namespace tsw.internal
 
 		return attrsHtml;
 	}
-	function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType2, attrName: string): string | null
+	function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType, attrName: string)
 	{
 		const attrVals = attrs[attrName];
 		//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
@@ -297,7 +310,7 @@ namespace tsw.internal
 			return fn();
 		}
 	}
-	function getRenderedLastAttrValue(attrVals: elements.attrValType2[])
+	function getRenderedLastAttrValue(attrVals: elements.attrValType[])
 	{
 		// it returns last value to support overwriting of attr values
 		// for example, bs.btnLink() returns <A href="#"> by default, and href could be re-assigned to another
@@ -305,7 +318,7 @@ namespace tsw.internal
 
 		return attrVals && joinAttrVals(attrVals.slice(-1), ', ', av => getRenderedAttrValue(av));
 	}
-	function joinAttrVals(attrVals: elements.attrValType2[], delim: string, selector: (av: elements.attrValType2) => elements.attrValType2)
+	function joinAttrVals(attrVals: elements.attrValType[], delim: string, selector: (av: elements.attrValType) => elements.attrValType)
 	{
 		// if all items are null, return null
 
@@ -339,7 +352,7 @@ namespace tsw.internal
 	}
 	function getElmAttrs(elm: elements.ElementGeneric)
 	{
-		const attrs: MapStringToArrayOfAttrValType2 = {};
+		const attrs: MapStringToArrayOfAttrValType = {};
 
 		const elmAttrs = elm.z_getAttrs();
 		if (elmAttrs)
@@ -392,13 +405,13 @@ namespace tsw.internal
 	{
 		return '"' + s + '"';
 	}
-	function canItemBeUpdated(item: elements.childValType): boolean
+	function canItemBeUpdated(item: elements.childValType)
 	{
 		if (item != null)
 		{
 			if (item instanceof Function) return true;
 			if (isRenderer(item)) return true; // macro element
-			if ((<any>item).get instanceof Function) return true; // PropVal
+			if (isPropDefChild(item)) return true;
 		}
 
 		return false;
@@ -414,47 +427,39 @@ namespace tsw.internal
 		{
 			if (item instanceof Function) return item();
 			if (isRenderer(item)) return item.render();
-			if (isPropDefReadable(item)) return item.get();
+			if (isPropDefChild(item)) return item.get();
 		}
 
 		return item;
 	}
-	function isRenderer(attrVal: any): attrVal is Renderer
-	{
-		return attrVal.render instanceof Function;
-	}
-	function getRenderedAttrValue(attrVal: elements.attrValType2)
+	function getRenderedAttrValue(attrVal: elements.attrValType)
 	{
 		const v = getRenderedAttrValueRaw(attrVal);
 		if (v === true) return '';
 		if (v === false) return null;
 		return v;
 	}
-	function canBeUpdatedAttr(attrVal: elements.attrValType2): boolean
+	function canBeUpdatedAttr(attrVal: elements.attrValType)
 	{
 		if (attrVal != null)
 		{
 			if (attrVal instanceof Function) return true;
-			if (isPropDefReadable(attrVal)) return true; // PropVal
+			if (isPropDefAttr(attrVal)) return true;
 		}
 		return false;
 	}
-	function isPropDefReadable(attrVal: elements.attrValType2 | elements.childValType): attrVal is global.PropDefReadable<elements.attrValSimpleType>
-	{
-		return (<any>attrVal).get instanceof Function;
-	}
-	function getRenderedAttrValueRaw(attrVal: elements.attrValType2)
+	function getRenderedAttrValueRaw(attrVal: elements.attrValType)
 	{
 		if (attrVal != null)
 		{
 			if (attrVal instanceof Function) return attrVal();
-			if (isPropDefReadable(attrVal)) return attrVal.get();
+			if (isPropDefAttr(attrVal)) return attrVal.get();
 		}
 		return attrVal;
 	}
-	function canBeUpdatedStyle(attrVal: elements.attrValType2): boolean
+	function canBeUpdatedStyle(attrVal: elements.attrValType)
 	{
-		if (typeof attrVal === "object" && attrVal instanceof StyleRule)
+		if (attrVal instanceof StyleRule)
 		{
 			return canBeUpdatedAttr(attrVal.propValue);
 		}
@@ -463,9 +468,9 @@ namespace tsw.internal
 			return canBeUpdatedAttr(attrVal);
 		}
 	}
-	function getRenderedStyleValue(attrVal: elements.attrValType2)
+	function getRenderedStyleValue(attrVal: elements.attrValType)
 	{
-		if (typeof attrVal === "object" && attrVal instanceof StyleRule)
+		if (attrVal instanceof StyleRule)
 		{
 			const v = getRenderedAttrValue(attrVal.propValue);
 
@@ -489,7 +494,7 @@ namespace tsw.internal
 			return null;
 		}
 	}
-	function getValue(rootCtx: CtxRoot, propDef: global.PropDefReadable<any>, valPropName: string)
+	function getValue(rootCtx: CtxRoot, propDef: global.PropDefReadable<elements.elmValue>, valPropName: string)
 	{
 		const ctxCurrent = CtxScope.getCurrentSafe();
 
@@ -504,7 +509,7 @@ namespace tsw.internal
 		return { value: val, ctx: ctx, valPropName: valPropName };
 	}
 
-	export function updateInnerHtml(htmlElement: HTMLElement, id: string, html: string): void
+	export function updateInnerHtml(htmlElement: HTMLElement, id: string, html: string)
 	{
 		const markers = new HtmlBlockMarkers(id);
 		updateDOM(htmlElement, html, markers);
@@ -572,13 +577,10 @@ namespace tsw.internal
 
 		if ((isFirst && isLast) || (!nodeBeginMarker && !nodeEndMarker))
 		{
-			// utils.log('html: replace complete');
 			targetElement.innerHTML = markers.getHtml(html);
 		}
 		else
 		{
-			// utils.log('html: replace between markers');
-
 			// replace between markers
 
 			if (nodeBeginMarker && nodeEndMarker)

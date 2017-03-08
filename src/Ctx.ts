@@ -3,12 +3,6 @@
  */
 namespace tsw.internal
 {
-	interface HtmlElementEvents
-	{
-		htmlElm: HTMLElement;
-		ehMap: EventHandlerMap;
-	}
-
 	export abstract class Ctx
 	{
 		private static useHierarchicalIds = false;
@@ -120,7 +114,7 @@ namespace tsw.internal
 			if (Ctx.useHierarchicalIds) this.lastChildId = null;
 		}
 
-		protected _update(content: any)
+		protected _update(content: elements.childValType)
 		{
 			this.beforeDetach();
 
@@ -140,7 +134,7 @@ namespace tsw.internal
 
 			this.afterAttach();
 		}
-		protected _renderHtml(content: any): string
+		protected _renderHtml(content: elements.childValType)
 		{
 			throw new Error("_renderHtml is not supported by this class");
 		}
@@ -161,18 +155,6 @@ namespace tsw.internal
 
 			this.forEachChild(ctx => ctx.collectChildContexts(ctxs));
 		}
-
-		//protected getDbgArgs(): any[]
-		//{
-		//	return ['%o #%s', this, this.id];
-		//}
-		//log(fmt: string, ...args: any[])
-		//{
-		//	var dbgArgs = this.getDbgArgs();
-		//	dbgArgs[0] = utils.appendDelimited(dbgArgs[0], ': ', fmt);
-		//	dbgArgs = dbgArgs.concat(args);
-		//	console.log.apply(console, dbgArgs);
-		//}
 	}
 	export abstract class CtxHtmlElementOwner extends Ctx
 	{
@@ -220,11 +202,6 @@ namespace tsw.internal
 
 			super.removeChildren();
 		}
-		//getDbgArgs(): any[]
-		//{
-		//	var htmlElement = document.getElementById(this.id);
-		//	return ['%o %s#%s %o', this, this.tagName, this.id, htmlElement];
-		//}
 	}
 	export class CtxRoot extends CtxHtmlElementOwner
 	{
@@ -244,7 +221,7 @@ namespace tsw.internal
 		{
 			return this.htmlElement;
 		}
-		render(content: any, htmlElement: HTMLElement)
+		render(content: elements.childValType, htmlElement: HTMLElement)
 		{
 			if (this.htmlElement !== htmlElement)
 			{
@@ -256,7 +233,7 @@ namespace tsw.internal
 
 			this._update(content);
 		}
-		protected _renderHtml(content: any)
+		protected _renderHtml(content: elements.childValType)
 		{
 			return internal.renderHtml(this, content);
 		}
@@ -368,7 +345,7 @@ namespace tsw.internal
 				}
 			}
 		}
-		private findEventHandlers(htmlElement: HTMLElement | null): HtmlElementEvents | null
+		private findEventHandlers(htmlElement: HTMLElement | null)
 		{
 			while (htmlElement && htmlElement != this.htmlElement)
 			{
@@ -385,14 +362,6 @@ namespace tsw.internal
 
 			return null;
 		}
-		//toString(): string // for DEBUG
-		//{
-		//	return "root";
-		//}
-		//getDbgArgs(): any[]
-		//{
-		//	return ['%o', this];
-		//}
 	}
 	export abstract class CtxUpdatable extends Ctx
 	{
@@ -400,9 +369,9 @@ namespace tsw.internal
 	}
 	export class CtxUpdatableChild extends CtxUpdatable
 	{
-		content: any;
+		content: elements.childValType;
 
-		constructor(rootCtx: CtxRoot, id: string, content: any)
+		constructor(rootCtx: CtxRoot, id: string, content: elements.childValType)
 		{
 			super();
 
@@ -414,7 +383,7 @@ namespace tsw.internal
 		{
 			this._update(this.content);
 		}
-		protected _renderHtml(content: any)
+		protected _renderHtml(content: elements.childValType)
 		{
 			var ctxRoot = this.getRootCtx();
 			if (!ctxRoot) throw new Error("root ctx is null");
@@ -441,15 +410,6 @@ namespace tsw.internal
 			var renderer = <Renderer>this.content;
 			if (renderer.beforeDetach) renderer.beforeDetach();
 		}
-
-		//toString(): string // for DEBUG
-		//{
-		//	return "block: " + this.id;
-		//}
-		//getDbgArgs(): any[]
-		//{
-		//	return ['%o #%s', this, this.id];
-		//}
 	}
 	export class CtxUpdatableAttr extends CtxUpdatable
 	{
@@ -492,24 +452,12 @@ namespace tsw.internal
 					jqElement.attr(this.attrName, v);
 			}
 		}
-		//toString(): string // for DEBUG
-		//{
-		//	var ctxElm = this.getParentHtmlElmOwnerCtx();
-		//	return utils.format("attr: #${id}[${attrName}]",  {
-		//		id: ctxElm.id,
-		//		attrName: this.attrName,
-		//	});
-		//}
-		//getDbgArgs(): any[]
-		//{
-		//	return ['%o #%s[%s]', this, this.id, this.attrName];
-		//}
 	}
 	export class CtxUpdatableValue extends CtxUpdatable
 	{
 		//tagName: string;
 		propName: string;
-		renderFn: () => any;
+		renderFn: () => elements.elmValue;
 
 		constructor(rootCtx: CtxRoot)
 		{
@@ -526,17 +474,8 @@ namespace tsw.internal
 			//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
 
 			var jqElement = jQuery(htmlElement);
-			jqElement.prop(this.propName, val);
+			jqElement.prop(this.propName, <string & number & boolean>val);
 		}
-		//		toString(): string // for DEBUG
-		//		{
-		//			var ctxElm = this.getParentHtmlElmOwnerCtx();
-		//			return `value: #${ctxElm.id}[${this.propName}]`;
-		//		}
-		//		getDbgArgs(): any[]
-		//		{
-		//			return ['%o prop:[%s]', this, this.propName];
-		//		}
 	}
 	export class CtxScope
 	{

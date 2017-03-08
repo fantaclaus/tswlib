@@ -46,14 +46,17 @@ namespace tsw.elements
 			return this;
 		}
 	}
+
+	export type elmValue = string | number | boolean | null;
+
 	export abstract class ElementWithValue extends ElementGeneric
 	{
-		protected propDef: global.PropDef<any>;
+		protected propDef: global.PropDef<elmValue>;
 
 		/**
 		 * @internal
 		 */
-		z_getPropDef(): global.PropDef<any>
+		z_getPropDef()
 		{
 			return this.propDef;
 		}
@@ -69,7 +72,7 @@ namespace tsw.elements
 		 */
 		abstract z_getValuePropName(): string;  // for jQuery.prop
 	}
-	export class ElementInput<T> extends ElementWithValue
+	export class ElementInput<T extends elmValue> extends ElementWithValue
 	{
 		constructor(type: string)
 		{
