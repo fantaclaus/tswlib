@@ -1,48 +1,10 @@
 ﻿import { Ref } from './Ref';
-import { PropDefReadable } from './PropDefs';
-import { RawHtml } from "./htmlElements";
-
-export interface PropDefReadableAttrValType extends PropDefReadable<attrValType> { }
-
-type attrValSimpleType = string | number | boolean | StyleRule | null;
-type attrValCompexType = attrValSimpleType | (() => attrValType) | PropDefReadableAttrValType;
-export type attrValType = attrValCompexType | attrValCompexType[];
-
-export interface PropDefReadableChildValType extends PropDefReadable<childValType> {}
-
-type childSimpleValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null;
-type childComplexValType = childSimpleValType | (() => childValType) | PropDefReadableChildValType;
-export type childValType = childComplexValType | childComplexValType[];
-
-export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
-export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
+import { attrValType, childValType, attrValCompexType, StyleRule, boolValType, EventHandlerMap, EventHandler } from "./types";
 
 interface AttrNameValue
 {
 	attrName: string;
 	attrValue: attrValType;
-}
-
-export interface Renderer
-{
-	render: () => childValType;
-	afterAttach?: () => void;
-	beforeDetach?: () => void;
-}
-
-export class StyleRule
-{
-	propName: string;
-	propValue: attrValType;
-}
-export interface EventHandlerMap
-{
-	[eventName: string]: EventHandler;
-}
-
-export interface EventHandler
-{
-	(e: JQueryEventObject, target: HTMLElement): void;
 }
 
 export class ElementGeneric

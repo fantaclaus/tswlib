@@ -1,6 +1,7 @@
-import { ElementGeneric, stringValType, boolValType } from './elm';
+import { ElementGeneric } from './elm';
 import { Ref } from './Ref';
 import { PropDef } from './PropDefs';
+import { stringValType, boolValType } from "./types";
 
 export class RawHtml
 {

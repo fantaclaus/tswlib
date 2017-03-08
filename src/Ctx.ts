@@ -1,16 +1,10 @@
-﻿import { EventHandlerMap, childValType, Renderer } from './elm';
+﻿import { EventHandlerMap } from './types';
 import * as CtxUtils from './CtxUtils';
 import { Ref } from './Ref';
 import * as utils from './utils';
 import * as RenderUtils from './RenderUtils';
 import { elmValue } from "./htmlElements";
-//import "jquery";
-
-interface HtmlElementEvents
-{
-	htmlElm: HTMLElement;
-	ehMap: EventHandlerMap;
-}
+import { childValType, Renderer } from "./types";
 
 export abstract class Ctx
 {
@@ -354,7 +348,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			}
 		}
 	}
-	private findEventHandlers(htmlElement: HTMLElement | null): HtmlElementEvents | null
+	private findEventHandlers(htmlElement: HTMLElement | null)
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{

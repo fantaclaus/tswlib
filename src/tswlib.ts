@@ -3,7 +3,7 @@ import * as global from './PropDefs';
 import * as elements from "./htmlElements";
 import * as components from "./RadioGroup";
 import { CtxRoot } from "./Ctx";
-import { childValType, Renderer } from "./elm";
+import { childValType, Renderer } from "./types";
 
 export { html };
 export { global };

@@ -1,4 +1,5 @@
-﻿import { attrValType, childValType, Renderer, ElementGeneric, EventHandlerMap, StyleRule, PropDefReadableChildValType, PropDefReadableAttrValType } from "./elm";
+﻿import { ElementGeneric } from "./elm";
+import { attrValType, childValType, StyleRule, PropDefReadableChildValType, PropDefReadableAttrValType, Renderer, EventHandlerMap } from "./types";
 import { elmValue, RawHtml, ElementWithValue } from "./htmlElements";
 import { CtxUpdatable, CtxRoot, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableValue, CtxUpdatableAttr } from "./Ctx";
 import { PropDefReadable } from "./propDefs";
@@ -76,7 +77,7 @@ export function renderHtml(rootCtx: CtxRoot, content: childValType | childValTyp
 		}
 	}
 }
-function renderItem(rootCtx: CtxRoot, item: childValType): string
+function renderItem(rootCtx: CtxRoot, item: childValType)
 {
 	if (item == null || item === true || item === false) return '';
 
@@ -98,7 +99,7 @@ function renderItem(rootCtx: CtxRoot, item: childValType): string
 	const s = item.toString();
 	return utils.htmlEncode(s);
 }
-function renderUpdatableChild(rootCtx: CtxRoot, item: childValType): string
+function renderUpdatableChild(rootCtx: CtxRoot, item: childValType)
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 	const id = ctxCurrent.generateNextChildId();
@@ -271,7 +272,7 @@ function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType):
 
 	return attrsHtml;
 }
-function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType, attrName: string): string | null
+function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType, attrName: string)
 {
 	const attrVals = attrs[attrName];
 	//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
@@ -510,7 +511,7 @@ function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<elmValue>, valPropN
 	return { value: val, ctx: ctx, valPropName: valPropName };
 }
 
-export function updateInnerHtml(htmlElement: HTMLElement, id: string, html: string): void
+export function updateInnerHtml(htmlElement: HTMLElement, id: string, html: string)
 {
 	const markers = new HtmlBlockMarkers(id);
 	updateDOM(htmlElement, html, markers);
