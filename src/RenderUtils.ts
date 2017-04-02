@@ -459,7 +459,7 @@ namespace tsw.internal
 	}
 	function canBeUpdatedStyle(attrVal: elements.attrValType)
 	{
-		if (attrVal instanceof StyleRule)
+		if (attrVal instanceof elements.StyleRule)
 		{
 			return canBeUpdatedAttr(attrVal.propValue);
 		}
@@ -470,7 +470,7 @@ namespace tsw.internal
 	}
 	function getRenderedStyleValue(attrVal: elements.attrValType)
 	{
-		if (attrVal instanceof StyleRule)
+		if (attrVal instanceof elements.StyleRule)
 		{
 			const v = getRenderedAttrValue(attrVal.propValue);
 

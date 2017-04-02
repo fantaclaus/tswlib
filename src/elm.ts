@@ -19,7 +19,7 @@
 			this.tagName = tagName.toLowerCase();
 		}
 
-		attr(name: string, val: attrValCompexType = true)
+		attr(name: string, val: attrValType = true)
 		{
 			if (name != null)
 			{
@@ -28,12 +28,12 @@
 
 			return this;
 		}
-		cls(val: attrValCompexType)
+		cls(val: attrValType)
 		{
 			this.attr('class', val);
 			return this;
 		}
-		style(val: attrValCompexType)
+		style(val: attrValType)
 		{
 			this.attr('style', val);
 
@@ -43,7 +43,7 @@
 		{
 			if (name != null && val != null)
 			{
-				const v = new internal.StyleRule();
+				const v = new StyleRule();
 				v.propName = name;
 				v.propValue = val;
 
@@ -52,7 +52,7 @@
 
 			return this;
 		}
-		data(name: string, val: attrValCompexType)
+		data(name: string, val: attrValType)
 		{
 			this.attr('data-' + name, val);
 
