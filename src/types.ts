@@ -11,15 +11,14 @@ export interface Renderer
 
 export interface PropDefReadableAttrValType extends PropDefReadable<attrValType> { }
 
-export type attrValSimpleType = string | number | boolean | StyleRule | null;
-export type attrValCompexType = attrValSimpleType | (() => attrValType) | PropDefReadableAttrValType;
-export type attrValType = attrValCompexType | attrValCompexType[];
+interface attrValTypeArray extends Array<attrValType> { }
+interface attrValTypeFn { (): attrValType; }
+export type attrValType = string | number | boolean | StyleRule | null | attrValTypeArray | PropDefReadableAttrValType | attrValTypeFn;
 
 export interface PropDefReadableChildValType extends PropDefReadable<childValType> { }
-
-export type childSimpleValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null;
-export type childComplexValType = childSimpleValType | (() => childValType) | PropDefReadableChildValType;
-export type childValType = childComplexValType | childComplexValType[];
+interface childValTypeArray extends Array<childValType> { }
+interface childValTypeFn { (): childValType; }
+export type childValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null | childValTypeArray | childValTypeFn | PropDefReadableChildValType;
 
 export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
 export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;

@@ -1,5 +1,5 @@
 ﻿import { Ref } from './Ref';
-import { attrValType, childValType, attrValCompexType, StyleRule, boolValType, EventHandlerMap, EventHandler } from "./types";
+import { attrValType, childValType, StyleRule, boolValType, EventHandlerMap, EventHandler } from "./types";
 
 interface AttrNameValue
 {
@@ -20,7 +20,7 @@ export class ElementGeneric
 		this.tagName = tagName.toLowerCase();
 	}
 
-	attr(name: string, val: attrValCompexType = true)
+	attr(name: string, val: attrValType = true)
 	{
 		if (name != null)
 		{
@@ -29,12 +29,12 @@ export class ElementGeneric
 
 		return this;
 	}
-	cls(val: attrValCompexType)
+	cls(val: attrValType)
 	{
 		this.attr('class', val);
 		return this;
 	}
-	style(val: attrValCompexType)
+	style(val: attrValType)
 	{
 		this.attr('style', val);
 
@@ -53,7 +53,7 @@ export class ElementGeneric
 
 		return this;
 	}
-	data(name: string, val: attrValCompexType)
+	data(name: string, val: attrValType)
 	{
 		this.attr('data-' + name, val);
 
