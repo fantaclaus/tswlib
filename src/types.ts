@@ -11,13 +11,13 @@ export interface Renderer
 
 export interface PropDefReadableAttrValType extends PropDefReadable<attrValType> { }
 
-interface attrValTypeArray extends Array<attrValType> { }
-interface attrValTypeFn { (): attrValType; }
+export interface attrValTypeArray extends Array<attrValType> { }
+export interface attrValTypeFn { (): attrValType; }
 export type attrValType = string | number | boolean | StyleRule | null | attrValTypeArray | PropDefReadableAttrValType | attrValTypeFn;
 
 export interface PropDefReadableChildValType extends PropDefReadable<childValType> { }
-interface childValTypeArray extends Array<childValType> { }
-interface childValTypeFn { (): childValType; }
+export interface childValTypeArray extends Array<childValType> { }
+export interface childValTypeFn { (): childValType; }
 export type childValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null | childValTypeArray | childValTypeFn | PropDefReadableChildValType;
 
 export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
