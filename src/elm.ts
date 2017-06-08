@@ -99,7 +99,7 @@ export class ElementGeneric
 		return this;
 	}
 
-	addRef(ref: Ref)
+	addRef(ref: Ref | null)
 	{
 		if (ref != null)
 		{
