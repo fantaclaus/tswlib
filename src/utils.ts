@@ -23,3 +23,14 @@ export function forEachKey(obj: Object, action: (key: string) => void): void
 		}
 	}
 }
+export function arrayIncludes<T>(items: T[], item: T)
+{
+	if (items == null) return false;
+
+	for (let i of items)
+	{
+		if (i === item) return true;
+	}
+
+	return false;
+}
