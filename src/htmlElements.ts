@@ -28,6 +28,7 @@ export class ElementA extends ElementGeneric
 	constructor()
 	{
 		super('a')
+		this.href("#");
 	}
 	href(val: stringValType)
 	{
