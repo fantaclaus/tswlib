@@ -1,5 +1,5 @@
 import * as CtxUtils from './CtxUtils';
-import { PropDef } from './PropDefs';
+import { PropDef, PropDefReadable } from './PropDefs';
 
 export class PropVal<T> implements PropDef<T>
 {
@@ -54,15 +54,15 @@ export class PropVal<T> implements PropDef<T>
 
 	onChanged: () => void;
 
-	isTrue(contentTrue: any, contentFalse?: any): () => any
+	isTrue<V1, V2>(contentTrue: V1, contentFalse: V2)
 	{
 		return () => this.get() ? contentTrue : contentFalse;
 	}
-	isFalse(content: any): () => any
+	isFalse<U>(content: U): () => false | U
 	{
 		return () => !this.get() && content;
 	}
-	isEqual(val: T, content: any): () => any
+	isEqual<U>(val: T, content: U): () => false | U
 	{
 		return () => this.get() == val && content;
 	}
@@ -86,6 +86,28 @@ export class PropVal<T> implements PropDef<T>
 		return {
 			get: () => to(this.get()),
 		};
+	}
+	asReadOnly()
+	{
+		return new PropValReadable(this);
+	}
+}
+
+export class PropValReadable<T> implements PropDefReadable<T>
+{
+	private src: PropDefReadable<T>;
+
+	constructor(src: PropDefReadable<T>)
+	{
+		this.src = src;
+	}
+	get()
+	{
+		return this.src.get();
+	}
+	clone()
+	{
+		return new PropValReadable(this.src);
 	}
 }
 

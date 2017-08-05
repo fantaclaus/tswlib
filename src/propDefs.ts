@@ -1,9 +1,9 @@
 export interface PropDefReadable<T>
 {
-	get: () => T;
+	get(): T;
 }
 export interface PropDef<T> extends PropDefReadable<T>
 {
-	set: (v: T) => void;
+	set(v: T): void;
 }
 
