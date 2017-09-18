@@ -602,7 +602,7 @@ function updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockM
 
 			// insert html into TABLE doesn't work on IE<10
 			targetElement.insertBefore(_tmpHtmlElement, nodeEndMarker);
-			_tmpHtmlElement.insertAdjacentHTML('beforeBegin', "\n" + html + "\n"); // IE9 needs something between a comment and a tag
+			_tmpHtmlElement.insertAdjacentHTML('beforebegin', "\n" + html + "\n"); // IE9 needs something between a comment and a tag
 			targetElement.removeChild(_tmpHtmlElement);
 
 			// doesn't work on IE
