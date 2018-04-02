@@ -5,11 +5,11 @@ export class PropVal<T> implements PropDef<T>
 {
 	val: T;
 	private insideSet = false; // to prevent infinite loops
-	name: string;
+	//name: string;
 
-	constructor(initialValue?: T)
+	constructor(initialValue: T)
 	{
-		if (initialValue !== undefined) this.val = initialValue;
+		this.val = initialValue;
 	}
 	get(): T
 	{
@@ -52,7 +52,7 @@ export class PropVal<T> implements PropDef<T>
 	//	this.val = newVal;
 	//}
 
-	onChanged: () => void;
+	onChanged: (() => void) | undefined;
 
 	isTrue(contentTrue: any, contentFalse?: any): () => any
 	{
@@ -91,7 +91,7 @@ export class PropVal<T> implements PropDef<T>
 
 export class PropValArray<T> extends PropVal<T[]>
 {
-	constructor(items?: T[])
+	constructor(items: T[])
 	{
 		super(items);
 	}

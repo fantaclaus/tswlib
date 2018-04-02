@@ -44,10 +44,7 @@ export class ElementGeneric
 	{
 		if (name != null && val != null)
 		{
-			const v = new StyleRule();
-			v.propName = name;
-			v.propValue = val;
-
+			const v = new StyleRule(name, val);
 			this.addAttr('style', v);
 		}
 

@@ -3,7 +3,7 @@ import { PropDef } from './propDefs';
 
 export class Ref implements PropDef<string | null>
 {
-	private refId: string | null;
+	private refId: string | null = null;
 
 	get(): string | null
 	{
@@ -27,6 +27,8 @@ export class Ref implements PropDef<string | null>
 
 	asJQuery(): JQuery
 	{
+		if (!this.refId) throw new Error("refId is not valid");
+		
 		return jQuery('#' + this.refId);
 	}
 }

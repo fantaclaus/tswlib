@@ -111,7 +111,7 @@ function renderUpdatableChild(rootCtx: CtxRoot, item: childValType)
 
 	const innerHtml = CtxScope.use(ctx, () => getRenderedHtml(rootCtx, item));
 
-	const markers = new HtmlBlockMarkers(ctx.id);
+	const markers = new HtmlBlockMarkers(ctx.getId());
 	return markers.getHtml(innerHtml);
 }
 function renderElement(rootCtx: CtxRoot, elm: ElementGeneric)
@@ -219,21 +219,21 @@ function renderElement(rootCtx: CtxRoot, elm: ElementGeneric)
 		const ctxRoot = ctxCurrent.getRootCtx();
 		if (!ctxRoot) throw new Error("root ctx is null");
 
-		ctxRoot.attachElmEventHandlers(ctx.id, eventHanders);
+		ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders);
 	}
 
 	if (elmRefs)
 	{
 		elmRefs.forEach(r =>
 		{
-			r.set(ctx.id);
+			r.set(ctx.getId());
 		});
 	}
 
 	let htmlStartTag = '<' + tagName;
 
 	const isCtxUsed = ctx.hasChildren() || eventHanders != null || elmRefs != null;
-	if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + quote(ctx.id));
+	if (isCtxUsed) htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', 'id=' + quote(ctx.getId()));
 
 	htmlStartTag = utils.appendDelimited(htmlStartTag, ' ', attrsHtml);
 	htmlStartTag = htmlStartTag + '>';
@@ -300,10 +300,8 @@ function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType, attr
 	{
 		const ctxCurrent = CtxScope.getCurrentSafe();
 
-		const ctx = new CtxUpdatableAttr(rootCtx);
+		const ctx = new CtxUpdatableAttr(rootCtx, attrName, fn);
 		ctxCurrent.addChildCtx(ctx);
-		ctx.attrName = attrName;
-		ctx.renderFn = fn;
 
 		return CtxScope.use(ctx, fn);
 	}
@@ -500,13 +498,10 @@ function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<elmValue>, valPropN
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 
-	const ctx = new CtxUpdatableValue(rootCtx);
+	const ctx = new CtxUpdatableValue(rootCtx, valPropName, () => propDef.get());
 	ctxCurrent.addChildCtx(ctx);
-	//ctx.tagName = tagName;
-	ctx.propName = valPropName;
-	ctx.renderFn = () => propDef.get();
 
-	const val = CtxScope.use(ctx, ctx.renderFn);
+	const val = CtxScope.use(ctx, ctx.getRenderFn());
 
 	return { value: val, ctx: ctx, valPropName: valPropName };
 }

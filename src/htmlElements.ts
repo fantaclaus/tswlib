@@ -53,9 +53,9 @@ export class ElementImg extends ElementGeneric
 
 export type elmValue = string | number | boolean | null;
 
-export abstract class ElementWithValue extends ElementGeneric
+export abstract class ElementWithValue<T extends elmValue> extends ElementGeneric
 {
-	protected propDef: PropDef<elmValue>;
+	protected propDef: PropDef<T> | undefined;
 
 	/**
 	 * @internal
@@ -76,7 +76,7 @@ export abstract class ElementWithValue extends ElementGeneric
 	 */
 	abstract z_getValuePropName(): string;  // for jQuery.prop
 }
-export class ElementInput<T extends elmValue> extends ElementWithValue
+export class ElementInput<T extends elmValue> extends ElementWithValue<T>
 {
 	constructor(type: string)
 	{
@@ -97,7 +97,7 @@ export class ElementInput<T extends elmValue> extends ElementWithValue
 		return 'value';
 	}
 }
-export class ElementInputText extends ElementInput<string | null>
+export class ElementInputText extends ElementInput<string>
 {
 	constructor()
 	{
@@ -150,7 +150,7 @@ export class ElementInputRadio extends ElementInputCheckboxBase
 		super('radio');
 	}
 }
-export class ElementTextArea extends ElementWithValue
+export class ElementTextArea extends ElementWithValue<string>
 {
 	constructor()
 	{
@@ -176,10 +176,8 @@ export class ElementTextArea extends ElementWithValue
 		return 'value';
 	}
 }
-export class ElementSelect extends ElementWithValue
+export class ElementSelect extends ElementWithValue<string | null>
 {
-	protected valuePropName: string;
-
 	constructor()
 	{
 		super('select')
@@ -188,14 +186,24 @@ export class ElementSelect extends ElementWithValue
 	value(propDef: PropDef<string | null>)
 	{
 		this.propDef = propDef;
-		this.valuePropName = "value";
 
 		return this;
 	}
+	z_getValuePropName(): string
+	{
+		return "value";
+	}
+}
+export class ElementSelectByIndex extends ElementWithValue<number | null>
+{
+	constructor()
+	{
+		super('select')
+	}
+
 	selectedIndex(propDef: PropDef<number | null>)
 	{
 		this.propDef = propDef;
-		this.valuePropName = "selectedIndex";
 
 		return this;
 	}
@@ -204,7 +212,7 @@ export class ElementSelect extends ElementWithValue
 	 */
 	z_getValuePropName(): string
 	{
-		return this.valuePropName;
+		return "selectedIndex";
 	}
 }
 export class ElementOption extends ElementGeneric

@@ -10,13 +10,19 @@ export abstract class Ctx
 {
 	private static useHierarchicalIds = false;
 
-	private lastChildId: number | null;
-	private childCtxs: Ctx[] | null;
-	private parentCtx: Ctx | null;
+	private lastChildId: number | null = null;
+	private childCtxs: Ctx[] | null = null;
+	private parentCtx: Ctx | null = null;
 
 	public rootCtx: CtxRoot | undefined;
-	public id: string;
+	protected id: string | undefined;
 
+	getId()
+	{
+		if (this.id == null) throw new Error('id is undefined');
+
+		return this.id;
+	}
 	getParent()
 	{
 		return this.parentCtx;
@@ -94,7 +100,7 @@ export abstract class Ctx
 	{
 		this.forEachChild(ctx => ctx.beforeDetach());
 	}
-	protected getHtmlElement(): HTMLElement | null
+	protected getHtmlElement(): HTMLElement | null | undefined
 	{
 		var ctxElm = this.getParentHtmlElmOwnerCtx();
 		return ctxElm && ctxElm.getHtmlElement();
@@ -102,6 +108,8 @@ export abstract class Ctx
 
 	private getNextChildId()
 	{
+		if (this.id == null) throw new Error('id is undefined');
+
 		this.lastChildId = (this.lastChildId || 0) + 1;
 		return utils.appendDelimited(this.id, '-', this.lastChildId.toString());
 	}
@@ -177,8 +185,10 @@ export class CtxElement extends CtxHtmlElementOwner
 		this.tagName = tagName;
 		this.refs = refs;
 	}
-	getHtmlElement(): HTMLElement
+	protected getHtmlElement(): HTMLElement | null | undefined
 	{
+		if (this.id == null) throw new Error('id is undefined');
+
 		var htmlElement = document.getElementById(this.id);
 		if (!htmlElement) throw new Error(`Can not find element by id: ${this.id}`);
 
@@ -191,6 +201,8 @@ export class CtxElement extends CtxHtmlElementOwner
 
 	unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
 	{
+		if (this.id == null) throw new Error('id is undefined');
+
 		ctxRoot.detachElmEventHandlers(this.id);
 
 		super.unregisterEventHandlersFromRoot(ctxRoot);
@@ -208,9 +220,9 @@ export class CtxElement extends CtxHtmlElementOwner
 }
 export class CtxRoot extends CtxHtmlElementOwner
 {
-	private htmlElement: HTMLElement;
-	private attachedEventNames: { [eventName: string]: boolean } | null;
-	private eventHandlers: { [elmId: string]: EventHandlerMap } | null;
+	private htmlElement: HTMLElement | undefined;
+	private attachedEventNames: { [eventName: string]: boolean } | null = null;
+	private eventHandlers: { [elmId: string]: EventHandlerMap } | null = null;
 
 	getRootCtx()
 	{
@@ -218,9 +230,11 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	getTagName()
 	{
+		if (this.htmlElement == null) throw new Error('htmlElement is undefined');
+
 		return this.htmlElement.tagName;
 	}
-	getHtmlElement(): HTMLElement
+	protected getHtmlElement(): HTMLElement | null | undefined
 	{
 		return this.htmlElement;
 	}
@@ -247,10 +261,13 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 	protected unregisterEventHandlers()
 	{
-		var jqElm = jQuery(this.htmlElement);
-		jqElm.off();
-		this.attachedEventNames = null;
-		this.eventHandlers = null;
+		if (this.htmlElement)
+		{
+			var jqElm = jQuery(this.htmlElement);
+			jqElm.off();
+			this.attachedEventNames = null;
+			this.eventHandlers = null;
+		}
 	}
 	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap)
 	{
@@ -281,6 +298,8 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	private updateEventSubscriptions()
 	{
+		if (this.htmlElement == null) throw new Error('htmlElement is undefined');
+
 		var jqElm = jQuery(this.htmlElement);
 
 		var currentEventNames: { [eventName: string]: boolean } = {};
@@ -318,7 +337,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			{
 				//console.log("subscribe to event: %s", eventName);
 
-				jqElm.on(eventName, e =>
+				jqElm.on(eventName, (e: JQuery.Event) =>
 				{
 					//console.log('on event: %s on %o', e.type, e.target);
 					this.handleEvent(e);
@@ -395,6 +414,8 @@ export class CtxUpdatableChild extends CtxUpdatable
 	}
 	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 	{
+		if (this.id == null) throw new Error('id is undefined');
+
 		//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 
 		RenderUtils.updateInnerHtml(htmlElement, this.id, innerHtml);
@@ -416,10 +437,10 @@ export class CtxUpdatableChild extends CtxUpdatable
 }
 export class CtxUpdatableAttr extends CtxUpdatable
 {
-	attrName: string;
-	renderFn: () => string | null;
+	//attrName: string;
+	//renderFn: () => string | null;
 
-	constructor(rootCtx: CtxRoot)
+	constructor(rootCtx: CtxRoot, public attrName: string, public renderFn: () => string | null)
 	{
 		super();
 
@@ -428,7 +449,7 @@ export class CtxUpdatableAttr extends CtxUpdatable
 	update()
 	{
 		var htmlElement = this.getHtmlElement();
-		if (!htmlElement) throw new Error("htmlElement is null");
+		if (!htmlElement) throw new Error("htmlElement is undefined");
 		//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
 		var v = CtxScope.use(this, () => this.renderFn());
@@ -458,11 +479,12 @@ export class CtxUpdatableAttr extends CtxUpdatable
 }
 export class CtxUpdatableValue extends CtxUpdatable
 {
-	//tagName: string;
-	propName: string;
-	renderFn: () => elmValue;
+	// private propName: string;
+	// private renderFn: () => elmValue;
 
-	constructor(rootCtx: CtxRoot)
+	getRenderFn() { return this.renderFn; }
+
+	constructor(rootCtx: CtxRoot, public propName: string, public renderFn: () => elmValue)
 	{
 		super();
 
@@ -471,7 +493,7 @@ export class CtxUpdatableValue extends CtxUpdatable
 	update()
 	{
 		var htmlElement = this.getHtmlElement();
-		if (!htmlElement) throw new Error("htmlElement is null");
+		if (!htmlElement) throw new Error("htmlElement is undefined");
 
 		var val = CtxScope.use(this, () => this.renderFn());
 		//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);

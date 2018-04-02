@@ -1,21 +1,10 @@
 {
 	"compilerOptions": {
-		"target": "es6",
-		"module": "amd",
-		"lib": [
-			"es2016",
-			"dom"
-		],
-		"noImplicitAny": true,
-		"noFallthroughCasesInSwitch": true,
-		"noImplicitReturns": true,
-		"noImplicitThis": true,
-		"noUnusedLocals": true,
-		"strictNullChecks": true,
-		"stripInternal": true,
+		"target": "esnext",
+		"module": "esnext",
+		"strict": true,
 		"removeComments": true,
-		"declaration": true,
-		"outFile": "tmp/tswlib.js"
+		"outDir": "out"
 	},
 	"exclude": [
 		"out",
