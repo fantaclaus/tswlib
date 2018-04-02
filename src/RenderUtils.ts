@@ -196,7 +196,7 @@ function renderElement(rootCtx: CtxRoot, elm: ElementGeneric)
 
 		const valData2 = valData; // remove null from type
 
-		const handler = (e: JQueryEventObject, htmlElement: HTMLElement) =>
+		const handler = (e: JQuery.Event, htmlElement: HTMLElement) =>
 		{
 			const v = jQuery(htmlElement).prop(valData2.valPropName);
 

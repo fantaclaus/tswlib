@@ -328,7 +328,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 		this.attachedEventNames = currentEventNamesCount == 0 ? null : currentEventNames;
 	}
-	private handleEvent(e: JQueryEventObject)
+	private handleEvent(e: JQuery.Event)
 	{
 		var htmlElm = <HTMLElement>e.target;
 		var r = this.findEventHandlers(htmlElm);
