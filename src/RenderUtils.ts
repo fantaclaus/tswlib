@@ -595,9 +595,15 @@ function updateDOM(targetElement: HTMLElement, html: string, markers: HtmlBlockM
 
 			if (!_tmpHtmlElement) _tmpHtmlElement = document.createElement('div');
 
+			let html2 = html;
+
+			// IE9 needs something between a comment and a tag
+			if (isFirst) html2 = "\n" + html2;
+			if (isLast) html2 = html2 + "\n";
+
 			// insert html into TABLE doesn't work on IE<10
 			targetElement.insertBefore(_tmpHtmlElement, nodeEndMarker);
-			_tmpHtmlElement.insertAdjacentHTML('beforebegin', "\n" + html + "\n"); // IE9 needs something between a comment and a tag
+			_tmpHtmlElement.insertAdjacentHTML('beforebegin', html2);
 			targetElement.removeChild(_tmpHtmlElement);
 
 			// doesn't work on IE
