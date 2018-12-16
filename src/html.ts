@@ -36,9 +36,9 @@ export function small() { return new ElementGeneric('small'); }
 export function span() { return new ElementGeneric('span'); }
 export function table() { return new ElementGeneric('table'); }
 export function tbody() { return new ElementGeneric('tbody'); }
-export function td() { return new ElementGeneric('td'); }
+export function td() { return new elements.ElementTD('td'); }
 export function textArea() { return new elements.ElementTextArea(); }
-export function th() { return new ElementGeneric('th'); }
+export function th() { return new elements.ElementTD('th'); }
 export function thead() { return new ElementGeneric('thead'); }
 export function tr() { return new ElementGeneric('tr'); }
 export function ul() { return new ElementGeneric('ul'); }

@@ -31,7 +31,15 @@ export class ElementGeneric
 	}
 	cls(val: attrValType)
 	{
-		this.attr('class', val);
+		if (val instanceof Array)
+		{
+			val.forEach(v => this.cls(v));
+		}
+		else
+		{
+			this.attr('class', val);
+		}
+
 		return this;
 	}
 	style(val: attrValType)
@@ -61,6 +69,11 @@ export class ElementGeneric
 		this.attr('disabled', val);
 		return this;
 	}
+	hidden(val: boolValType)
+	{
+		this.attr('hidden', val);
+		return this;
+	}
 	children(items: childValType)
 	{
 		if (items != null)
@@ -70,16 +83,16 @@ export class ElementGeneric
 		}
 		return this;
 	}
-	onclick(handler: EventHandler)
+	onclick(handler: EventHandler | null)
 	{
 		return this.on('click', handler);
 	}
-	onEvents(eventNames: string[], handler: EventHandler)
+	onEvents(eventNames: string[], handler: EventHandler | null)
 	{
 		eventNames.forEach(e => this.on(e, handler));
 		return this;
 	}
-	on(eventName: string, handler: EventHandler)
+	on(eventName: string, handler: EventHandler | null)
 	{
 		if (eventName && handler instanceof Function)
 		{

@@ -13,7 +13,7 @@ export interface PropDefReadableAttrValType extends PropDefReadable<attrValType>
 
 export interface attrValTypeArray extends Array<attrValType> { }
 export interface attrValTypeFn { (): attrValType; }
-export type attrValType = string | number | boolean | StyleRule | null | attrValTypeArray | PropDefReadableAttrValType | attrValTypeFn;
+export type attrValType = string | number | boolean | StyleRule | null | undefined | attrValTypeArray | PropDefReadableAttrValType | attrValTypeFn;
 
 export interface PropDefReadableChildValType extends PropDefReadable<childValType> { }
 export interface childValTypeArray extends Array<childValType> { }

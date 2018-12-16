@@ -221,7 +221,7 @@ export class ElementOption extends ElementGeneric
 	{
 		super('option')
 	}
-	value(val: stringValType)
+	value(val: stringValType | undefined)
 	{
 		this.attr('value', val);
 
@@ -245,6 +245,21 @@ export class ElementLabel extends ElementGeneric
 	forRef(ref: Ref)
 	{
 		this.attr('for', ref);
+
+		return this;
+	}
+}
+export class ElementTD extends ElementGeneric
+{
+	colSpan(val: number)
+	{
+		this.attr('colSpan', val);
+
+		return this;
+	}
+	rowSpan(val: number)
+	{
+		this.attr('rowSpan', val);
 
 		return this;
 	}
