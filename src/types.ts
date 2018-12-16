@@ -25,7 +25,7 @@ export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
 
 export interface EventHandler
 {
-	(e: JQuery.Event, target: HTMLElement): void;
+	(e: JQuery.Event, target: Element): void;
 }
 
 export class StyleRule

@@ -344,7 +344,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	private handleEvent(e: JQuery.Event)
 	{
-		var htmlElm = <HTMLElement>e.target;
+		var htmlElm = <Element>e.target;
 		var r = this.findEventHandlers(htmlElm);
 		if (r)
 		{
@@ -362,7 +362,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 			}
 		}
 	}
-	private findEventHandlers(htmlElement: HTMLElement | null)
+	private findEventHandlers(htmlElement: Element | null)
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{
@@ -374,7 +374,10 @@ export class CtxRoot extends CtxHtmlElementOwner
 				ehMap: elmEventHandlers,
 			});
 
-			htmlElement = htmlElement.parentElement;
+			// NOTE: in IE 11 parentElement of SVG tag is undefined
+
+			const parentNode = htmlElement.parentNode;
+			htmlElement = parentNode instanceof Element ? <Element>parentNode : null;
 		}
 
 		return null;
