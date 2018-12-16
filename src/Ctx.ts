@@ -140,10 +140,13 @@ export abstract class Ctx
 		if (htmlElement)
 		{
 			const innerHtml = CtxScope.use(this, () => this._renderHtml(content));
-			this.setInnerHtml(htmlElement, innerHtml || '');
+			// use timeout to give time for injected css-in-js to be parsed
+			setTimeout(() =>
+			{
+				this.setInnerHtml(htmlElement, innerHtml || '');
+				this.afterAttach();
+			}, 0);
 		}
-
-		this.afterAttach();
 	}
 	protected _renderHtml(content: childValType): string
 	{
