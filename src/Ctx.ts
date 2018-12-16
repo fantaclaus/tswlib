@@ -425,10 +425,10 @@ export class CtxUpdatableChild extends CtxUpdatable
 	}
 	protected afterAttach()
 	{
+		super.afterAttach();
+
 		var renderer = <Renderer>this.content;
 		if (renderer.afterAttach) renderer.afterAttach();
-
-		super.afterAttach();
 	}
 	protected beforeDetach()
 	{
