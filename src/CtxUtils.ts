@@ -68,7 +68,7 @@ export function update(propKey: any)
 
 		if (!_timerId)
 		{
-			_timerId = window.setTimeout(() => processQueue(), 0);
+			_timerId = setTimeout(() => processQueue(), 0);
 		}
 	}
 }

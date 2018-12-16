@@ -2,7 +2,7 @@
 import { attrValType, childValType, StyleRule, PropDefReadableChildValType, PropDefReadableAttrValType, Renderer, EventHandlerMap } from "./types";
 import { elmValue, RawHtml, ElementWithValue } from "./htmlElements";
 import { CtxUpdatable, CtxRoot, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableValue, CtxUpdatableAttr } from "./Ctx";
-import { PropDefReadable } from "./propDefs";
+import { PropDefReadable } from "./PropDefs";
 import * as utils from "./utils";
 
 interface MapStringToArrayOfAttrValType

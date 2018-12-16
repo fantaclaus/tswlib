@@ -1,5 +1,5 @@
 import * as CtxUtils from './CtxUtils';
-import { PropDef } from './propDefs';
+import { PropDef } from './PropDefs';
 
 export class Ref implements PropDef<string | null>
 {

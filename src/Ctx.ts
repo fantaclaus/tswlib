@@ -102,7 +102,7 @@ export abstract class Ctx
 	}
 	protected getHtmlElement(): HTMLElement | null | undefined
 	{
-		var ctxElm = this.getParentHtmlElmOwnerCtx();
+		const ctxElm = this.getParentHtmlElmOwnerCtx();
 		return ctxElm && ctxElm.getHtmlElement();
 	}
 
@@ -136,10 +136,10 @@ export abstract class Ctx
 		this.removeChildren();
 		this.resetNextChildId();
 
-		var htmlElement = this.getHtmlElement();
+		const htmlElement = this.getHtmlElement();
 		if (htmlElement)
 		{
-			var innerHtml = CtxScope.use(this, () => this._renderHtml(content));
+			const innerHtml = CtxScope.use(this, () => this._renderHtml(content));
 			this.setInnerHtml(htmlElement, innerHtml || '');
 		}
 

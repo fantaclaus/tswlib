@@ -1,5 +1,5 @@
 import * as CtxUtils from './CtxUtils';
-import { PropDef } from './PropDefs';
+import { PropDef, PropDefReadable } from './PropDefs';
 
 export class PropVal<T> implements PropDef<T>
 {
@@ -24,7 +24,7 @@ export class PropVal<T> implements PropDef<T>
 
 		try
 		{
-			//console.group('propDef %s %o: set value %o', this.name, this, v);
+			// console.group('propDef %o: set value %o', this, v);
 
 			if (this.val !== v)
 			{
@@ -34,11 +34,11 @@ export class PropVal<T> implements PropDef<T>
 
 				if (this.onChanged) this.onChanged();
 			}
-
-			//console.groupEnd();
 		}
 		finally
 		{
+			// console.groupEnd();
+
 			this.insideSet = false;
 		}
 	}
@@ -81,7 +81,7 @@ export class PropVal<T> implements PropDef<T>
 			set: v => this.set(from(v)),
 		};
 	}
-	to<U>(to: (v: T) => U)
+	to<U>(to: (v: T) => U): PropDefReadable<U>
 	{
 		return {
 			get: () => to(this.get()),
