@@ -31,6 +31,11 @@ export function attach(propKey: any)
 }
 export function removeCtxs(ctxs: Ctx[])
 {
+	removeAttachedCtxs(ctxs);
+	removeFromUpdateQueue(ctxs);
+}
+function removeAttachedCtxs(ctxs: Ctx[])
+{
 	if (_propKeyToCtxMap)
 	{
 		//const removedKeys = propKeyToCtxMap
@@ -40,6 +45,13 @@ export function removeCtxs(ctxs: Ctx[])
 		_propKeyToCtxMap = _propKeyToCtxMap.filter(p => !ctxs.includes(p.ctx));
 
 		//console.log('removed: ', removedKeys, propKeyToCtxMap && propKeyToCtxMap.map(p => p.propKey));
+	}
+}
+function removeFromUpdateQueue(ctxs: Ctx[])
+{
+	if (_ctxUpdateQueue)
+	{
+		_ctxUpdateQueue = _ctxUpdateQueue.filter(ctx => !ctxs.includes(ctx));
 	}
 }
 export function update(propKey: any)
