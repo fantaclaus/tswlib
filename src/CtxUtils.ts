@@ -6,9 +6,12 @@ interface PropKeyContext
 	ctx: CtxUpdatable;
 }
 
+type CtxEventHandler = () => void;
+
 let _propKeyToCtxMap: PropKeyContext[] | null = null;
 let _ctxUpdateQueue: CtxUpdatable[] | null = null;
 let _timerId: number | null = null;
+let _updatedCbs: CtxEventHandler[] = [];
 
 export function attach(propKey: any)
 {
@@ -72,6 +75,17 @@ export function update(propKey: any)
 		}
 	}
 }
+export function afterDOMUpdated(cb: () => void)
+{
+	if (_timerId)
+	{
+		_updatedCbs.push(cb);
+	}
+	else
+	{
+		cb();
+	}
+}
 function getCtx()
 {
 	const ctx = CtxScope.getCurrent();
@@ -97,6 +111,12 @@ function processQueue()
 			//console.groupEnd();
 		});
 	}
+
+	setTimeout(() =>
+	{
+		_updatedCbs.forEach(cb => cb());
+		_updatedCbs.length = 0;
+	}, 0);
 }
 function isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[])
 {
