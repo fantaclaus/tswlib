@@ -28,7 +28,7 @@ export class Ref implements PropDef<string | null>
 	asJQuery(): JQuery
 	{
 		if (!this.refId) throw new Error("refId is not valid");
-		
+
 		return jQuery('#' + this.refId);
 	}
 }

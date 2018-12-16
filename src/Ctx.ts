@@ -145,7 +145,7 @@ export abstract class Ctx
 
 		this.afterAttach();
 	}
-	protected _renderHtml(content: childValType)
+	protected _renderHtml(content: childValType): string
 	{
 		throw new Error("_renderHtml is not supported by this class");
 	}
