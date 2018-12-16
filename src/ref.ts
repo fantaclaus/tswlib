@@ -24,11 +24,25 @@ export class Ref implements PropDef<string | null>
 			//console.groupEnd();
 		}
 	}
-
-	asJQuery(): JQuery
+	isValid()
 	{
-		if (!this.refId) throw new Error("refId is not valid");
+		if (!this.refId) return false;
+		const el = document.getElementById(this.refId);
+		return !!el;
+	}
+	asJQuery()
+	{
+		if (!this.refId) throw new Error("refId is not initialized");
 
 		return jQuery('#' + this.refId);
+	}
+	asHtmlElement<T extends HTMLElement = HTMLElement>()
+	{
+		if (!this.refId) throw new Error("refId is not initialized");
+
+		const el = document.getElementById(this.refId);
+		if (!el) throw new Error("element is not found by refId");
+
+		return el as T;
 	}
 }
