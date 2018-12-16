@@ -14,11 +14,9 @@ export { Renderer };
 export { Ref } from './Ref';
 export { PropVal, PropValArray } from './PropVals';
 
-export function setContent(htmlElement: HTMLElement | null, content: childValType)
+export function setContent(htmlElement: HTMLElement, content: childValType)
 {
-	if (htmlElement != null)
-	{
-		const ctxRoot = new CtxRoot();
-		ctxRoot.render(content, htmlElement);
-	}
+	const ctxRoot = new CtxRoot(htmlElement);
+	ctxRoot.setContent(content);
+	return ctxRoot;
 }

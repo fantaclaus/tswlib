@@ -223,34 +223,31 @@ export class CtxElement extends CtxHtmlElementOwner
 }
 export class CtxRoot extends CtxHtmlElementOwner
 {
-	private htmlElement: HTMLElement | undefined;
+	private htmlElement: HTMLElement;
 	private attachedEventNames: { [eventName: string]: boolean } | null = null;
 	private eventHandlers: { [elmId: string]: EventHandlerMap } | null = null;
 
+	constructor(htmlElement: HTMLElement)
+	{
+		super();
+
+		this.htmlElement = htmlElement;
+		this.id = htmlElement.id;
+	}
 	getRootCtx()
 	{
 		return this;
 	}
 	getTagName()
 	{
-		if (this.htmlElement == null) throw new Error('htmlElement is undefined');
-
 		return this.htmlElement.tagName;
 	}
-	protected getHtmlElement(): HTMLElement | null | undefined
+	getHtmlElement()
 	{
 		return this.htmlElement;
 	}
-	render(content: childValType, htmlElement: HTMLElement)
+	setContent(content: childValType)
 	{
-		if (this.htmlElement !== htmlElement)
-		{
-			this._update(null);
-		}
-
-		this.htmlElement = htmlElement;
-		this.id = htmlElement.id;
-
 		this._update(content);
 	}
 	protected _renderHtml(content: childValType)
@@ -264,13 +261,10 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 	protected unregisterEventHandlers()
 	{
-		if (this.htmlElement)
-		{
-			var jqElm = jQuery(this.htmlElement);
-			jqElm.off();
-			this.attachedEventNames = null;
-			this.eventHandlers = null;
-		}
+		var jqElm = jQuery(this.htmlElement);
+		jqElm.off();
+		this.attachedEventNames = null;
+		this.eventHandlers = null;
 	}
 	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap)
 	{
@@ -301,8 +295,6 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	private updateEventSubscriptions()
 	{
-		if (this.htmlElement == null) throw new Error('htmlElement is undefined');
-
 		var jqElm = jQuery(this.htmlElement);
 
 		var currentEventNames: { [eventName: string]: boolean } = {};
