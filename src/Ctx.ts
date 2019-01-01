@@ -141,9 +141,8 @@ export abstract class Ctx
 		{
 			const innerHtml = CtxScope.use(this, () => this._renderHtml(content));
 			this.setInnerHtml(htmlElement, innerHtml || '');
+			this.afterAttach();
 		}
-
-		this.afterAttach();
 	}
 	protected _renderHtml(content: childValType): string
 	{
@@ -185,7 +184,7 @@ export class CtxElement extends CtxHtmlElementOwner
 		this.tagName = tagName;
 		this.refs = refs;
 	}
-	protected getHtmlElement(): HTMLElement | null | undefined
+	protected getHtmlElement()//: HTMLElement | null | undefined
 	{
 		if (this.id == null) throw new Error('id is undefined');
 
