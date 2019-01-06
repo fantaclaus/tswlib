@@ -25,4 +25,8 @@ export class CtxUpdatableValue extends CtxUpdatable
 		const jqElement = jQuery(htmlElement);
 		jqElement.prop(this.propName, <string & number & boolean>val);
 	}
+	protected _renderHtml(content: childValType): string
+	{
+		throw new Error("_renderHtml is not supported by this class");
+	}
 }

@@ -30,14 +30,12 @@ export class CtxElement extends CtxHtmlElementOwner
 	{
 		return this.tagName;
 	}
-
 	unregisterEventHandlersFromRoot(ctxRoot: Ctx)
 	{
 		if (this.id == null) throw new Error('id is undefined');
 		if (!(ctxRoot instanceof CtxRoot)) throw new Error("ctxRoot is not CtxRoot");
 
 		ctxRoot.detachElmEventHandlers(this.id);
-
 		super.unregisterEventHandlersFromRoot(ctxRoot);
 	}
 	removeChildren()
@@ -47,7 +45,10 @@ export class CtxElement extends CtxHtmlElementOwner
 			this.refs.forEach(r => r.set(null));
 			this.refs = null;
 		}
-
 		super.removeChildren();
+	}
+	protected _renderHtml(content: childValType): string
+	{
+		throw new Error("_renderHtml is not supported by this class");
 	}
 }

@@ -138,10 +138,7 @@ export abstract class Ctx
 			this.afterAttach();
 		}
 	}
-	protected _renderHtml(content: childValType): string
-	{
-		throw new Error("_renderHtml is not supported by this class");
-	}
+	protected abstract _renderHtml(content: childValType): string;
 	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string)
 	{
 		throw new Error("setInnerHtml is not supported by this class");
@@ -160,10 +157,12 @@ export abstract class Ctx
 		this.forEachChild(ctx => ctx.collectChildContexts(ctxs));
 	}
 }
+
 export abstract class CtxHtmlElementOwner extends Ctx
 {
 	abstract getTagName(): string;
 }
+
 export abstract class CtxUpdatable extends Ctx
 {
 	abstract update(): void;

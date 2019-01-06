@@ -41,4 +41,8 @@ export class CtxUpdatableAttr extends CtxUpdatable
 				jqElement.attr(this.attrName, v);
 		}
 	}
+	protected _renderHtml(content: childValType): string
+	{
+		throw new Error("_renderHtml is not supported by this class");
+	}
 }
