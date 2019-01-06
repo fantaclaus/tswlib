@@ -51,7 +51,7 @@ function isRenderer(item: childValType): item is Renderer
 	return (<Renderer>item).render instanceof Function;
 }
 
-export function renderHtml(rootCtx: Ctx, content: childValType | childValType[] | null)
+export function renderHtml(rootCtx: Ctx, content: childValType)
 {
 	let result = '';
 
@@ -59,7 +59,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType | childValType[] 
 
 	return result;
 
-	function addExpanded(item: childValType | childValType[] | null): void
+	function addExpanded(item: childValType)
 	{
 		if (item == null) return;
 
@@ -101,7 +101,7 @@ function renderItem(rootCtx: Ctx, item: childValType)
 	}
 
 	const s = item.toString();
-	return utils.htmlEncode(s);
+	return htmlEncode(s);
 }
 function renderUpdatableChild(rootCtx: Ctx, item: childValType)
 {
@@ -180,7 +180,7 @@ function renderElement(rootCtx: Ctx, elm: ElementGeneric)
 
 	if (valData && tagName == 'textarea')
 	{
-		innerHtml = valData.value == null ? '' : utils.htmlEncode(valData.value.toString());
+		innerHtml = valData.value == null ? '' : htmlEncode(valData.value.toString());
 	}
 	else
 	{
@@ -253,6 +253,13 @@ function renderElement(rootCtx: Ctx, elm: ElementGeneric)
 		const v = mapSrc.get(key);
 		if (v) mapDest.set(key, v);
 	}
+}
+function htmlEncode(s: string): string
+{
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;");
 }
 function elmNeedsCloseTag(tagName: string): boolean
 {
