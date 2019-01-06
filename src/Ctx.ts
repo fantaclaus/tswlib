@@ -40,6 +40,9 @@ export abstract class Ctx
 	{
 		return this.rootCtx;
 	}
+	protected beforeAttach()
+	{
+	}
 	private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean)
 	{
 		let ctx: Ctx | null = this;
@@ -134,6 +137,11 @@ export abstract class Ctx
 		if (htmlElement)
 		{
 			const innerHtml = CtxScope.use(this, () => this._renderHtml(content));
+
+			const ctxRoot = this.getRootCtx();
+
+			ctxRoot.beforeAttach();
+
 			this.setInnerHtml(htmlElement, innerHtml || '');
 			this.afterAttach();
 		}

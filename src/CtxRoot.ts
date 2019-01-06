@@ -8,6 +8,8 @@ export class CtxRoot extends CtxHtmlElementOwner
 	private attachedEventListeners = new Set<string>();
 	private eventHandlers = new Map<string, EventHandlerMap>();
 
+	onBeforeAttach: (() => void) | undefined;
+
 	constructor(htmlElement: HTMLElement)
 	{
 		super(null); // workaround: can not pass this here
@@ -26,6 +28,10 @@ export class CtxRoot extends CtxHtmlElementOwner
 	setContent(content: childValType)
 	{
 		this._update(content);
+	}
+	protected beforeAttach()
+	{
+		if (this.onBeforeAttach) this.onBeforeAttach();
 	}
 	protected _renderHtml(content: childValType): string
 	{
