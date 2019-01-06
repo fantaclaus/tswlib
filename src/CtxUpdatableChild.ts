@@ -1,6 +1,7 @@
 import { Ctx, CtxUpdatable } from "./Ctx";
 import * as RenderUtils from './RenderUtils';
 import { childValType, Renderer } from "./types";
+import * as DOMUtils from "./DOMUtils";
 
 export class CtxUpdatableChild extends CtxUpdatable
 {
@@ -28,8 +29,7 @@ export class CtxUpdatableChild extends CtxUpdatable
 		if (this.id == null) throw new Error('id is undefined');
 
 		//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
-
-		RenderUtils.updateInnerHtml(htmlElement, this.id, innerHtml);
+		DOMUtils.updateInnerHtml(htmlElement, this.id, innerHtml);
 	}
 	protected afterAttach()
 	{
