@@ -38,7 +38,4 @@ export class StyleRule
 	}
 }
 
-export interface EventHandlerMap
-{
-	[eventName: string]: EventHandler;
-}
+export type EventHandlerMap = Map<string, EventHandler>;

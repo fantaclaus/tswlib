@@ -96,14 +96,14 @@ export class ElementGeneric
 	{
 		if (eventName && handler instanceof Function)
 		{
-			this.eventHandlers = this.eventHandlers || {};
+			if (this.eventHandlers == null) this.eventHandlers = new Map<string, EventHandler>();
 
-			if (this.eventHandlers[eventName])
+			if (this.eventHandlers.has(eventName))
 			{
 				throw new Error(`Event handler "${eventName}" is already installed.`);
 			}
 
-			this.eventHandlers[eventName] = handler;
+			this.eventHandlers.set(eventName, handler);
 		}
 
 		return this;

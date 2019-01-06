@@ -194,11 +194,11 @@ function renderElement(rootCtx: Ctx, elm: ElementGeneric)
 
 	if (useVal && valData && propDef && propDef.set instanceof Function)
 	{
-		eventHanders = eventHanders || {};
+		eventHanders = eventHanders || new Map<string, EventHandler>();
 
-		const savedHandlers: EventHandlerMap = {};
-		savedHandlers['change'] = eventHanders['change'];
-		savedHandlers['input'] = eventHanders['input'];
+		const savedHandlers = new Map<string, EventHandler>();
+		copyMapValue(savedHandlers, eventHanders, 'change');
+		copyMapValue(savedHandlers, eventHanders, 'input');
 
 		const valData2 = valData; // remove null from type
 
@@ -212,12 +212,12 @@ function renderElement(rootCtx: Ctx, elm: ElementGeneric)
 				propDef.set(v);
 			});
 
-			const userHandler = savedHandlers[e.type];
+			const userHandler = savedHandlers.get(e.type);
 			if (userHandler) userHandler(e, htmlElement);
 		};
 
-		eventHanders['change'] = handler;
-		eventHanders['input'] = handler;
+		eventHanders.set('change', handler);
+		eventHanders.set('input', handler);
 	}
 
 	if (eventHanders)
@@ -249,6 +249,12 @@ function renderElement(rootCtx: Ctx, elm: ElementGeneric)
 	if (hasInnerHtml) html = html + innerHtml;
 	if (hasInnerHtml || elmNeedsCloseTag(tagName)) html = html + '</' + tagName + '>';
 	return html;
+
+	function copyMapValue(mapDest: EventHandlerMap, mapSrc: EventHandlerMap, key: string)
+	{
+		const v = mapSrc.get(key);
+		if (v) mapDest.set(key, v);
+	}
 }
 function elmNeedsCloseTag(tagName: string): boolean
 {
