@@ -10,7 +10,7 @@ interface PropKeyContext
 type CtxEventHandler = () => void;
 
 let _propKeyToCtxMap: PropKeyContext[] | null = null;
-let _ctxUpdateQueue: CtxUpdatable[] | null = null;
+let _ctxUpdateQueue: Set<Ctx> | null = null;
 let _timerId: number | null = null;
 let _updatedCbs: CtxEventHandler[] = [];
 
@@ -24,7 +24,7 @@ export function attach(propKey: any)
 		const exists = _propKeyToCtxMap.some(p => p.propKey === propKey && p.ctx == ctx);
 		if (!exists)
 		{
-			_propKeyToCtxMap.push({ propKey: propKey, ctx: ctx });
+			_propKeyToCtxMap.push({ propKey, ctx });
 
 			//console.log('attached:', propKey.toString(), propKeyToCtxMap && propKeyToCtxMap.map(p => p.propKey));
 		}
@@ -52,7 +52,10 @@ function removeFromUpdateQueue(ctxs: Ctx[])
 {
 	if (_ctxUpdateQueue)
 	{
-		_ctxUpdateQueue = _ctxUpdateQueue.filter(ctx => !ctxs.includes(ctx));
+		for (const ctx of ctxs)
+		{
+			_ctxUpdateQueue.delete(ctx);
+		}
 	}
 }
 export function update(propKey: any)
@@ -68,17 +71,17 @@ export function update(propKey: any)
 
 	// add contexts to ctxUpdateQueue
 
-	const newQueue = _ctxUpdateQueue || [];
+	const newQueue = _ctxUpdateQueue || new Set<Ctx>();
 
 	propKeyContexts.forEach(p =>
 	{
-		if (p.ctx !== currentCtx && !newQueue.includes(p.ctx))
+		if (p.ctx !== currentCtx)
 		{
-			newQueue.push(p.ctx);
+			newQueue.add(p.ctx);
 		}
 	});
 
-	if (newQueue.length > 0)
+	if (newQueue.size > 0)
 	{
 		_ctxUpdateQueue = newQueue;
 
@@ -113,7 +116,19 @@ function processQueue()
 
 	if (contexts)
 	{
-		const contextsToUpdate = contexts.filter(ctx => !isAnyParentInList(ctx, contexts)); // do it before ctx.update(), since parents will be set to null
+		// collect into contextsToUpdate before ctx.update(), since parents will be set to null
+		const contextsToUpdate = [];
+
+		for (let ctx of contexts)
+		{
+			if (!isAnyParentInList(ctx, contexts))
+			{
+				if (ctx instanceof CtxUpdatable)
+				{
+					contextsToUpdate.push(ctx);
+				}
+			}
+		}
 
 		contextsToUpdate.forEach(ctx =>
 		{
@@ -125,22 +140,17 @@ function processQueue()
 		});
 	}
 
-	setTimeout(() =>
-	{
-		_updatedCbs.forEach(cb => cb());
-		_updatedCbs.length = 0;
-	}, 0);
+	_updatedCbs.forEach(cb => cb());
+	_updatedCbs.length = 0;
 }
-function isAnyParentInList(ctx: Ctx, contexts: CtxUpdatable[])
+function isAnyParentInList(ctx: Ctx, contexts: Set<Ctx>)
 {
-	if (!ctx) throw new Error("ctx is null");
-
 	while (true)
 	{
 		const ctxParent = ctx.getParent();
 		if (!ctxParent) return false;
 
-		if (ctxParent instanceof CtxUpdatable && contexts.includes(ctxParent)) return true;
+		if (contexts.has(ctxParent)) return true;
 
 		ctx = ctxParent;
 	}
