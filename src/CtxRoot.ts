@@ -46,12 +46,26 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap)
 	{
-		//console.group('attached events for: %s: %o', elmId, eventHandlers);
+		if (this.eventHandlers && elmId in this.eventHandlers) throw new Error(`this.eventHandlers already has elmId=${elmId}`);
 
 		this.eventHandlers = this.eventHandlers || {};
 		this.eventHandlers[elmId] = eventHandlers;
 
-		this.updateEventSubscriptions();
+		for (const eventName in eventHandlers)
+		{
+			this.attachedEventNames = this.attachedEventNames || {};
+
+			if (!(eventName in this.attachedEventNames))
+			{
+				const jqElm = jQuery(this.htmlElement);
+				jqElm.on(eventName, e =>
+				{
+					this.handleEvent(e);
+				});
+
+				this.attachedEventNames[eventName] = true;
+			}
+		}
 
 		//console.groupEnd();
 	}
@@ -64,61 +78,11 @@ export class CtxRoot extends CtxHtmlElementOwner
 			//const eventHandlers = this.eventHandlers[elmId];  // DEBUG
 			//if (eventHandlers) console.log('detached events for: %s: %o', elmId, eventHandlers);  // DEBUG
 
+			// we only remove elm's handlers from map without detaching event listeners from this.htmlElement for optimization sake
 			delete this.eventHandlers[elmId];
-
-			this.updateEventSubscriptions();
 
 			//console.groupEnd();
 		}
-	}
-	private updateEventSubscriptions()
-	{
-		const jqElm = jQuery(this.htmlElement);
-
-		const currentEventNames: { [eventName: string]: boolean } = {};
-		let currentEventNamesCount = 0;
-
-		const eventHandlers = this.eventHandlers;
-		if (eventHandlers)
-		{
-			utils.forEachKey(eventHandlers, elmId =>
-			{
-				const elmEventHandlers = eventHandlers[elmId];
-				utils.forEachKey(elmEventHandlers, eventName =>
-				{
-					currentEventNames[eventName] = true;
-					currentEventNamesCount++;
-				});
-			});
-		}
-
-		if (this.attachedEventNames)
-		{
-			utils.forEachKey(this.attachedEventNames, eventName =>
-			{
-				if (!(eventName in currentEventNames))
-				{
-					//console.log("unsubscribe from event: %s", eventName);
-					jqElm.off(eventName);
-				}
-			});
-		}
-
-		utils.forEachKey(currentEventNames, eventName =>
-		{
-			if (!this.attachedEventNames || !(eventName in this.attachedEventNames))
-			{
-				//console.log("subscribe to event: %s", eventName);
-
-				jqElm.on(eventName, (e: JQuery.Event) =>
-				{
-					//console.log('on event: %s on %o', e.type, e.target);
-					this.handleEvent(e);
-				});
-			}
-		});
-
-		this.attachedEventNames = currentEventNamesCount == 0 ? null : currentEventNames;
 	}
 	private handleEvent(e: JQuery.Event)
 	{
