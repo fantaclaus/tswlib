@@ -1,4 +1,5 @@
-﻿import { CtxUpdatable, CtxScope, Ctx } from './Ctx';
+﻿import { Ctx, CtxUpdatable } from './Ctx';
+import { CtxScope } from "./CtxScope";
 
 interface PropKeyContext
 {
