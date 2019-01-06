@@ -5,8 +5,6 @@ import * as utils from './utils';
 
 export abstract class Ctx
 {
-	private static useHierarchicalIds = false;
-
 	private lastChildId: number | null = null;
 	private childCtxs: Ctx[] | null = null;
 	private parentCtx: Ctx | null = null;
@@ -117,13 +115,9 @@ export abstract class Ctx
 	}
 	generateNextChildId(): string
 	{
-		const ctxRoot = Ctx.useHierarchicalIds ? this : this.getRootCtx();
+		const ctxRoot = this.getRootCtx();
 
 		return ctxRoot.getNextChildId();
-	}
-	protected resetNextChildId()
-	{
-		if (Ctx.useHierarchicalIds) this.lastChildId = null;
 	}
 
 	protected _update(content: childValType)
@@ -135,7 +129,6 @@ export abstract class Ctx
 		this.unregisterEventHandlers();
 
 		this.removeChildren();
-		this.resetNextChildId();
 
 		const htmlElement = this.getHtmlElement();
 		if (htmlElement)
