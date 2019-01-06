@@ -11,10 +11,8 @@ import { PropDefReadable } from "./PropDefs";
 import { attrValType, childValType, EventHandler, EventHandlerMap, PropDefReadableAttrValType, PropDefReadableChildValType, Renderer, StyleRule } from "./types";
 import * as utils from "./utils";
 
-interface MapStringToArrayOfAttrValType
-{
-	[name: string]: attrValType[];
-}
+type MapStringToArrayOfAttrValType = Map<string, attrValType[]>;
+
 interface ValueData
 {
 	value: elmValue;
@@ -138,8 +136,8 @@ function renderElement(rootCtx: Ctx, elm: ElementGeneric)
 
 	const elmRefs = elm.z_getRefs();
 
-	const attrId = getRenderedLastAttrValue(attrs['id']);
-	delete attrs['id'];
+	const attrId = getRenderedLastAttrValue(attrs.get('id'));
+	attrs.delete('id');
 
 	const ctxCurrent = CtxScope.getCurrentSafe();
 	const id = attrId || ctxCurrent.generateNextChildId();
@@ -169,7 +167,7 @@ function renderElement(rootCtx: Ctx, elm: ElementGeneric)
 			//delete attrs['checked'];
 			//delete attrs['value'];
 
-			attrs[valAttrName] = [valData2.value];
+			attrs.set(valAttrName, [valData2.value]);
 		}
 
 		valData = valData2;
@@ -270,9 +268,9 @@ function getElmAttrHtml(rootCtx: Ctx, attrs: MapStringToArrayOfAttrValType): str
 {
 	let attrsHtml = '';
 
-	utils.forEachKey(attrs, attrName =>
+	attrs.forEach((attrVals, attrName) =>
 	{
-		const attrVal = getAttrVal(rootCtx, attrs, attrName);
+		const attrVal = getAttrVal(rootCtx, attrName, attrVals);
 		if (attrVal != null)
 		{
 			let attrHtml = attrName;
@@ -284,9 +282,8 @@ function getElmAttrHtml(rootCtx: Ctx, attrs: MapStringToArrayOfAttrValType): str
 
 	return attrsHtml;
 }
-function getAttrVal(rootCtx: Ctx, attrs: MapStringToArrayOfAttrValType, attrName: string)
+function getAttrVal(rootCtx: Ctx, attrName: string, attrVals: attrValType[])
 {
-	const attrVals = attrs[attrName];
 	//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
 
 	let canBeUpdated: boolean;
@@ -322,13 +319,13 @@ function getAttrVal(rootCtx: Ctx, attrs: MapStringToArrayOfAttrValType, attrName
 		return fn();
 	}
 }
-function getRenderedLastAttrValue(attrVals: attrValType[])
+function getRenderedLastAttrValue(attrVals: attrValType[] | undefined)
 {
 	// it returns last value to support overwriting of attr values
 	// for example, bs.btnLink() returns <A href="#"> by default, and href could be re-assigned to another
 	// value this way: bs.btnLink().href("some url")
 
-	return attrVals && joinAttrVals(attrVals.slice(-1), ', ', av => getRenderedAttrValue(av));
+	return attrVals == null ? null : joinAttrVals(attrVals.slice(-1), ', ', av => getRenderedAttrValue(av));
 }
 function joinAttrVals(attrVals: attrValType[], delim: string, selector: (av: attrValType) => attrValType)
 {
@@ -364,7 +361,7 @@ function joinAttrVals(attrVals: attrValType[], delim: string, selector: (av: att
 }
 function getElmAttrs(elm: ElementGeneric)
 {
-	const attrs: MapStringToArrayOfAttrValType = {};
+	const attrs = new Map<string, attrValType[]>();
 
 	const elmAttrs = elm.z_getAttrs();
 	if (elmAttrs)
@@ -374,11 +371,11 @@ function getElmAttrs(elm: ElementGeneric)
 			const attrName = a.attrName;
 			if (attrName)
 			{
-				let vals = attrs[attrName];
+				let vals = attrs.get(attrName);
 				if (!vals)
 				{
 					vals = [];
-					attrs[attrName] = vals;
+					attrs.set(attrName, vals);
 				}
 
 				vals.push(a.attrValue);
