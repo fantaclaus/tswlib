@@ -22,8 +22,8 @@ export class CtxUpdatableValue extends CtxUpdatable
 		const val = CtxScope.use(this, () => this.renderFn());
 		//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
 
-		const jqElement = jQuery(htmlElement);
-		jqElement.prop(this.propName, <string & number & boolean>val);
+		const el = <any>htmlElement;
+		el[this.propName] = val;
 	}
 	protected _renderHtml(content: childValType): string
 	{

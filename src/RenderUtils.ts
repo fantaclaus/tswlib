@@ -211,7 +211,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 				copyMapValue(savedHandlers, eventHanders2, 'input');
 
 				const valData2 = valData; // remove null from type
-				const handler = (e: JQuery.Event, htmlElement: Element) =>
+				const handler = (e: Event, htmlElement: Element) =>
 				{
 					//const v = jQuery(htmlElement).prop(valData2.valPropName);
 					const v = (<any>htmlElement)[valData2.valPropName];

@@ -30,12 +30,6 @@ export class Ref implements PropDef<string | null>
 		const el = document.getElementById(this.refId);
 		return !!el;
 	}
-	asJQuery()
-	{
-		if (!this.refId) throw new Error("refId is not initialized");
-
-		return jQuery('#' + this.refId);
-	}
 	asHtmlElement<T extends HTMLElement = HTMLElement>()
 	{
 		if (!this.refId) throw new Error("refId is not initialized");

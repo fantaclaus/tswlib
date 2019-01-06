@@ -7,6 +7,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 	private htmlElement: HTMLElement;
 	private attachedEventListeners = new Set<string>();
 	private eventHandlers = new Map<string, EventHandlerMap>();
+	private _listener = this.handleEvent.bind(this);
 
 	onBeforeAttach: (() => void) | undefined;
 
@@ -43,8 +44,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	protected unregisterEventHandlers()
 	{
-		const jqElm = jQuery(this.htmlElement);
-		jqElm.off();
+		this.attachedEventListeners.forEach((eventName) => this.htmlElement.removeEventListener(eventName, this._listener));
 		this.attachedEventListeners.clear();
 		this.eventHandlers.clear();
 	}
@@ -59,11 +59,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 		{
 			if (!this.attachedEventListeners.has(eventName))
 			{
-				const jqElm = jQuery(this.htmlElement);
-				jqElm.on(eventName, e =>
-				{
-					this.handleEvent(e);
-				});
+				this.htmlElement.addEventListener(eventName, this._listener);
 
 				this.attachedEventListeners.add(eventName);
 			}
@@ -76,7 +72,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 		// we only remove elm's handlers from map without detaching event listeners from this.htmlElement for optimization sake
 		this.eventHandlers.delete(elmId);
 	}
-	private handleEvent(e: JQuery.Event)
+	private handleEvent(e: Event)
 	{
 		const htmlElm = <Element>e.target;
 		const r = this.findEventHandlers(htmlElm);
