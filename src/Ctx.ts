@@ -14,8 +14,14 @@ export abstract class Ctx
 	private childCtxs: Ctx[] | null = null;
 	private parentCtx: Ctx | null = null;
 
-	public rootCtx: CtxRoot | undefined;
+	public rootCtx: Ctx;
+
 	protected id: string | undefined;
+
+	constructor(rootCtx: Ctx | null)
+	{
+		this.rootCtx = rootCtx ? rootCtx : this;
+	}
 
 	getId()
 	{
@@ -84,11 +90,10 @@ export abstract class Ctx
 	protected unregisterEventHandlers()
 	{
 		var ctxRoot = this.getRootCtx();
-		if (!ctxRoot) throw new Error("root ctx is null");
 
 		this.unregisterEventHandlersFromRoot(ctxRoot);
 	}
-	unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
+	unregisterEventHandlersFromRoot(ctxRoot: Ctx)
 	{
 		this.forEachChild(ctx => ctx.unregisterEventHandlersFromRoot(ctxRoot));
 	}
@@ -100,7 +105,7 @@ export abstract class Ctx
 	{
 		this.forEachChild(ctx => ctx.beforeDetach());
 	}
-	protected getHtmlElement(): HTMLElement | null | undefined
+	protected getHtmlElement(): HTMLElement | null
 	{
 		const ctxElm = this.getParentHtmlElmOwnerCtx();
 		return ctxElm && ctxElm.getHtmlElement();
@@ -115,10 +120,9 @@ export abstract class Ctx
 	}
 	generateNextChildId(): string
 	{
-		const ctx = Ctx.useHierarchicalIds ? <Ctx>this : this.getRootCtx();
-		if (!ctx) throw new Error("root ctx is null");
+		const ctxRoot = Ctx.useHierarchicalIds ? this : this.getRootCtx();
 
-		return ctx.getNextChildId();
+		return ctxRoot.getNextChildId();
 	}
 	protected resetNextChildId()
 	{
@@ -175,16 +179,15 @@ export class CtxElement extends CtxHtmlElementOwner
 	private tagName: string;
 	private refs: Ref[] | null;
 
-	constructor(rootCtx: CtxRoot, id: string, tagName: string, refs: Ref[] | null)
+	constructor(rootCtx: Ctx, id: string, tagName: string, refs: Ref[] | null)
 	{
-		super();
+		super(rootCtx);
 
-		this.rootCtx = rootCtx;
 		this.id = id;
 		this.tagName = tagName;
 		this.refs = refs;
 	}
-	protected getHtmlElement()//: HTMLElement | null | undefined
+	protected getHtmlElement()
 	{
 		if (this.id == null) throw new Error('id is undefined');
 
@@ -198,9 +201,10 @@ export class CtxElement extends CtxHtmlElementOwner
 		return this.tagName;
 	}
 
-	unregisterEventHandlersFromRoot(ctxRoot: CtxRoot)
+	unregisterEventHandlersFromRoot(ctxRoot: Ctx)
 	{
 		if (this.id == null) throw new Error('id is undefined');
+		if (!(ctxRoot instanceof CtxRoot)) throw new Error("ctxRoot is not CtxRoot");
 
 		ctxRoot.detachElmEventHandlers(this.id);
 
@@ -225,14 +229,10 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 	constructor(htmlElement: HTMLElement)
 	{
-		super();
+		super(null); // workaround: can not pass this here
 
 		this.htmlElement = htmlElement;
 		this.id = htmlElement.id;
-	}
-	getRootCtx()
-	{
-		return this;
 	}
 	getTagName()
 	{
@@ -246,7 +246,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 	{
 		this._update(content);
 	}
-	protected _renderHtml(content: childValType)
+	protected _renderHtml(content: childValType): string
 	{
 		return RenderUtils.renderHtml(this, content);
 	}
@@ -387,11 +387,10 @@ export class CtxUpdatableChild extends CtxUpdatable
 {
 	content: childValType;
 
-	constructor(rootCtx: CtxRoot, id: string, content: childValType)
+	constructor(rootCtx: Ctx, id: string, content: childValType)
 	{
-		super();
+		super(rootCtx);
 
-		this.rootCtx = rootCtx;
 		this.id = id;
 		this.content = content;
 	}
@@ -402,7 +401,6 @@ export class CtxUpdatableChild extends CtxUpdatable
 	protected _renderHtml(content: childValType)
 	{
 		var ctxRoot = this.getRootCtx();
-		if (!ctxRoot) throw new Error("root ctx is null");
 
 		return RenderUtils.getRenderedHtml(ctxRoot, content);
 	}
@@ -434,11 +432,9 @@ export class CtxUpdatableAttr extends CtxUpdatable
 	//attrName: string;
 	//renderFn: () => string | null;
 
-	constructor(rootCtx: CtxRoot, public attrName: string, public renderFn: () => string | null)
+	constructor(rootCtx: Ctx, public attrName: string, public renderFn: () => string | null)
 	{
-		super();
-
-		this.rootCtx = rootCtx;
+		super(rootCtx);
 	}
 	update()
 	{
@@ -478,11 +474,9 @@ export class CtxUpdatableValue extends CtxUpdatable
 
 	getRenderFn() { return this.renderFn; }
 
-	constructor(rootCtx: CtxRoot, public propName: string, public renderFn: () => elmValue)
+	constructor(rootCtx: Ctx, public propName: string, public renderFn: () => elmValue)
 	{
-		super();
-
-		this.rootCtx = rootCtx;
+		super(rootCtx);
 	}
 	update()
 	{

@@ -1,7 +1,7 @@
 ﻿import { ElementGeneric } from "./elm";
 import { attrValType, childValType, StyleRule, PropDefReadableChildValType, PropDefReadableAttrValType, Renderer, EventHandlerMap } from "./types";
 import { elmValue, RawHtml, ElementWithValue } from "./htmlElements";
-import { CtxUpdatable, CtxRoot, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableValue, CtxUpdatableAttr } from "./Ctx";
+import { CtxUpdatable, CtxRoot, CtxScope, CtxUpdatableChild, CtxElement, CtxUpdatableValue, CtxUpdatableAttr, Ctx } from "./Ctx";
 import { PropDefReadable } from "./PropDefs";
 import * as utils from "./utils";
 
@@ -47,7 +47,7 @@ function isRenderer(item: childValType): item is Renderer
 	return (<Renderer>item).render instanceof Function;
 }
 
-export function renderHtml(rootCtx: CtxRoot, content: childValType | childValType[] | null)
+export function renderHtml(rootCtx: Ctx, content: childValType | childValType[] | null)
 {
 	let result = '';
 
@@ -77,7 +77,7 @@ export function renderHtml(rootCtx: CtxRoot, content: childValType | childValTyp
 		}
 	}
 }
-function renderItem(rootCtx: CtxRoot, item: childValType)
+function renderItem(rootCtx: Ctx, item: childValType)
 {
 	if (item == null || item === true || item === false) return '';
 
@@ -99,7 +99,7 @@ function renderItem(rootCtx: CtxRoot, item: childValType)
 	const s = item.toString();
 	return utils.htmlEncode(s);
 }
-function renderUpdatableChild(rootCtx: CtxRoot, item: childValType)
+function renderUpdatableChild(rootCtx: Ctx, item: childValType)
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 	const id = ctxCurrent.generateNextChildId();
@@ -114,7 +114,7 @@ function renderUpdatableChild(rootCtx: CtxRoot, item: childValType)
 	const markers = new HtmlBlockMarkers(ctx.getId());
 	return markers.getHtml(innerHtml);
 }
-function renderElement(rootCtx: CtxRoot, elm: ElementGeneric)
+function renderElement(rootCtx: Ctx, elm: ElementGeneric)
 {
 	const tagName = elm.z_getTagName();
 	//console.log(elm, tagName);
@@ -217,7 +217,7 @@ function renderElement(rootCtx: CtxRoot, elm: ElementGeneric)
 	if (eventHanders)
 	{
 		const ctxRoot = ctxCurrent.getRootCtx();
-		if (!ctxRoot) throw new Error("root ctx is null");
+		if (!(ctxRoot instanceof CtxRoot)) throw new Error("ctxRoot is not CtxRoot");
 
 		ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders);
 	}
@@ -254,7 +254,7 @@ function elmNeedsCloseTag(tagName: string): boolean
 
 	return !needNoClosingTag;
 }
-function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType): string
+function getElmAttrHtml(rootCtx: Ctx, attrs: MapStringToArrayOfAttrValType): string
 {
 	let attrsHtml = '';
 
@@ -272,7 +272,7 @@ function getElmAttrHtml(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType):
 
 	return attrsHtml;
 }
-function getAttrVal(rootCtx: CtxRoot, attrs: MapStringToArrayOfAttrValType, attrName: string)
+function getAttrVal(rootCtx: Ctx, attrs: MapStringToArrayOfAttrValType, attrName: string)
 {
 	const attrVals = attrs[attrName];
 	//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
@@ -416,7 +416,7 @@ function canItemBeUpdated(item: childValType)
 
 	return false;
 }
-export function getRenderedHtml(rootCtx: CtxRoot, item: childValType)
+export function getRenderedHtml(rootCtx: Ctx, item: childValType)
 {
 	const content = getRenderedContent(item);
 	return renderHtml(rootCtx, content);
@@ -494,7 +494,7 @@ function asElmWithValue(elm: ElementGeneric)
 		return null;
 	}
 }
-function getValue(rootCtx: CtxRoot, propDef: PropDefReadable<elmValue>, valPropName: string)
+function getValue(rootCtx: Ctx, propDef: PropDefReadable<elmValue>, valPropName: string)
 {
 	const ctxCurrent = CtxScope.getCurrentSafe();
 
