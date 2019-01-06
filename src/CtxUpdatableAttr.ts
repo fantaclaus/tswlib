@@ -13,15 +13,15 @@ export class CtxUpdatableAttr extends CtxUpdatable
 	}
 	update()
 	{
-		var htmlElement = this.getHtmlElement();
+		const htmlElement = this.getHtmlElement();
 		if (!htmlElement) throw new Error("htmlElement is undefined");
 		//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
-		var v = CtxScope.use(this, () => this.renderFn());
+		const v = CtxScope.use(this, () => this.renderFn());
 
 		//console.log("%o update: %o %s = %o", this, htmlElement, this.attrName, v);
 
-		var jqElement = jQuery(htmlElement);
+		const jqElement = jQuery(htmlElement);
 
 		// attributes checked and value can be changed only by $.prop()
 

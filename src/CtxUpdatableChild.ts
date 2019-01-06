@@ -19,7 +19,7 @@ export class CtxUpdatableChild extends CtxUpdatable
 	}
 	protected _renderHtml(content: childValType)
 	{
-		var ctxRoot = this.getRootCtx();
+		const ctxRoot = this.getRootCtx();
 
 		return RenderUtils.getRenderedHtml(ctxRoot, content);
 	}
@@ -35,14 +35,14 @@ export class CtxUpdatableChild extends CtxUpdatable
 	{
 		super.afterAttach();
 
-		var renderer = <Renderer>this.content;
+		const renderer = <Renderer>this.content;
 		if (renderer.afterAttach) renderer.afterAttach();
 	}
 	protected beforeDetach()
 	{
 		super.beforeDetach();
 
-		var renderer = <Renderer>this.content;
+		const renderer = <Renderer>this.content;
 		if (renderer.beforeDetach) renderer.beforeDetach();
 	}
 }

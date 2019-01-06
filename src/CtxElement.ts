@@ -21,7 +21,7 @@ export class CtxElement extends CtxHtmlElementOwner
 	{
 		if (this.id == null) throw new Error('id is undefined');
 
-		var htmlElement = document.getElementById(this.id);
+		const htmlElement = document.getElementById(this.id);
 		if (!htmlElement) throw new Error(`Can not find element by id: ${this.id}`);
 
 		return htmlElement;

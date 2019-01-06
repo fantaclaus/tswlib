@@ -39,7 +39,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 
 	protected unregisterEventHandlers()
 	{
-		var jqElm = jQuery(this.htmlElement);
+		const jqElm = jQuery(this.htmlElement);
 		jqElm.off();
 		this.attachedEventNames = null;
 		this.eventHandlers = null;
@@ -61,7 +61,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 		{
 			//console.group('detachElmEventHandlers: %s', elmId);
 
-			//var eventHandlers = this.eventHandlers[elmId];  // DEBUG
+			//const eventHandlers = this.eventHandlers[elmId];  // DEBUG
 			//if (eventHandlers) console.log('detached events for: %s: %o', elmId, eventHandlers);  // DEBUG
 
 			delete this.eventHandlers[elmId];
@@ -73,17 +73,17 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	private updateEventSubscriptions()
 	{
-		var jqElm = jQuery(this.htmlElement);
+		const jqElm = jQuery(this.htmlElement);
 
-		var currentEventNames: { [eventName: string]: boolean } = {};
-		var currentEventNamesCount = 0;
+		const currentEventNames: { [eventName: string]: boolean } = {};
+		let currentEventNamesCount = 0;
 
 		const eventHandlers = this.eventHandlers;
 		if (eventHandlers)
 		{
 			utils.forEachKey(eventHandlers, elmId =>
 			{
-				var elmEventHandlers = eventHandlers[elmId];
+				const elmEventHandlers = eventHandlers[elmId];
 				utils.forEachKey(elmEventHandlers, eventName =>
 				{
 					currentEventNames[eventName] = true;
@@ -122,11 +122,11 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	private handleEvent(e: JQuery.Event)
 	{
-		var htmlElm = <Element>e.target;
-		var r = this.findEventHandlers(htmlElm);
+		const htmlElm = <Element>e.target;
+		const r = this.findEventHandlers(htmlElm);
 		if (r)
 		{
-			var eventHandler = r.ehMap[e.type];
+			const eventHandler = r.ehMap[e.type];
 			if (eventHandler)
 			{
 				// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
@@ -144,9 +144,9 @@ export class CtxRoot extends CtxHtmlElementOwner
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{
-			var elmId = htmlElement.id;
+			const elmId = htmlElement.id;
 
-			var elmEventHandlers = elmId && this.eventHandlers && this.eventHandlers[elmId];
+			const elmEventHandlers = elmId && this.eventHandlers && this.eventHandlers[elmId];
 			if (elmEventHandlers) return ({
 				htmlElm: htmlElement,
 				ehMap: elmEventHandlers,

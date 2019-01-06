@@ -16,13 +16,13 @@ export class CtxUpdatableValue extends CtxUpdatable
 	}
 	update()
 	{
-		var htmlElement = this.getHtmlElement();
+		const htmlElement = this.getHtmlElement();
 		if (!htmlElement) throw new Error("htmlElement is undefined");
 
-		var val = CtxScope.use(this, () => this.renderFn());
+		const val = CtxScope.use(this, () => this.renderFn());
 		//console.log("%o update: %o %s = %o", this, htmlElement, this.propName, val);
 
-		var jqElement = jQuery(htmlElement);
+		const jqElement = jQuery(htmlElement);
 		jqElement.prop(this.propName, <string & number & boolean>val);
 	}
 }

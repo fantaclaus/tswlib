@@ -15,7 +15,7 @@ export function forEachKey(obj: Object, action: (key: string) => void): void
 {
 	if (!obj) throw new Error("obj == null");
 
-	for (var key in obj)
+	for (let key in obj)
 	{
 		if (obj.hasOwnProperty(key))
 		{

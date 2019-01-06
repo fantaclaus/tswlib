@@ -44,7 +44,7 @@ export abstract class Ctx
 	}
 	private findSelfOrParent<T extends Ctx>(predicate: (ctx: Ctx) => boolean)
 	{
-		var ctx: Ctx | null = this;
+		let ctx: Ctx | null = this;
 
 		while (ctx != null)
 		{
@@ -86,7 +86,7 @@ export abstract class Ctx
 	}
 	protected unregisterEventHandlers()
 	{
-		var ctxRoot = this.getRootCtx();
+		const ctxRoot = this.getRootCtx();
 
 		this.unregisterEventHandlersFromRoot(ctxRoot);
 	}
@@ -155,7 +155,7 @@ export abstract class Ctx
 	}
 	private detachPropKeys()
 	{
-		var ctxs: Ctx[] = [];
+		const ctxs: Ctx[] = [];
 		this.collectChildContexts(ctxs);
 
 		CtxUtils.removeCtxs(ctxs);
