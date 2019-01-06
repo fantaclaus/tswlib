@@ -118,6 +118,12 @@ export class ElementInputText extends ElementInput<string>
 
 		return this;
 	}
+	autocomplete(v: stringValType)
+	{
+		this.attr('autocomplete', v);
+
+		return this;
+	}
 }
 export class ElementInputCheckboxBase extends ElementInput<boolean>
 {
