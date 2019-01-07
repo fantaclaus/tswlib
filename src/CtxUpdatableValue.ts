@@ -10,7 +10,7 @@ export class CtxUpdatableValue extends CtxUpdatable
 
 	getRenderFn() { return this.renderFn; }
 
-	constructor(rootCtx: Ctx, public propName: string, public renderFn: () => elmValue)
+	constructor(rootCtx: Ctx, private propName: string, private renderFn: () => elmValue)
 	{
 		super(rootCtx);
 	}

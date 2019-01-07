@@ -7,7 +7,7 @@ export class CtxUpdatableAttr extends CtxUpdatable
 	//attrName: string;
 	//renderFn: () => string | null;
 
-	constructor(rootCtx: Ctx, public attrName: string, public renderFn: () => string | null)
+	constructor(rootCtx: Ctx, private attrName: string, private renderFn: () => string | null)
 	{
 		super(rootCtx);
 	}
