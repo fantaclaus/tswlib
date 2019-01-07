@@ -38,7 +38,7 @@ export function updateInnerHtml(targetElement: HTMLElement, id: string, html: st
 		{
 			let node: Node | null = firstNode;
 
-			while (node)
+			while (node && (!nodeBeginMarker || !nodeEndMarker))
 			{
 				if (node.nodeType == COMMENT_NODE)
 				{
@@ -85,7 +85,11 @@ export function updateInnerHtml(targetElement: HTMLElement, id: string, html: st
 				node = nodeNext;
 			}
 
-			if (!_tmpHtmlElement) _tmpHtmlElement = document.createElement('div');
+			if (!_tmpHtmlElement)
+			{
+				_tmpHtmlElement = document.createElement('span');
+				_tmpHtmlElement.style.display = "none"; // slightly improves performance
+			}
 
 			let html2 = html;
 
