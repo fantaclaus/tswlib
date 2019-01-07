@@ -38,7 +38,7 @@ export class CtxElement extends CtxHtmlElementOwner
 		ctxRoot.detachElmEventHandlers(this.id);
 		super.unregisterEventHandlersFromRoot(ctxRoot);
 	}
-	removeChildren()
+	protected removeChildren()
 	{
 		if (this.refs)
 		{

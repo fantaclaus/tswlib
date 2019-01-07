@@ -81,7 +81,7 @@ export abstract class Ctx
 			this.childCtxs = null;
 		}
 	}
-	hasChildren(): boolean
+	hasChildren()
 	{
 		return this.childCtxs != null && this.childCtxs.length > 0;
 	}
@@ -139,8 +139,7 @@ export abstract class Ctx
 			const innerHtml = CtxScope.use(this, () => this._renderHtml(content));
 
 			const ctxRoot = this.getRootCtx();
-
-			ctxRoot.beforeAttach();
+			ctxRoot.beforeAttach(); // call between _renderHtml and setInnerHtml to give a chance to insert css styles
 
 			this.setInnerHtml(htmlElement, innerHtml || '');
 			this.afterAttach();
