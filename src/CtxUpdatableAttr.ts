@@ -14,7 +14,7 @@ export class CtxUpdatableAttr extends CtxUpdatable
 	update()
 	{
 		const htmlElement = this.getHtmlElement();
-		if (!(htmlElement instanceof HTMLInputElement)) throw new Error("htmlElement is undefined or not HTMLInputElement");
+		if (!htmlElement) throw new Error("htmlElement is undefined");
 
 		//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
@@ -26,11 +26,11 @@ export class CtxUpdatableAttr extends CtxUpdatable
 
 		if (this.attrName == 'checked')
 		{
-			htmlElement.checked = v != null;
+			(<any>htmlElement).checked = v != null;
 		}
 		else if (this.attrName == 'value')
 		{
-			htmlElement.value = v || '';
+			(<any>htmlElement).value = v || '';
 		}
 		else
 		{
