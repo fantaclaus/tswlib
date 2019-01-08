@@ -16,7 +16,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 		super(null); // workaround: can not pass this here
 
 		this.htmlElement = htmlElement;
-		this.id = htmlElement.id;
+		this.id = htmlElement.id || (htmlElement instanceof HTMLBodyElement ? undefined : Math.random().toFixed(4).substring(2));
 	}
 	getTagName()
 	{
