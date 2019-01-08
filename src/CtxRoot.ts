@@ -74,7 +74,7 @@ export class CtxRoot extends CtxHtmlElementOwner
 	}
 	private handleEvent(e: Event)
 	{
-		const htmlElm = <Element>e.target;
+		const htmlElm = e.target instanceof Element ? e.target : null;
 		const r = this.findEventHandlers(htmlElm);
 		if (r)
 		{
