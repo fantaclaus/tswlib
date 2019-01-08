@@ -142,26 +142,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 		const propDef = elmWithVal && elmWithVal.z_getPropDef();
 		const useVal = propDef && propDef.get instanceof Function;
 
-		let valData: ValueData | null = null;
-		if (elmWithVal && propDef && useVal)
-		{
-			const valAttrName = elmWithVal.z_getValueAttrName();
-			const valPropName = elmWithVal.z_getValuePropName();
-
-			const valData2 = CtxScope.use(ctx, () => getValue(rootCtx, propDef, valPropName));
-
-			// replace attributes with value of propdef (checked or value)
-
-			if (valAttrName != null && valData2.value != null) // tagName == 'input'
-			{
-				//delete attrs['checked'];
-				//delete attrs['value'];
-
-				attrs.set(valAttrName, [valData2.value]);
-			}
-
-			valData = valData2;
-		}
+		const valData = getValData();
 
 		const attrsHtml = CtxScope.use(ctx, () => getElmAttrHtml(rootCtx, attrs));
 		//console.log(`attrsHtml: [${attrsHtml}]`);
@@ -172,9 +153,10 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 
 		if (elmRefs)
 		{
+			const ctxId = ctx.getId();
 			elmRefs.forEach(r =>
 			{
-				r.set(ctx.getId());
+				r.set(ctxId);
 			});
 		}
 
@@ -182,6 +164,28 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 
 		return makeHtml(tagName, attrsHtml, innerHtml, hasEventHanders, hasRefs, ctx);
 
+		function getValData()
+		{
+			if (elmWithVal && propDef && useVal)
+			{
+				const valAttrName = elmWithVal.z_getValueAttrName();
+				const valPropName = elmWithVal.z_getValuePropName();
+				const valData = CtxScope.use(ctx, () => getValue(rootCtx, propDef, valPropName));
+				// replace attributes with value of propdef (checked or value)
+				if (valAttrName != null && valData.value != null) // tagName == 'input'
+				{
+					//delete attrs['checked'];
+					//delete attrs['value'];
+					attrs.set(valAttrName, [valData.value]);
+				}
+
+				return valData;
+			}
+			else
+			{
+				return null;
+			}
+		}
 		function isPropDefAttr(attrVal: attrValType): attrVal is PropDefReadableAttrValType
 		{
 			return (<PropDefReadableAttrValType>attrVal).get instanceof Function;
@@ -213,7 +217,6 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 				const valData2 = valData; // remove null from type
 				const handler = (e: Event, htmlElement: Element) =>
 				{
-					//const v = jQuery(htmlElement).prop(valData2.valPropName);
 					const v = (<any>htmlElement)[valData2.valPropName];
 
 					// pass ctx to CtxUtils.update for optimization: to skip it during update.
