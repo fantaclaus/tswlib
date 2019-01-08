@@ -262,7 +262,7 @@ export function renderHtml(rootCtx: ICtxRoot, content: childValType)
 
 			return attrsHtml;
 		}
-		function makeHtml(tagName: string, attrsHtml: string, innerHtml: string, hasEventHanders: boolean, hasRefs: boolean, ctx: Ctx)
+		function makeHtml(tagName: string, attrsHtml: string, innerHtml: string, hasEventHanders: boolean, hasRefs: boolean, ctx: CtxElement)
 		{
 			let htmlStartTag = '<' + tagName;
 			if (ctx.hasChildren() || hasEventHanders || hasRefs)

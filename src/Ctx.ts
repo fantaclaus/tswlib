@@ -8,18 +8,9 @@ export abstract class Ctx
 	private ctxUpdateable: Ctx | null = null; // performance cache
 	private rootCtx: ICtxRoot | null; // performance cache
 
-	protected id: string | undefined;
-
 	constructor(rootCtx: ICtxRoot | null)
 	{
 		this.rootCtx = rootCtx;
-	}
-
-	getId()
-	{
-		if (this.id == null) throw new Error('id is undefined');
-
-		return this.id;
 	}
 	getParent()
 	{

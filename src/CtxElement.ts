@@ -8,6 +8,7 @@ export class CtxElement extends Ctx implements CtxHtmlElementOwner
 {
 	private [implements_CtxHtmlElementOwner] = true;
 
+	private id: string;
 	private tagName: string;
 	private refs: Ref[] | null;
 
@@ -18,6 +19,10 @@ export class CtxElement extends Ctx implements CtxHtmlElementOwner
 		this.id = id;
 		this.tagName = tagName;
 		this.refs = refs;
+	}
+	getId()
+	{
+		return this.id;
 	}
 	getHtmlElement()
 	{

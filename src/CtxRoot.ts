@@ -11,18 +11,19 @@ export class CtxRoot extends Ctx2 implements CtxHtmlElementOwner, ICtxRoot
 
 	private lastChildId: number | null = null;
 	private htmlElement: HTMLElement;
+	private id: string;
 	private attachedEventListeners = new Set<string>();
 	private eventHandlers = new Map<string, EventHandlerMap>();
-	private _listener = this.handleEvent.bind(this);
+	private eventsListener = this.handleEvent.bind(this);
 
 	onBeforeAttach: (() => void) | undefined;
 
 	constructor(htmlElement: HTMLElement)
 	{
-		super(null); // workaround: can not pass this here
+		super(null); // workaround: can not pass 'this' here
 
 		this.htmlElement = htmlElement;
-		this.id = htmlElement.id || (htmlElement instanceof HTMLBodyElement ? undefined : Math.random().toFixed(4).substring(2));
+		this.id = htmlElement.id || (htmlElement instanceof HTMLBodyElement ? '' : Math.random().toFixed(4).substring(2));
 	}
 	getRootCtx()
 	{
@@ -42,8 +43,6 @@ export class CtxRoot extends Ctx2 implements CtxHtmlElementOwner, ICtxRoot
 	}
 	getNextChildId()
 	{
-		if (this.id == null) throw new Error('id is undefined');
-
 		this.lastChildId = (this.lastChildId || 0) + 1;
 		return appendDelimited(this.id, '-', this.lastChildId.toString());
 	}
@@ -61,7 +60,7 @@ export class CtxRoot extends Ctx2 implements CtxHtmlElementOwner, ICtxRoot
 	}
 	protected unregisterEventHandlers()
 	{
-		this.attachedEventListeners.forEach((eventName) => this.htmlElement.removeEventListener(eventName, this._listener));
+		this.attachedEventListeners.forEach(eventName => this.htmlElement.removeEventListener(eventName, this.eventsListener));
 		this.attachedEventListeners.clear();
 		this.eventHandlers.clear();
 	}
@@ -76,7 +75,7 @@ export class CtxRoot extends Ctx2 implements CtxHtmlElementOwner, ICtxRoot
 		{
 			if (!this.attachedEventListeners.has(eventName))
 			{
-				this.htmlElement.addEventListener(eventName, this._listener);
+				this.htmlElement.addEventListener(eventName, this.eventsListener);
 
 				this.attachedEventListeners.add(eventName);
 			}

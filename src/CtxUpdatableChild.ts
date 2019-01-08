@@ -8,6 +8,8 @@ export class CtxUpdatableChild extends Ctx2 implements CtxUpdatable
 {
 	private [implements_CtxUpdatable] = true;
 
+	private id: string;
+
 	content: childValType;
 
 	constructor(rootCtx: ICtxRoot, id: string, content: childValType)
@@ -16,6 +18,10 @@ export class CtxUpdatableChild extends Ctx2 implements CtxUpdatable
 
 		this.id = id;
 		this.content = content;
+	}
+	getId()
+	{
+		return this.id;
 	}
 	update()
 	{
