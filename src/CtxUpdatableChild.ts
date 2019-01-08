@@ -1,13 +1,16 @@
-import { Ctx, CtxUpdatable } from "./Ctx";
+import { Ctx2 } from "./Ctx2";
 import * as RenderUtils from './RenderUtils';
 import { childValType, Renderer } from "./types";
 import * as DOMUtils from "./DOMUtils";
+import { CtxUpdatable, implements_CtxUpdatable, ICtxRoot } from './interfaces';
 
-export class CtxUpdatableChild extends CtxUpdatable
+export class CtxUpdatableChild extends Ctx2 implements CtxUpdatable
 {
+	private [implements_CtxUpdatable] = true;
+
 	content: childValType;
 
-	constructor(rootCtx: Ctx, id: string, content: childValType)
+	constructor(rootCtx: ICtxRoot, id: string, content: childValType)
 	{
 		super(rootCtx);
 

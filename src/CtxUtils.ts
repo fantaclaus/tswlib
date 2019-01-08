@@ -1,10 +1,11 @@
-﻿import { Ctx, CtxUpdatable } from './Ctx';
+﻿import { Ctx } from './Ctx';
 import { CtxScope } from "./CtxScope";
+import { CtxUpdatable, isCtxUpdatable } from './interfaces';
 
 interface PropKeyContext
 {
 	propKey: any;
-	ctx: CtxUpdatable;
+	ctx: Ctx;
 }
 
 type CtxEventHandler = () => void;
@@ -30,12 +31,12 @@ export function attach(propKey: any)
 		}
 	}
 }
-export function removeCtxs(ctxs: Ctx[])
+export function removeCtxs(ctxs: Set<Ctx>)
 {
 	removeAttachedCtxs(ctxs);
 	removeFromUpdateQueue(ctxs);
 }
-function removeAttachedCtxs(ctxs: Ctx[])
+function removeAttachedCtxs(ctxs: Set<Ctx>)
 {
 	if (_propKeyToCtxMap)
 	{
@@ -43,12 +44,12 @@ function removeAttachedCtxs(ctxs: Ctx[])
 		//	.filter(p => ctxs.includes(p.ctx))
 		//	.map(p => p.propKey);
 
-		_propKeyToCtxMap = _propKeyToCtxMap.filter(p => !ctxs.includes(p.ctx));
+		_propKeyToCtxMap = _propKeyToCtxMap.filter(p => !ctxs.has(p.ctx));
 
 		//console.log('removed: ', removedKeys, propKeyToCtxMap && propKeyToCtxMap.map(p => p.propKey));
 	}
 }
-function removeFromUpdateQueue(ctxs: Ctx[])
+function removeFromUpdateQueue(ctxs: Set<Ctx>)
 {
 	if (_ctxUpdateQueue)
 	{
@@ -105,8 +106,11 @@ export function afterDOMUpdated(cb: () => void)
 function getCtx()
 {
 	const ctx = CtxScope.getCurrent();
-	return ctx ? ctx.getParentUpdatableCtx() : null;
+	if (ctx == null) return null;
+
+	return ctx.getParentUpdatableCtx();
 }
+
 function processQueue()
 {
 	const contexts = _ctxUpdateQueue;
@@ -117,13 +121,13 @@ function processQueue()
 	if (contexts)
 	{
 		// collect into contextsToUpdate before ctx.update(), since parents will be set to null
-		const contextsToUpdate = [];
+		const contextsToUpdate: CtxUpdatable[] = [];
 
 		for (let ctx of contexts)
 		{
-			if (!isAnyParentInList(ctx, contexts))
+			if (isCtxUpdatable(ctx))
 			{
-				if (ctx instanceof CtxUpdatable)
+				if (!isAnyParentInList(ctx, contexts))
 				{
 					contextsToUpdate.push(ctx);
 				}

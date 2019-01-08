@@ -1,4 +1,4 @@
-﻿import { Ctx, CtxUpdatable } from "./Ctx";
+﻿import { Ctx } from "./Ctx";
 import { CtxElement } from "./CtxElement";
 import { CtxRoot } from "./CtxRoot";
 import { CtxScope } from "./CtxScope";
@@ -11,6 +11,7 @@ import { PropDefReadable } from "./PropDefs";
 import { attrValType, childValType, EventHandler, EventHandlerMap, PropDefReadableAttrValType, PropDefReadableChildValType, Renderer, StyleRule } from "./types";
 import * as utils from "./utils";
 import { HtmlBlockMarkers } from "./HtmlBlockMarkers";
+import { ICtxRoot } from "./interfaces";
 
 function isPropDefChild(attrVal: childValType): attrVal is PropDefReadableChildValType
 {
@@ -21,7 +22,7 @@ function isRenderer(item: childValType): item is Renderer
 	return (<Renderer>item).render instanceof Function;
 }
 
-export function renderHtml(rootCtx: Ctx, content: childValType)
+export function renderHtml(rootCtx: ICtxRoot, content: childValType)
 {
 	let result = '';
 
@@ -42,7 +43,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 		}
 		else
 		{
-			const s = renderItem(rootCtx, item);
+			const s = renderItem(item);
 
 			if (s != null && s !== '') // don't add nulls and empty strings. but zero (number) value must be added.
 			{
@@ -50,12 +51,12 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 			}
 		}
 	}
-	function renderItem(rootCtx: Ctx, item: childValType)
+	function renderItem(item: childValType)
 	{
 		if (item == null || item === true || item === false) return '';
 
 		if (item instanceof RawHtml) return item.value;
-		if (item instanceof ElementGeneric) return renderElement(rootCtx, item);
+		if (item instanceof ElementGeneric) return renderElement(item);
 
 		// content of textarea can not be updated using comment blocks, since they are displayed inside textarea as is
 		const ctxCurrent = CtxScope.getCurrentSafe();
@@ -66,7 +67,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 		if (tagName != 'textarea')
 		{
 			const canBeUpdated = canItemBeUpdated(item);
-			if (canBeUpdated) return renderUpdatableChild(rootCtx, item);
+			if (canBeUpdated) return renderUpdatableChild(item);
 		}
 
 		const s = item.toString();
@@ -84,7 +85,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 			return false;
 		}
 	}
-	function renderUpdatableChild(rootCtx: Ctx, item: childValType)
+	function renderUpdatableChild(item: childValType)
 	{
 		const ctxCurrent = CtxScope.getCurrentSafe();
 		const id = ctxCurrent.generateNextChildId();
@@ -99,16 +100,9 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 		const markers = new HtmlBlockMarkers(ctx.getId());
 		return markers.getHtml(innerHtml);
 	}
-	function renderElement(rootCtx: Ctx, elm: ElementGeneric)
+	function renderElement(elm: ElementGeneric)
 	{
 		type MapStringToArrayOfAttrValType = Map<string, attrValType[]>;
-
-		interface ValueData
-		{
-			value: elmValue;
-			ctx: CtxUpdatable;
-			valPropName: string;
-		}
 
 		const tagName = elm.z_getTagName();
 		//console.log(elm, tagName);
@@ -144,7 +138,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 
 		const valData = getValData();
 
-		const attrsHtml = CtxScope.use(ctx, () => getElmAttrHtml(rootCtx, attrs));
+		const attrsHtml = CtxScope.use(ctx, () => getElmAttrHtml(attrs));
 		//console.log(`attrsHtml: [${attrsHtml}]`);
 
 		const innerHtml = renderInnerHtml();
@@ -170,7 +164,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 			{
 				const valAttrName = elmWithVal.z_getValueAttrName();
 				const valPropName = elmWithVal.z_getValuePropName();
-				const valData = CtxScope.use(ctx, () => getValue(rootCtx, propDef, valPropName));
+				const valData = CtxScope.use(ctx, () => getValue(propDef, valPropName));
 				// replace attributes with value of propdef (checked or value)
 				if (valAttrName != null && valData.value != null) // tagName == 'input'
 				{
@@ -239,8 +233,6 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 			if (eventHanders)
 			{
 				const ctxRoot = ctxCurrent.getRootCtx();
-				if (!(ctxRoot instanceof CtxRoot)) throw new Error("ctxRoot is not CtxRoot");
-
 				ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders);
 			}
 
@@ -252,13 +244,13 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 				if (v) mapDest.set(key, v);
 			}
 		}
-		function getElmAttrHtml(rootCtx: Ctx, attrs: MapStringToArrayOfAttrValType): string
+		function getElmAttrHtml(attrs: MapStringToArrayOfAttrValType): string
 		{
 			let attrsHtml = '';
 
 			attrs.forEach((attrVals, attrName) =>
 			{
-				const attrVal = getAttrVal(rootCtx, attrName, attrVals);
+				const attrVal = getAttrVal(attrName, attrVals);
 				if (attrVal != null)
 				{
 					let attrHtml = attrName;
@@ -291,7 +283,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 		{
 			return '"' + s + '"';
 		}
-		function getAttrVal(rootCtx: Ctx, attrName: string, attrVals: attrValType[])
+		function getAttrVal(attrName: string, attrVals: attrValType[])
 		{
 			//console.log('attrName: %s; attrVals: %o', attrName, attrVals);
 
@@ -469,7 +461,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 		{
 			return elm instanceof ElementWithValue ? elm : null;
 		}
-		function getValue(rootCtx: Ctx, propDef: PropDefReadable<elmValue>, valPropName: string)
+		function getValue(propDef: PropDefReadable<elmValue>, valPropName: string)
 		{
 			const ctxCurrent = CtxScope.getCurrentSafe();
 
@@ -506,7 +498,7 @@ export function renderHtml(rootCtx: Ctx, content: childValType)
 			.replace(/>/g, "&gt;");
 	}
 }
-export function getRenderedHtml(rootCtx: Ctx, item: childValType)
+export function getRenderedHtml(rootCtx: ICtxRoot, item: childValType)
 {
 	const content = getRenderedContent(item);
 	return renderHtml(rootCtx, content);

@@ -1,15 +1,17 @@
 import { Ref } from './Ref';
-import { CtxHtmlElementOwner } from "./Ctx";
 import { CtxRoot } from "./CtxRoot";
 import { childValType } from './types';
 import { Ctx } from './Ctx';
+import { CtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot } from './interfaces';
 
-export class CtxElement extends CtxHtmlElementOwner
+export class CtxElement extends Ctx implements CtxHtmlElementOwner
 {
+	private [implements_CtxHtmlElementOwner] = true;
+
 	private tagName: string;
 	private refs: Ref[] | null;
 
-	constructor(rootCtx: Ctx, id: string, tagName: string, refs: Ref[] | null)
+	constructor(rootCtx: ICtxRoot, id: string, tagName: string, refs: Ref[] | null)
 	{
 		super(rootCtx);
 
@@ -17,7 +19,7 @@ export class CtxElement extends CtxHtmlElementOwner
 		this.tagName = tagName;
 		this.refs = refs;
 	}
-	protected getHtmlElement()
+	getHtmlElement()
 	{
 		if (this.id == null) throw new Error('id is undefined');
 
@@ -30,13 +32,14 @@ export class CtxElement extends CtxHtmlElementOwner
 	{
 		return this.tagName;
 	}
-	unregisterEventHandlersFromRoot(ctxRoot: Ctx)
+	unregisterEventHandlersFromRoot()
 	{
 		if (this.id == null) throw new Error('id is undefined');
-		if (!(ctxRoot instanceof CtxRoot)) throw new Error("ctxRoot is not CtxRoot");
 
+		const ctxRoot = this.getRootCtx();
 		ctxRoot.detachElmEventHandlers(this.id);
-		super.unregisterEventHandlersFromRoot(ctxRoot);
+
+		super.unregisterEventHandlersFromRoot();
 	}
 	protected removeChildren()
 	{
@@ -46,9 +49,5 @@ export class CtxElement extends CtxHtmlElementOwner
 			this.refs = null;
 		}
 		super.removeChildren();
-	}
-	protected _renderHtml(content: childValType): string
-	{
-		throw new Error("_renderHtml is not supported by this class");
 	}
 }

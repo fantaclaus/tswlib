@@ -1,20 +1,21 @@
-import { Ctx, CtxUpdatable } from './Ctx';
+import { Ctx } from './Ctx';
 import { CtxScope } from "./CtxScope";
-import { childValType } from './types';
+import { CtxUpdatable, implements_CtxUpdatable, ICtxRoot } from './interfaces';
 
-export class CtxUpdatableAttr extends CtxUpdatable
+export class CtxUpdatableAttr extends Ctx implements CtxUpdatable
 {
+	private [implements_CtxUpdatable] = true;
+
 	//attrName: string;
 	//renderFn: () => string | null;
 
-	constructor(rootCtx: Ctx, private attrName: string, private renderFn: () => string | null)
+	constructor(rootCtx: ICtxRoot, private attrName: string, private renderFn: () => string | null)
 	{
 		super(rootCtx);
 	}
 	update()
 	{
 		const htmlElement = this.getHtmlElement();
-		if (!htmlElement) throw new Error("htmlElement is undefined");
 
 		//console.log("%o update: %o %s", this, htmlElement, this.attrName);
 
@@ -43,9 +44,5 @@ export class CtxUpdatableAttr extends CtxUpdatable
 				htmlElement.setAttribute(this.attrName, v);
 			}
 		}
-	}
-	protected _renderHtml(content: childValType): string
-	{
-		throw new Error("_renderHtml is not supported by this class");
 	}
 }

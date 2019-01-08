@@ -1,9 +1,15 @@
-import { CtxHtmlElementOwner } from "./Ctx";
+import { Ctx2 } from "./Ctx2";
 import * as RenderUtils from './RenderUtils';
 import { childValType, EventHandlerMap } from './types';
+import { CtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot, implements_ICtxRoot } from './interfaces';
+import { appendDelimited } from "./utils";
 
-export class CtxRoot extends CtxHtmlElementOwner
+export class CtxRoot extends Ctx2 implements CtxHtmlElementOwner, ICtxRoot
 {
+	private [implements_CtxHtmlElementOwner] = true;
+	private [implements_ICtxRoot] = true;
+
+	private lastChildId: number | null = null;
 	private htmlElement: HTMLElement;
 	private attachedEventListeners = new Set<string>();
 	private eventHandlers = new Map<string, EventHandlerMap>();
@@ -18,6 +24,10 @@ export class CtxRoot extends CtxHtmlElementOwner
 		this.htmlElement = htmlElement;
 		this.id = htmlElement.id || (htmlElement instanceof HTMLBodyElement ? undefined : Math.random().toFixed(4).substring(2));
 	}
+	getRootCtx()
+	{
+		return this;
+	}
 	getTagName()
 	{
 		return this.htmlElement.tagName;
@@ -30,7 +40,14 @@ export class CtxRoot extends CtxHtmlElementOwner
 	{
 		this._update(content);
 	}
-	protected beforeAttach()
+	getNextChildId()
+	{
+		if (this.id == null) throw new Error('id is undefined');
+
+		this.lastChildId = (this.lastChildId || 0) + 1;
+		return appendDelimited(this.id, '-', this.lastChildId.toString());
+	}
+	beforeAttach()
 	{
 		if (this.onBeforeAttach) this.onBeforeAttach();
 	}
