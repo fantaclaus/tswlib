@@ -145,7 +145,9 @@ function renderElement(rootCtx: ICtxRoot, elm: ElementGeneric)
 
 	const innerHtml = renderInnerHtml(rootCtx, valData, tagName, elm, ctx);
 
-	const hasEventHanders = attachEventHandlers(ctxCurrent, valData, propDef, useVal, ctx, elm);
+	const ctxRoot = ctxCurrent.getRootCtx();
+	const hasEventHanders1 = attachEventHandlersPropVal(ctxRoot, valData, propDef, useVal, ctx);
+	const hasEventHanders2 = attachEventHandlersElm(ctxRoot, ctx, elm);
 
 	if (elmRefs)
 	{
@@ -158,8 +160,7 @@ function renderElement(rootCtx: ICtxRoot, elm: ElementGeneric)
 
 	const hasRefs = elmRefs != null && elmRefs.length > 0;
 
-	return makeHtml(tagName, attrsHtml, innerHtml, hasEventHanders, hasRefs, ctx);
-
+	return makeHtml(tagName, attrsHtml, innerHtml, hasEventHanders1 || hasEventHanders2, hasRefs, ctx);
 }
 function getValData(rootCtx: ICtxRoot, elmWithVal: IElementWithValue | null, propDef: PropDefReadable<elmValue> | undefined, useVal: boolean, attrs: Map<string, attrValType[]>, ctx: Ctx)
 {
@@ -199,52 +200,50 @@ function renderInnerHtml(rootCtx: ICtxRoot, valData: ValDataType | null, tagName
 		return CtxScope.use(ctx, () => renderHtml(rootCtx, children));
 	}
 }
-function attachEventHandlers(ctxCurrent: Ctx, valData: ValDataType | null, propDef: PropDef<elmValue> | undefined, useVal: boolean, ctx: CtxElement, elm: ElementGeneric)
+function attachEventHandlersPropVal(ctxRoot: ICtxRoot, valData: ValDataType | null, propDef: PropDef<elmValue> | undefined, useVal: boolean, ctx: CtxElement)
 {
-	let eventHanders = elm.z_getEventHandlers();
-
 	if (useVal && valData && propDef && propDef.set instanceof Function)
 	{
-		const eventHanders2 = eventHanders || new Map<string, EventHandler>();
+		const handler = createHandler(propDef, valData.valPropName, valData.ctx);
 
-		const savedHandlers = new Map<string, EventHandler>();
-		copyMapValue(savedHandlers, eventHanders2, 'change');
-		copyMapValue(savedHandlers, eventHanders2, 'input');
-
-		const valData2 = valData; // remove null from type
-		const handler = (e: Event, htmlElement: Element) =>
-		{
-			const v = (<any>htmlElement)[valData2.valPropName];
-
-			// pass ctx to CtxUtils.update for optimization: to skip it during update.
-			CtxScope.use(valData2.ctx, () =>
-			{
-				propDef.set(v);
-			});
-
-			const userHandler = savedHandlers.get(e.type);
-			if (userHandler) userHandler(e, htmlElement);
-		};
-
+		const eventHanders2 = new Map<string, EventHandler>();
 		eventHanders2.set('change', handler);
 		eventHanders2.set('input', handler);
 
-		eventHanders = eventHanders2;
-	}
+		ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders2);
 
-	if (eventHanders)
+		return true;
+	}
+	else
 	{
-		const ctxRoot = ctxCurrent.getRootCtx();
-		ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders);
+		return false;
 	}
-
-	return eventHanders != null;
-
 }
-function copyMapValue(mapDest: EventHandlerMap, mapSrc: EventHandlerMap, key: string)
+function createHandler(propDef: PropDef<elmValue>, valPropName: string, ctx: CtxUpdatableValue)
 {
-	const v = mapSrc.get(key);
-	if (v) mapDest.set(key, v);
+	// put in separate function to minimize the number of captured objects (in closures)
+
+	return (e: Event, htmlElement: Element) =>
+	{
+		const v = (<any>htmlElement)[valPropName];
+
+		// console.log('propval handler', e, v);
+
+		// pass ctx to CtxUtils.update for optimization: to skip it during update.
+		CtxScope.use(ctx, () =>
+		{
+			propDef.set(v);
+		});
+	};
+}
+function attachEventHandlersElm(ctxRoot: ICtxRoot, ctx: CtxElement, elm: ElementGeneric)
+{
+	const eventHanders = elm.z_getEventHandlers();
+	if (!eventHanders) return false;
+
+	ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders);
+
+	return true;
 }
 function getElmAttrHtml(rootCtx: ICtxRoot, attrs: MapStringToArrayOfAttrValType): string
 {

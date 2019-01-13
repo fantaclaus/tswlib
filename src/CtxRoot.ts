@@ -13,7 +13,7 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	private htmlElement: HTMLElement;
 	private id: string;
 	private attachedEventListeners = new Set<string>();
-	private eventHandlers = new Map<string, EventHandlerMap>();
+	private eventHandlers = new Map<string, EventHandlerMap[]>();
 	private eventsListener = this.handleEvent.bind(this);
 
 	onBeforeAttach: (() => void) | undefined;
@@ -66,10 +66,18 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	}
 	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap)
 	{
-		if (this.eventHandlers.has(elmId)) throw new Error(`this.eventHandlers already has elmId=${elmId}`);
-
 		//console.group('attached events for: %s: %o', elmId, eventHandlers);
-		this.eventHandlers.set(elmId, eventHandlers);
+
+		let elmHandlers = this.eventHandlers.get(elmId);
+		if (elmHandlers == null)
+		{
+			elmHandlers = [];
+			this.eventHandlers.set(elmId, elmHandlers);
+		}
+
+		elmHandlers.push(eventHandlers);
+
+		// attach root handler if needed
 
 		eventHandlers.forEach((v, eventName) =>
 		{
@@ -94,18 +102,21 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 		const r = this.findEventHandlers(htmlElm);
 		if (r)
 		{
-			const eventHandler = r.ehMap.get(e.type);
-			if (eventHandler)
+			r.ehMaps.forEach(ehMap =>
 			{
-				// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
-
-				if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a')
+				const eventHandler = ehMap.get(e.type);
+				if (eventHandler)
 				{
-					e.preventDefault();
-				}
+					// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
 
-				eventHandler(e, r.htmlElm);
-			}
+					if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a')
+					{
+						e.preventDefault();
+					}
+
+					eventHandler(e, r.htmlElm);
+				}
+			});
 		}
 	}
 	private findEventHandlers(htmlElement: Element | null)
@@ -115,7 +126,7 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 			const elmEventHandlers = this.eventHandlers.get(htmlElement.id);
 			if (elmEventHandlers) return ({
 				htmlElm: htmlElement,
-				ehMap: elmEventHandlers,
+				ehMaps: elmEventHandlers,
 			});
 
 			// NOTE: in IE 11 parentElement of SVG element is undefined
