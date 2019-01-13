@@ -112,8 +112,7 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{
-			const elmId = htmlElement.id;
-			const elmEventHandlers = elmId && this.eventHandlers.get(elmId);
+			const elmEventHandlers = this.eventHandlers.get(htmlElement.id);
 			if (elmEventHandlers) return ({
 				htmlElm: htmlElement,
 				ehMap: elmEventHandlers,
@@ -122,7 +121,7 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 			// NOTE: in IE 11 parentElement of SVG element is undefined
 
 			const parentNode = htmlElement.parentNode;
-			htmlElement = parentNode instanceof Element ? <Element>parentNode : null;
+			htmlElement = parentNode instanceof Element ? parentNode : null;
 		}
 
 		return null;
