@@ -1,7 +1,7 @@
-import * as CtxUtils from './CtxUtils';
 import { PropDef, PropDefReadable } from './PropDefs';
+import { PropValBase } from './PropValBase';
 
-export class PropVal<T> implements PropDef<T>
+export class PropVal<T> extends PropValBase implements PropDef<T>
 {
 	val: T;
 	private insideSet = false; // to prevent infinite loops
@@ -9,11 +9,14 @@ export class PropVal<T> implements PropDef<T>
 
 	constructor(initialValue: T)
 	{
+		super();
+
 		this.val = initialValue;
 	}
-	get(): T
+
+	get()
 	{
-		CtxUtils.attach(this);
+		this.ctxAttach();
 
 		return this.val;
 	}
@@ -30,7 +33,7 @@ export class PropVal<T> implements PropDef<T>
 			{
 				this.val = v;
 
-				CtxUtils.update(this);
+				this.ctxUpdate();
 
 				if (this.onChanged) this.onChanged();
 			}
@@ -113,7 +116,7 @@ export class PropValArray<T> extends PropVal<T[]>
 			a.splice(index, 0, item);
 		}
 
-		CtxUtils.update(this);
+		this.ctxUpdate();
 	}
 	setLength(length: number)
 	{
@@ -123,7 +126,7 @@ export class PropValArray<T> extends PropVal<T[]>
 		{
 			a.length = length;
 
-			CtxUtils.update(this);
+			this.ctxUpdate();
 		}
 	}
 }

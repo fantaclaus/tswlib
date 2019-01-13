@@ -94,8 +94,8 @@ export function updateInnerHtml(targetElement: HTMLElement, id: string, html: st
 			let html2 = html;
 
 			// IE9 needs something between a comment and a tag
-			if (isFirst) html2 = "\n" + html2;
-			if (isLast) html2 = html2 + "\n";
+			// if (isFirst) html2 = "\n" + html2;
+			// if (isLast) html2 = html2 + "\n";
 
 			// insert html into TABLE doesn't work on IE<10
 			targetElement.insertBefore(_tmpHtmlElement, nodeEndMarker);

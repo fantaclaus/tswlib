@@ -1,13 +1,13 @@
-import * as CtxUtils from './CtxUtils';
 import { PropDef } from './PropDefs';
+import { PropValBase } from './PropValBase';
 
-export class Ref implements PropDef<string | null>
+export class Ref<T extends HTMLElement = HTMLElement> extends PropValBase implements PropDef<string | null>
 {
 	private refId: string | null = null;
 
 	get(): string | null
 	{
-		CtxUtils.attach(this);
+		this.ctxAttach();
 
 		return this.refId;
 	}
@@ -19,7 +19,7 @@ export class Ref implements PropDef<string | null>
 
 			this.refId = v;
 
-			CtxUtils.update(this);
+			this.ctxUpdate();
 
 			//console.groupEnd();
 		}
@@ -30,13 +30,13 @@ export class Ref implements PropDef<string | null>
 		const el = document.getElementById(this.refId);
 		return !!el;
 	}
-	asHtmlElement<T extends HTMLElement = HTMLElement>()
+	asHtmlElement<T2 extends HTMLElement = T>()
 	{
 		if (!this.refId) throw new Error("refId is not initialized");
 
 		const el = document.getElementById(this.refId);
 		if (!el) throw new Error("element is not found by refId");
 
-		return el as T;
+		return el as T2;
 	}
 }

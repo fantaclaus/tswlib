@@ -1,11 +1,9 @@
-import { Ctx } from './Ctx';
+import { CtxUpdatable } from './CtxUpdatable';
 import { CtxScope } from "./CtxScope";
-import { CtxUpdatable, implements_CtxUpdatable, ICtxRoot } from './interfaces';
+import { ICtxRoot } from './interfaces';
 
-export class CtxUpdatableAttr extends Ctx implements CtxUpdatable
+export class CtxUpdatableAttr extends CtxUpdatable
 {
-	private [implements_CtxUpdatable] = true;
-
 	//attrName: string;
 	//renderFn: () => string | null;
 

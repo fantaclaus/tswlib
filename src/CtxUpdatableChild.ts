@@ -1,13 +1,11 @@
-import { Ctx2 } from "./Ctx2";
 import * as RenderUtils from './RenderUtils';
 import { childValType, Renderer } from "./types";
 import * as DOMUtils from "./DOMUtils";
-import { CtxUpdatable, implements_CtxUpdatable, ICtxRoot } from './interfaces';
+import { ICtxRoot } from './interfaces';
+import { CtxUpdatable } from './CtxUpdatable';
 
-export class CtxUpdatableChild extends Ctx2 implements CtxUpdatable
+export class CtxUpdatableChild extends CtxUpdatable
 {
-	private [implements_CtxUpdatable] = true;
-
 	private id: string;
 
 	content: childValType;
@@ -49,9 +47,9 @@ export class CtxUpdatableChild extends Ctx2 implements CtxUpdatable
 	}
 	protected beforeDetach()
 	{
-		super.beforeDetach();
-
 		const renderer = <Renderer>this.content;
 		if (renderer.beforeDetach) renderer.beforeDetach();
+
+		super.beforeDetach();
 	}
 }

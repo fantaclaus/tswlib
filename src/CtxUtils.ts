@@ -1,70 +1,25 @@
-﻿import { Ctx } from './Ctx';
-import { CtxScope } from "./CtxScope";
-import { CtxUpdatable, isCtxUpdatable } from './interfaces';
-
-interface PropKeyContext
-{
-	propKey: any;
-	ctx: Ctx;
-}
+﻿import { CtxScope } from "./CtxScope";
+import { ICtxUpdatable, IPropVal, isCtxUpdatable } from './interfaces';
 
 type CtxEventHandler = () => void;
 
-let _propKeyToCtxMap: PropKeyContext[] | null = null;
-let _ctxUpdateQueue: Set<Ctx> | null = null;
-let _timerId: number | null = null;
+let _ctxUpdateQueue: Set<ICtxUpdatable> | null = null;
+let _timerId: number | undefined;
 let _updatedCbs: CtxEventHandler[] = [];
 
-export function attach(propKey: any)
+export function attach(pv: IPropVal)
 {
 	const ctx = getCtx();
-	if (ctx)
-	{
-		_propKeyToCtxMap = _propKeyToCtxMap || [];
-
-		const exists = _propKeyToCtxMap.some(p => p.propKey === propKey && p.ctx == ctx);
-		if (!exists)
-		{
-			_propKeyToCtxMap.push({ propKey, ctx });
-
-			//console.log('attached:', propKey.toString(), propKeyToCtxMap && propKeyToCtxMap.map(p => p.propKey));
-		}
-	}
+	if (ctx) ctx.addPropVal(pv);
 }
-export function removeCtxs(ctxs: Set<Ctx>)
+export function removeCtx(ctx: ICtxUpdatable)
 {
-	removeAttachedCtxs(ctxs);
-	removeFromUpdateQueue(ctxs);
+	if (_ctxUpdateQueue) _ctxUpdateQueue.delete(ctx);
 }
-function removeAttachedCtxs(ctxs: Set<Ctx>)
+export function update(pv: IPropVal)
 {
-	if (_propKeyToCtxMap)
-	{
-		//const removedKeys = propKeyToCtxMap
-		//	.filter(p => ctxs.includes(p.ctx))
-		//	.map(p => p.propKey);
-
-		_propKeyToCtxMap = _propKeyToCtxMap.filter(p => !ctxs.has(p.ctx));
-
-		//console.log('removed: ', removedKeys, propKeyToCtxMap && propKeyToCtxMap.map(p => p.propKey));
-	}
-}
-function removeFromUpdateQueue(ctxs: Set<Ctx>)
-{
-	if (_ctxUpdateQueue)
-	{
-		for (const ctx of ctxs)
-		{
-			_ctxUpdateQueue.delete(ctx);
-		}
-	}
-}
-export function update(propKey: any)
-{
-	const propKeyContexts = _propKeyToCtxMap && _propKeyToCtxMap.filter(p => p.propKey === propKey);
-	//console.log('update req: %o; found: %o', propKey, propKeyContexts);
-
-	if (propKeyContexts == null || propKeyContexts.length == 0) return;
+	const ctxs = pv.ctxGetAll();
+	if (ctxs == null || ctxs.size == 0) return;
 
 	const currentCtx = getCtx(); // context that has been set in event handler for 'change' or 'input' event
 
@@ -72,13 +27,13 @@ export function update(propKey: any)
 
 	// add contexts to ctxUpdateQueue
 
-	const newQueue = _ctxUpdateQueue || new Set<Ctx>();
+	const newQueue = _ctxUpdateQueue || new Set<ICtxUpdatable>();
 
-	propKeyContexts.forEach(p =>
+	ctxs.forEach(ctx =>
 	{
-		if (p.ctx !== currentCtx)
+		if (ctx !== currentCtx)
 		{
-			newQueue.add(p.ctx);
+			newQueue.add(ctx);
 		}
 	});
 
@@ -92,17 +47,6 @@ export function update(propKey: any)
 		}
 	}
 }
-export function afterDOMUpdated(cb: () => void)
-{
-	if (_timerId)
-	{
-		_updatedCbs.push(cb);
-	}
-	else
-	{
-		cb();
-	}
-}
 function getCtx()
 {
 	const ctx = CtxScope.getCurrent();
@@ -110,29 +54,25 @@ function getCtx()
 
 	return ctx.getParentUpdatableCtx();
 }
-
 function processQueue()
 {
 	const contexts = _ctxUpdateQueue;
 
-	_timerId = null;
+	_timerId = undefined;
 	_ctxUpdateQueue = null;
 
 	if (contexts)
 	{
 		// collect into contextsToUpdate before ctx.update(), since parents will be set to null
-		const contextsToUpdate: CtxUpdatable[] = [];
+		const contextsToUpdate: ICtxUpdatable[] = [];
 
-		for (let ctx of contexts)
+		contexts.forEach(ctx =>
 		{
-			if (isCtxUpdatable(ctx))
+			if (!ctx.isAnyParentInList(contexts))
 			{
-				if (!isAnyParentInList(ctx, contexts))
-				{
-					contextsToUpdate.push(ctx);
-				}
+				contextsToUpdate.push(ctx);
 			}
-		}
+		});
 
 		contextsToUpdate.forEach(ctx =>
 		{
@@ -147,15 +87,24 @@ function processQueue()
 	_updatedCbs.forEach(cb => cb());
 	_updatedCbs.length = 0;
 }
-function isAnyParentInList(ctx: Ctx, contexts: Set<Ctx>)
+
+export function afterDOMUpdated(cb: () => void)
 {
-	while (true)
+	if (_timerId)
 	{
-		const ctxParent = ctx.getParent();
-		if (!ctxParent) return false;
-
-		if (contexts.has(ctxParent)) return true;
-
-		ctx = ctxParent;
+		_updatedCbs.push(cb);
 	}
+	else
+	{
+		cb();
+	}
+}
+export function applyChanges()
+{
+	console.log('applyChanges', '_timerId', _timerId, _ctxUpdateQueue, _updatedCbs.length);
+
+	clearTimeout(_timerId);
+	_timerId = undefined;
+
+	processQueue();
 }

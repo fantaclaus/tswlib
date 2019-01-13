@@ -1,12 +1,10 @@
-import { Ctx } from "./Ctx";
 import { CtxScope } from "./CtxScope";
 import { elmValue } from "./htmlElements";
-import { CtxUpdatable, implements_CtxUpdatable, ICtxRoot } from './interfaces';
+import { ICtxRoot } from './interfaces';
+import { CtxUpdatable } from "./CtxUpdatable";
 
-export class CtxUpdatableValue extends Ctx implements CtxUpdatable
+export class CtxUpdatableValue extends CtxUpdatable
 {
-	private [implements_CtxUpdatable] = true;
-
 	// private propName: string;
 	// private renderFn: () => elmValue;
 

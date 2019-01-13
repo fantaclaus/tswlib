@@ -1,11 +1,13 @@
-﻿import { CtxHtmlElementOwner, isCtxHtmlElementOwner, isCtxUpdatable, ICtxRoot, isICtxRoot } from './interfaces';
+﻿import { ICtxHtmlElementOwner, isCtxHtmlElementOwner, isCtxUpdatable, ICtxRoot, IPropVal, ICtxUpdatable } from './interfaces';
+import { childValType } from './types';
+import { CtxScope } from './CtxScope';
 
 export abstract class Ctx
 {
 	private childCtxs: Ctx[] | null = null;
 	private parentCtx: Ctx | null = null;
-	private ctxHtmlOwner: CtxHtmlElementOwner | null = null; // performance cache
-	private ctxUpdateable: Ctx | null = null; // performance cache
+	private ctxHtmlOwner: ICtxHtmlElementOwner | null = null; // performance cache
+	private ctxUpdateable: ICtxUpdatable | null = null; // performance cache
 	private rootCtx: ICtxRoot | null; // performance cache
 
 	constructor(rootCtx: ICtxRoot | null)
@@ -23,7 +25,7 @@ export abstract class Ctx
 			const ctx = this.findSelfOrParent(ctx => isCtxHtmlElementOwner(ctx));
 			if (ctx == null) throw new Error("CtxHtmlElementOwner not found");
 
-			this.ctxHtmlOwner = <CtxHtmlElementOwner><unknown>ctx;
+			this.ctxHtmlOwner = <ICtxHtmlElementOwner><unknown>ctx;
 		}
 
 		return this.ctxHtmlOwner;
@@ -32,10 +34,10 @@ export abstract class Ctx
 	{
 		if (!this.ctxUpdateable)
 		{
-			this.ctxUpdateable = this.findSelfOrParent(ctx => isCtxUpdatable(ctx));
+			this.ctxUpdateable = <ICtxUpdatable><unknown>this.findSelfOrParent(ctx => isCtxUpdatable(ctx));
 		}
 
-		return this.ctxUpdateable;
+		return <ICtxUpdatable>this.ctxUpdateable;
 	}
 	getRootCtx()
 	{
@@ -43,7 +45,7 @@ export abstract class Ctx
 
 		return this.rootCtx;
 	}
-	private findSelfOrParent(predicate: (ctx: Ctx) => boolean)
+	protected findSelfOrParent(predicate: (ctx: Ctx) => boolean)
 	{
 		let ctx: Ctx | null = this;
 
@@ -66,8 +68,36 @@ export abstract class Ctx
 		this.childCtxs.push(ctx);
 		ctx.parentCtx = this;
 	}
+	protected _update(content: childValType)
+	{
+		this.removeChildren();
+
+		const htmlElement = this.getHtmlElement();
+		const innerHtml = CtxScope.use(this, () => this._renderHtml(content));
+
+		const ctxRoot = this.getRootCtx();
+		ctxRoot.beforeAttach(); // call between _renderHtml and setInnerHtml to give a chance to insert css styles
+
+		this.setInnerHtml(htmlElement, innerHtml || '');
+		this.afterAttach();
+	}
+
+	protected _renderHtml(content: childValType): string
+	{
+		throw new Error("Not Implemented");
+	}
+	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
+	{
+		throw new Error("Not Implemented");
+	}
 	protected removeChildren()
 	{
+		this.beforeDetach();
+
+		this.detachPropKeys();
+
+		this.unregisterEventHandlersFromRoot();
+
 		if (this.childCtxs)
 		{
 			this.childCtxs.forEach(ctx =>
@@ -90,14 +120,13 @@ export abstract class Ctx
 		return ctxElm.getHtmlElement();
 	}
 
-	generateNextChildId(): string
+	generateNextChildId()
 	{
 		const ctxRoot = this.getRootCtx();
 		return ctxRoot.getNextChildId();
 	}
 	protected unregisterEventHandlersFromRoot()
 	{
-		this.forEachChild(ctx => ctx.unregisterEventHandlersFromRoot());
 	}
 	protected afterAttach()
 	{
@@ -105,6 +134,8 @@ export abstract class Ctx
 	}
 	protected beforeDetach()
 	{
-		this.forEachChild(ctx => ctx.beforeDetach());
+	}
+	protected detachPropKeys()
+	{
 	}
 }

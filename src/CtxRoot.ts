@@ -1,10 +1,10 @@
-import { Ctx2 } from "./Ctx2";
 import * as RenderUtils from './RenderUtils';
 import { childValType, EventHandlerMap } from './types';
-import { CtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot, implements_ICtxRoot } from './interfaces';
+import { ICtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot, implements_ICtxRoot } from './interfaces';
 import { appendDelimited } from "./utils";
+import { Ctx } from './Ctx';
 
-export class CtxRoot extends Ctx2 implements CtxHtmlElementOwner, ICtxRoot
+export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 {
 	private [implements_CtxHtmlElementOwner] = true;
 	private [implements_ICtxRoot] = true;
@@ -71,7 +71,7 @@ export class CtxRoot extends Ctx2 implements CtxHtmlElementOwner, ICtxRoot
 		//console.group('attached events for: %s: %o', elmId, eventHandlers);
 		this.eventHandlers.set(elmId, eventHandlers);
 
-		for (const eventName of eventHandlers.keys())
+		eventHandlers.forEach((v, eventName) =>
 		{
 			if (!this.attachedEventListeners.has(eventName))
 			{
@@ -79,7 +79,7 @@ export class CtxRoot extends Ctx2 implements CtxHtmlElementOwner, ICtxRoot
 
 				this.attachedEventListeners.add(eventName);
 			}
-		}
+		})
 
 		//console.groupEnd();
 	}

@@ -53,7 +53,13 @@ export class ElementImg extends ElementGeneric
 
 export type elmValue = string | number | boolean | null;
 
-export abstract class ElementWithValue<T extends elmValue> extends ElementGeneric
+export interface IElementWithValue
+{
+	z_getValueAttrName(): string | null;
+	z_getValuePropName(): string;
+}
+
+export abstract class ElementWithValue<T extends elmValue> extends ElementGeneric implements IElementWithValue
 {
 	protected propDef: PropDef<T> | undefined;
 
@@ -74,7 +80,7 @@ export abstract class ElementWithValue<T extends elmValue> extends ElementGeneri
 	/**
 	 * @internal
 	 */
-	abstract z_getValuePropName(): string;  // for jQuery.prop
+	abstract z_getValuePropName(): string;
 }
 export class ElementInput<T extends elmValue> extends ElementWithValue<T>
 {

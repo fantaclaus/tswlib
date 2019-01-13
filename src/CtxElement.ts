@@ -1,10 +1,8 @@
 import { Ref } from './Ref';
-import { CtxRoot } from "./CtxRoot";
-import { childValType } from './types';
 import { Ctx } from './Ctx';
-import { CtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot } from './interfaces';
+import { ICtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot } from './interfaces';
 
-export class CtxElement extends Ctx implements CtxHtmlElementOwner
+export class CtxElement extends Ctx implements ICtxHtmlElementOwner
 {
 	private [implements_CtxHtmlElementOwner] = true;
 
