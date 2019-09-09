@@ -83,16 +83,15 @@ export class ElementGeneric
 		}
 		return this;
 	}
-	onclick(handler: EventHandler | null)
+	onclick(handler: EventHandler<MouseEvent> | null | undefined)
 	{
 		return this.on('click', handler);
 	}
-	onEvents(eventNames: string[], handler: EventHandler | null)
-	{
-		eventNames.forEach(e => this.on(e, handler));
-		return this;
-	}
-	on(eventName: string, handler: EventHandler | null)
+
+	on(eventName: "keydown" | "keyup", handler: EventHandler<KeyboardEvent> | null | undefined): this;
+	on(eventName: "mouseup" | "click", handler: EventHandler<MouseEvent> | null | undefined): this;
+	on(eventName: string, handler: EventHandler | null | undefined): this;
+	on(eventName: string, handler: any)
 	{
 		if (eventName && handler instanceof Function)
 		{
@@ -103,7 +102,7 @@ export class ElementGeneric
 				throw new Error(`Event handler "${eventName}" is already installed.`);
 			}
 
-			this.eventHandlers.set(eventName, handler);
+			this.eventHandlers.set(eventName, <EventHandler>handler);
 		}
 
 		return this;

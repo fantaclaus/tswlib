@@ -23,9 +23,9 @@ export type childValType = string | number | boolean | ElementGeneric | RawHtml 
 export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
 export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
 
-export interface EventHandler
+export interface EventHandler<T = Event>
 {
-	(e: Event, target: Element): void;
+	(e: T, target: Element): void;
 }
 
 export class StyleRule
