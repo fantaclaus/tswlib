@@ -206,11 +206,11 @@ function attachEventHandlersPropVal(ctxRoot: ICtxRoot, valData: ValDataType | nu
 	{
 		const handler = createHandler(propDef, valData.valPropName, valData.ctx);
 
-		const eventHanders2 = new Map<string, EventHandler>();
-		eventHanders2.set('change', handler);
-		eventHanders2.set('input', handler);
+		const eventHanders = new Map<string, EventHandler>();
+		eventHanders.set('change', handler);
+		eventHanders.set('input', handler);
 
-		ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders2);
+		ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders);
 
 		return true;
 	}
