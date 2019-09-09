@@ -40,5 +40,6 @@ export function td() { return new elements.ElementTD('td'); }
 export function textArea() { return new elements.ElementTextArea(); }
 export function th() { return new elements.ElementTD('th'); }
 export function thead() { return new ElementGeneric('thead'); }
+export function tfoot() { return new ElementGeneric('tfoot'); }
 export function tr() { return new ElementGeneric('tr'); }
 export function ul() { return new ElementGeneric('ul'); }
