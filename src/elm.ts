@@ -88,6 +88,7 @@ export class ElementGeneric
 		return this.on('click', handler);
 	}
 
+	on(eventName: "input", handler: EventHandler<InputEvent> | null | undefined): this;
 	on(eventName: "keydown" | "keyup", handler: EventHandler<KeyboardEvent> | null | undefined): this;
 	on(eventName: "mouseup" | "click", handler: EventHandler<MouseEvent> | null | undefined): this;
 	on(eventName: string, handler: EventHandler | null | undefined): this;
