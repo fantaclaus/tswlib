@@ -108,6 +108,7 @@ export class ElementInputText extends ElementInput<string>
 	constructor()
 	{
 		super('text');
+		this.autocomplete('off');
 	}
 
 	/**
