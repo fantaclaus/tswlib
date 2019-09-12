@@ -1,5 +1,5 @@
 import * as RenderUtils from './RenderUtils';
-import { childValType, EventHandlerMap } from './types';
+import { childValType, EventHandlerMap, EventHandler } from './types';
 import { ICtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot, implements_ICtxRoot } from './interfaces';
 import { appendDelimited } from "./utils";
 import { Ctx } from './Ctx';
@@ -99,35 +99,46 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	private handleEvent(e: Event)
 	{
 		const htmlElm = e.target instanceof Element ? e.target : null;
-		const r = this.findEventHandlers(htmlElm);
+		const r = this.findEventHandlers(htmlElm, e.type);
 		if (r)
 		{
-			r.ehMaps.forEach(ehMap =>
+			r.ehs.forEach(eventHandler =>
 			{
-				const eventHandler = ehMap.get(e.type);
-				if (eventHandler)
+				// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
+
+				if (e.type == 'click' && r.htmlElement.tagName.toLowerCase() == 'a')
 				{
-					// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
-
-					if (e.type == 'click' && r.htmlElm.tagName.toLowerCase() == 'a')
-					{
-						e.preventDefault();
-					}
-
-					eventHandler(e, r.htmlElm);
+					e.preventDefault();
 				}
+
+				eventHandler(e, r.htmlElement);
 			});
 		}
 	}
-	private findEventHandlers(htmlElement: Element | null)
+	private findEventHandlers(htmlElement: Element | null, eType: string)
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{
 			const elmEventHandlers = this.eventHandlers.get(htmlElement.id);
-			if (elmEventHandlers) return ({
-				htmlElm: htmlElement,
-				ehMaps: elmEventHandlers,
-			});
+			if (elmEventHandlers)
+			{
+				let ehs: EventHandler[] | undefined;
+
+				elmEventHandlers.forEach(i =>
+				{
+					const eh = i.get(eType);
+					if (eh)
+					{
+						if (!ehs) ehs = [];
+						ehs.push(eh);
+					}
+				})
+
+				if (ehs)
+				{
+					return { htmlElement, ehs };
+				}
+			}
 
 			// NOTE: in IE 11 parentElement of SVG element is undefined
 
