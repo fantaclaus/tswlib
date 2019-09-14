@@ -13,7 +13,7 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	private lastChildId: number | null = null;
 	private htmlElement: HTMLElement;
 	private id: string;
-	private attachedEventListeners = new Set<string>();
+	private attachedEventListeners = new Map<string, number>();
 	private eventHandlers = new Map<string, EventHandlerMap[]>();
 	private eventsListener = this.handleEvent.bind(this);
 
@@ -59,43 +59,80 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	{
 		htmlElement.innerHTML = innerHtml;
 	}
-	protected unregisterEventHandlers()
-	{
-		this.attachedEventListeners.forEach(eventName => this.htmlElement.removeEventListener(eventName, this.eventsListener));
-		this.attachedEventListeners.clear();
-		this.eventHandlers.clear();
-	}
-	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap)
+	attachElmEventHandlers(elmId: string, eventHandlerMap: EventHandlerMap)
 	{
 		//console.group('attached events for: %s: %o', elmId, eventHandlers);
 
-		let elmHandlers = this.eventHandlers.get(elmId);
-		if (elmHandlers == null)
+		let elmHandlerMaps = this.eventHandlers.get(elmId);
+		if (elmHandlerMaps == null)
 		{
-			elmHandlers = [];
-			this.eventHandlers.set(elmId, elmHandlers);
+			elmHandlerMaps = [];
+			this.eventHandlers.set(elmId, elmHandlerMaps);
 		}
 
-		elmHandlers.push(eventHandlers);
+		elmHandlerMaps.push(eventHandlerMap);
 
 		// attach root handler if needed
 
-		eventHandlers.forEach((v, eventName) =>
+		eventHandlerMap.forEach((h, eventName) =>
 		{
-			if (!this.attachedEventListeners.has(eventName))
+			const count = this.attachedEventListeners.get(eventName) || 0;
+			if (count == 0)
 			{
 				this.htmlElement.addEventListener(eventName, this.eventsListener);
-
-				this.attachedEventListeners.add(eventName);
 			}
+
+			this.attachedEventListeners.set(eventName, count + 1);
 		})
 
 		//console.groupEnd();
+
+		// this.dumpAttachedEvents();
 	}
 	detachElmEventHandlers(elmId: string)
 	{
+		// this.removeEventListeners(elmId);
+
 		// we only remove elm's handlers from map without detaching event listeners from this.htmlElement for optimization sake
 		this.eventHandlers.delete(elmId);
+
+		// this.dumpAttachedEvents();
+	}
+	private removeEventListeners(elmId: string)
+	{
+		let elmHandlerMaps = this.eventHandlers.get(elmId);
+		if (elmHandlerMaps)
+		{
+			elmHandlerMaps.forEach((eventHandlerMap) =>
+			{
+				eventHandlerMap.forEach((h, eventName) =>
+				{
+					const count = this.attachedEventListeners.get(eventName) || 0;
+
+					const countNew = count - 1;
+
+					if (countNew == 0)
+					{
+						this.htmlElement.removeEventListener(eventName, this.eventsListener);
+
+						this.attachedEventListeners.delete(eventName);
+					}
+					else
+					{
+						this.attachedEventListeners.set(eventName, count - 1);
+					}
+				});
+			});
+		}
+	}
+	private dumpAttachedEvents()
+	{
+		let s = '';
+		this.attachedEventListeners.forEach((count, eventName) =>
+		{
+			s += `${eventName}=${count}; `;
+		});
+		console.log('eventHandlers: ', this.eventHandlers.size, ' attachedEventListeners:', s);
 	}
 	private handleEvent(e: Event)
 	{
