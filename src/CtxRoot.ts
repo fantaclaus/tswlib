@@ -1,5 +1,6 @@
 import * as RenderUtils from './RenderUtils';
-import { childValType, EventHandlerMap, EventHandler } from './types';
+import { childValType } from './types';
+import { EventHandlerMap, EventHandler } from './EventHandler';
 import { ICtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot, implements_ICtxRoot } from './interfaces';
 import { appendDelimited } from "./utils";
 import { Ctx } from './Ctx';

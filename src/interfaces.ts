@@ -1,4 +1,4 @@
-import { EventHandlerMap } from "./types";
+import { EventHandlerMap } from './EventHandler';
 import { Ctx } from "./Ctx";
 
 /**

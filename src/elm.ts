@@ -1,5 +1,6 @@
 ﻿import { Ref } from './Ref';
-import { attrValType, childValType, StyleRule, boolValType, EventHandlerMap, EventHandler } from "./types";
+import { attrValType, childValType, StyleRule, boolValType } from "./types";
+import { EventHandlerMap, EventHandler } from './EventHandler';
 
 interface AttrNameValue
 {
