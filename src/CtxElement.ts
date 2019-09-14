@@ -35,7 +35,7 @@ export class CtxElement extends Ctx implements ICtxHtmlElementOwner
 	{
 		return this.tagName;
 	}
-	unregisterEventHandlersFromRoot()
+	protected unregisterEventHandlersFromRoot()
 	{
 		if (this.id == null) throw new Error('id is undefined');
 
