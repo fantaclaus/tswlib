@@ -8,6 +8,11 @@ interface AttrNameValue
 	attrValue: attrValType;
 }
 
+interface WindowEventMap2 extends WindowEventMap
+{
+	"input": InputEvent;
+}
+
 export class ElementGeneric
 {
 	private tagName: string | null = null;
@@ -89,10 +94,7 @@ export class ElementGeneric
 		return this.on('click', handler);
 	}
 
-	on(eventName: "input", handler: EventHandler<InputEvent> | null | undefined): this;
-	on(eventName: "keydown" | "keyup", handler: EventHandler<KeyboardEvent> | null | undefined): this;
-	on(eventName: "mouseup" | "click", handler: EventHandler<MouseEvent> | null | undefined): this;
-	on(eventName: string, handler: EventHandler | null | undefined): this;
+	on<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | null | undefined): this;
 	on(eventName: string, handler: any)
 	{
 		if (eventName && handler instanceof Function)
