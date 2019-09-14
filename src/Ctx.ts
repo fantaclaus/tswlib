@@ -132,7 +132,7 @@ export abstract class Ctx
 		const ctxRoot = this.getRootCtx();
 		return ctxRoot.getNextChildId();
 	}
-	protected unregisterEventHandlersFromRoot()
+	protected unregisterEventHandlersFromRoot(): void
 	{
 	}
 	protected afterAttach(beforeChildren: boolean)
