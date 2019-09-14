@@ -79,7 +79,15 @@ export abstract class Ctx
 		ctxRoot.beforeAttach(); // call between _renderHtml and setInnerHtml to give a chance to insert css styles
 
 		this.setInnerHtml(htmlElement, innerHtml || '');
-		this.afterAttach();
+		this.setupChildren();
+	}
+	protected setupChildren()
+	{
+		this.afterAttach(true);
+
+		this.forEachChild(ctx => ctx.setupChildren());
+
+		this.afterAttach(false);
 	}
 
 	protected _renderHtml(content: childValType): string
@@ -92,23 +100,22 @@ export abstract class Ctx
 	}
 	protected removeChildren()
 	{
-		this.beforeDetach();
+		this.beforeDetach(true);
 
 		this.detachPropKeys();
 
 		this.unregisterEventHandlersFromRoot();
 
-		if (this.childCtxs)
+		this.forEachChild(ctx =>
 		{
-			this.childCtxs.forEach(ctx =>
-			{
-				ctx.removeChildren();
+			ctx.removeChildren();
 
-				ctx.parentCtx = null;
-			});
+			ctx.parentCtx = null;
+		});
 
-			this.childCtxs = null;
-		}
+		this.childCtxs = null;
+
+		this.beforeDetach(false);
 	}
 	hasChildren()
 	{
@@ -128,11 +135,10 @@ export abstract class Ctx
 	protected unregisterEventHandlersFromRoot()
 	{
 	}
-	protected afterAttach()
+	protected afterAttach(beforeChildren: boolean)
 	{
-		this.forEachChild(ctx => ctx.afterAttach());
 	}
-	protected beforeDetach()
+	protected beforeDetach(beforeChildren: boolean)
 	{
 	}
 	protected detachPropKeys()

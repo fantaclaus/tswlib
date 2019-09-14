@@ -5,8 +5,10 @@ import { ElementGeneric } from "./elm";
 export interface Renderer
 {
 	render: () => childValType;
-	afterAttach?: () => void;
-	beforeDetach?: () => void;
+	afterAttachPre?: () => void;
+	afterAttachPost?: () => void;
+	beforeDetachPre?: () => void;
+	beforeDetachPost?: () => void;
 }
 
 export interface PropDefReadableAttrValType extends PropDefReadable<attrValType> { }

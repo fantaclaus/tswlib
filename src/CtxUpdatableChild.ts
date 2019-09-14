@@ -38,18 +38,16 @@ export class CtxUpdatableChild extends CtxUpdatable
 		//console.log("CtxUpdatableChild.update: %o %s", htmlElement, this.id);
 		DOMUtils.updateInnerHtml(htmlElement, this.id, innerHtml);
 	}
-	protected afterAttach()
+	protected afterAttach(beforeChildren: boolean)
 	{
-		super.afterAttach();
-
 		const renderer = <Renderer>this.content;
-		if (renderer.afterAttach) renderer.afterAttach();
+		const cb = beforeChildren ? renderer.afterAttachPre : renderer.afterAttachPost;
+		if (cb) cb.call(renderer);
 	}
-	protected beforeDetach()
+	protected beforeDetach(beforeChildren: boolean)
 	{
 		const renderer = <Renderer>this.content;
-		if (renderer.beforeDetach) renderer.beforeDetach();
-
-		super.beforeDetach();
+		const cb = beforeChildren ? renderer.beforeDetachPre : renderer.beforeDetachPost;
+		if (cb) cb.call(renderer);
 	}
 }
