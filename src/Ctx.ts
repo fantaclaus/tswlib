@@ -84,11 +84,11 @@ export abstract class Ctx
 
 	protected _renderHtml(content: childValType): string
 	{
-		throw new Error("Not Implemented");
+		throw new Error("Not implemented");
 	}
 	protected setInnerHtml(htmlElement: HTMLElement, innerHtml: string): void
 	{
-		throw new Error("Not Implemented");
+		throw new Error("Not implemented");
 	}
 	protected removeChildren()
 	{
