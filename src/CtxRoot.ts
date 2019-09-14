@@ -136,11 +136,13 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	}
 	private handleEvent(e: Event)
 	{
+		// console.log('handleEvent: %o for: %o', e.type, e.target);
+
 		const htmlElm = e.target instanceof Element ? e.target : null;
 		const r = this.findEventHandlers(htmlElm, e.type);
 		if (r)
 		{
-			r.ehs.forEach(eventHandler =>
+			r.elmHandlers.forEach(eventHandler =>
 			{
 				// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
 
@@ -157,24 +159,24 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{
-			const elmEventHandlers = this.eventHandlers.get(htmlElement.id);
-			if (elmEventHandlers)
+			const elmHandlerMaps = this.eventHandlers.get(htmlElement.id);
+			if (elmHandlerMaps)
 			{
-				let ehs: EventHandler[] | undefined;
+				let elmHandlers: EventHandler[] | undefined;
 
-				elmEventHandlers.forEach(i =>
+				elmHandlerMaps.forEach(elmHandlerMap =>
 				{
-					const eh = i.get(eType);
-					if (eh)
+					const elmHandler = elmHandlerMap.get(eType);
+					if (elmHandler)
 					{
-						if (!ehs) ehs = [];
-						ehs.push(eh);
+						if (!elmHandlers) elmHandlers = [];
+						elmHandlers.push(elmHandler);
 					}
 				})
 
-				if (ehs)
+				if (elmHandlers)
 				{
-					return { htmlElement, ehs };
+					return { htmlElement, elmHandlers };
 				}
 			}
 
