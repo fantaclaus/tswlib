@@ -147,8 +147,8 @@ function renderElement(rootCtx: ICtxRoot, elm: ElementGeneric)
 	const innerHtml = renderInnerHtml(rootCtx, valData, tagName, elm, ctx);
 
 	const ctxRoot = ctxCurrent.getRootCtx();
-	const hasEventHanders1 = attachEventHandlersPropVal(ctxRoot, valData, propDef, useVal, ctx);
-	const hasEventHanders2 = attachEventHandlersElm(ctxRoot, ctx, elm);
+	const hasEventHanders1 = attachEventHandlersPropVal(ctxRoot, ctx.getId(), valData, propDef, useVal);
+	const hasEventHanders2 = attachEventHandlersOfElm(ctxRoot, ctx.getId(), elm);
 
 	if (elmRefs)
 	{
@@ -201,17 +201,14 @@ function renderInnerHtml(rootCtx: ICtxRoot, valData: ValDataType | null, tagName
 		return CtxScope.use(ctx, () => renderHtml(rootCtx, children));
 	}
 }
-function attachEventHandlersPropVal(ctxRoot: ICtxRoot, valData: ValDataType | null, propDef: PropDef<elmValue> | undefined, useVal: boolean, ctx: CtxElement)
+function attachEventHandlersPropVal(ctxRoot: ICtxRoot, elmId: string, valData: ValDataType | null, propDef: PropDef<elmValue> | undefined, useVal: boolean)
 {
 	if (useVal && valData && propDef && propDef.set instanceof Function)
 	{
 		const handler = createHandler(propDef, valData.valPropName, valData.ctx);
 
-		const eventHanders = new Map<string, EventHandler>();
-		eventHanders.set('change', handler);
-		eventHanders.set('input', handler);
-
-		ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders);
+		ctxRoot.attachElmEventHandlers(elmId, { eventName: 'change', isJQuery: false, handler });
+		ctxRoot.attachElmEventHandlers(elmId, { eventName: 'input', isJQuery: false, handler });
 
 		return true;
 	}
@@ -237,12 +234,12 @@ function createHandler(propDef: PropDef<elmValue>, valPropName: string, ctx: Ctx
 		});
 	};
 }
-function attachEventHandlersElm(ctxRoot: ICtxRoot, ctx: CtxElement, elm: ElementGeneric)
+function attachEventHandlersOfElm(ctxRoot: ICtxRoot, elmId: string, elm: ElementGeneric)
 {
 	const eventHanders = elm.z_getEventHandlers();
 	if (!eventHanders) return false;
 
-	ctxRoot.attachElmEventHandlers(ctx.getId(), eventHanders);
+	ctxRoot.attachElmEventHandlers(elmId, ...eventHanders);
 
 	return true;
 }

@@ -1,6 +1,6 @@
 ﻿import { Ref } from './Ref';
 import { attrValType, childValType, StyleRule, boolValType } from "./types";
-import { EventHandlerMap, EventHandler } from './EventHandler';
+import { EventHandler, ElmEventMapItem } from './EventHandler';
 
 interface AttrNameValue
 {
@@ -15,15 +15,15 @@ interface WindowEventMap2 extends WindowEventMap
 
 export class ElementGeneric
 {
-	private tagName: string | null = null;
+	private _tagName: string | null = null;
 	private _attrs: AttrNameValue[] | null = null;
 	private _children: childValType[] | null = null;
-	private eventHandlers: EventHandlerMap | null = null;
+	private _eventHandlers: ElmEventMapItem[] | null = null;
 	private _refs: Ref[] | null = null;
 
 	constructor(tagName: string)
 	{
-		this.tagName = tagName.toLowerCase();
+		this._tagName = tagName.toLowerCase();
 	}
 
 	attr(name: string, val: attrValType = true)
@@ -89,27 +89,37 @@ export class ElementGeneric
 		}
 		return this;
 	}
-	onclick(handler: EventHandler<MouseEvent> | null | undefined)
+
+	onclick(handler: EventHandler<JQuery.Event> | null | undefined)
 	{
 		return this.on('click', handler);
 	}
+	on(eventName: string, handler: EventHandler<JQuery.Event> | null | undefined)
+	{
+		this.addHandler(eventName, true, handler);
 
-	on<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | null | undefined): this;
-	on(eventName: string, handler: any)
+		return this;
+	}
+
+	onClick(handler: EventHandler<MouseEvent> | null | undefined)
+	{
+		return this.onEvent('click', handler);
+	}
+	onEvent<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | null | undefined): this;
+	onEvent(eventName: string, handler: EventHandler<Event> | null | undefined)
+	{
+		this.addHandler(eventName, false, handler);
+
+		return this;
+	}
+
+	private addHandler(eventName: string, isJQuery: boolean, handler: EventHandler<Event> | EventHandler<JQuery.Event> | null | undefined)
 	{
 		if (eventName && handler instanceof Function)
 		{
-			if (this.eventHandlers == null) this.eventHandlers = new Map<string, EventHandler>();
-
-			if (this.eventHandlers.has(eventName))
-			{
-				throw new Error(`Event handler "${eventName}" is already installed.`);
-			}
-
-			this.eventHandlers.set(eventName, <EventHandler>handler);
+			if (this._eventHandlers == null) this._eventHandlers = [];
+			this._eventHandlers.push({ eventName, isJQuery, handler });
 		}
-
-		return this;
 	}
 
 	addRef(ref: Ref | null)
@@ -127,37 +137,25 @@ export class ElementGeneric
 		this._attrs = this._attrs || [];
 		this._attrs.push({ attrName: name.toLowerCase(), attrValue: val });
 	}
-	/**
-	 * @internal
-	 */
+
+	// internal methods
+
 	z_getTagName()
 	{
-		return this.tagName;
+		return this._tagName;
 	}
-	/**
-	 * @internal
-	 */
 	z_getChildren()
 	{
 		return this._children;
 	}
-	/**
-	 * @internal
-	 */
 	z_getAttrs()
 	{
 		return this._attrs;
 	}
-	/**
-	 * @internal
-	 */
 	z_getEventHandlers()
 	{
-		return this.eventHandlers;
+		return this._eventHandlers;
 	}
-	/**
-	 * @internal
-	 */
 	z_getRefs()
 	{
 		return this._refs;

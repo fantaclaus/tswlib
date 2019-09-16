@@ -1,9 +1,10 @@
 import * as RenderUtils from './RenderUtils';
 import { childValType } from './types';
-import { EventHandlerMap, EventHandler } from './EventHandler';
+import { ElmEventMapItem, EventHandler } from './EventHandler';
 import { ICtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot, implements_ICtxRoot } from './interfaces';
 import { appendDelimited } from "./utils";
 import { Ctx } from './Ctx';
+import { RootEventHandlers, RootEventHandlersDom, RootEventHandlersJQ } from './RootEventHandlers';
 
 export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 {
@@ -13,9 +14,9 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	private lastChildId: number | null = null;
 	private htmlElement: HTMLElement;
 	private id: string;
-	private attachedEventListeners = new Map<string, number>();
-	private eventHandlers = new Map<string, EventHandlerMap[]>();
-	private eventsListener = this.handleEvent.bind(this);
+	private eventHandlers = new Map<string, ElmEventMapItem[]>();
+	private rootHandlersDom: RootEventHandlers;
+	private rootHandlersJQ: RootEventHandlers;
 
 	onBeforeAttach: (() => void) | undefined;
 
@@ -25,6 +26,9 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 
 		this.htmlElement = htmlElement;
 		this.id = htmlElement.id || (htmlElement instanceof HTMLBodyElement ? '' : Math.random().toFixed(4).substring(2));
+
+		this.rootHandlersDom = new RootEventHandlersDom(htmlElement, this.eventHandlers);
+		this.rootHandlersJQ = new RootEventHandlersJQ(htmlElement, this.eventHandlers);
 	}
 	getRootCtx()
 	{
@@ -59,33 +63,38 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	{
 		htmlElement.innerHTML = innerHtml;
 	}
-	attachElmEventHandlers(elmId: string, eventHandlerMap: EventHandlerMap)
+	attachElmEventHandlers(elmId: string, ...elmEventHandlers: ElmEventMapItem[])
 	{
-		//console.group('attached events for: %s: %o', elmId, eventHandlers);
-
-		let elmHandlerMaps = this.eventHandlers.get(elmId);
-		if (elmHandlerMaps == null)
+		let elmHandlers = this.eventHandlers.get(elmId);
+		if (elmHandlers == null)
 		{
-			elmHandlerMaps = [];
-			this.eventHandlers.set(elmId, elmHandlerMaps);
+			elmHandlers = [];
+			this.eventHandlers.set(elmId, elmHandlers);
 		}
 
-		elmHandlerMaps.push(eventHandlerMap);
+		elmHandlers.push(...elmEventHandlers);
 
-		// attach root handler if needed
-
-		eventHandlerMap.forEach((h, eventName) =>
+		elmEventHandlers.forEach(elmEventHandler =>
 		{
-			const count = this.attachedEventListeners.get(eventName) || 0;
-			if (count == 0)
-			{
-				this.htmlElement.addEventListener(eventName, this.eventsListener);
-			}
-
-			this.attachedEventListeners.set(eventName, count + 1);
+			const rh = elmEventHandler.isJQuery ? this.rootHandlersJQ : this.rootHandlersDom;
+			rh.attachEventListenerIfNeeded(elmEventHandler);
 		})
 
-		//console.groupEnd();
+		// if (elmEventHandlers instanceof Array)
+		// {
+		// 	elmHandlers.push(...elmEventHandlers);
+
+		// 	elmEventHandlers.forEach(elmEventHandler =>
+		// 	{
+		// 		this.attachEventListenerIfNeeded(elmEventHandler);
+		// 	})
+		// }
+		// else
+		// {
+		// 	elmHandlers.push(elmEventHandlers);
+
+		// 	this.attachEventListenerIfNeeded(elmEventHandlers);
+		// }
 
 		// this.dumpAttachedEvents();
 	}
@@ -97,95 +106,5 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 		this.eventHandlers.delete(elmId);
 
 		// this.dumpAttachedEvents();
-	}
-	private removeEventListeners(elmId: string)
-	{
-		let elmHandlerMaps = this.eventHandlers.get(elmId);
-		if (elmHandlerMaps)
-		{
-			elmHandlerMaps.forEach((eventHandlerMap) =>
-			{
-				eventHandlerMap.forEach((h, eventName) =>
-				{
-					const count = this.attachedEventListeners.get(eventName) || 0;
-
-					const countNew = count - 1;
-
-					if (countNew == 0)
-					{
-						this.htmlElement.removeEventListener(eventName, this.eventsListener);
-
-						this.attachedEventListeners.delete(eventName);
-					}
-					else
-					{
-						this.attachedEventListeners.set(eventName, count - 1);
-					}
-				});
-			});
-		}
-	}
-	private dumpAttachedEvents()
-	{
-		let s = '';
-		this.attachedEventListeners.forEach((count, eventName) =>
-		{
-			s += `${eventName}=${count}; `;
-		});
-		console.log('eventHandlers: ', this.eventHandlers.size, ' attachedEventListeners:', s);
-	}
-	private handleEvent(e: Event)
-	{
-		// console.log('handleEvent: %o for: %o', e.type, e.target);
-
-		const htmlElm = e.target instanceof Element ? e.target : null;
-		const r = this.findEventHandlers(htmlElm, e.type);
-		if (r)
-		{
-			r.elmHandlers.forEach(eventHandler =>
-			{
-				// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
-
-				if (e.type == 'click' && r.htmlElement.tagName.toLowerCase() == 'a')
-				{
-					e.preventDefault();
-				}
-
-				eventHandler(e, r.htmlElement);
-			});
-		}
-	}
-	private findEventHandlers(htmlElement: Element | null, eType: string)
-	{
-		while (htmlElement && htmlElement != this.htmlElement)
-		{
-			const elmHandlerMaps = this.eventHandlers.get(htmlElement.id);
-			if (elmHandlerMaps)
-			{
-				let elmHandlers: EventHandler[] | undefined;
-
-				elmHandlerMaps.forEach(elmHandlerMap =>
-				{
-					const elmHandler = elmHandlerMap.get(eType);
-					if (elmHandler)
-					{
-						if (!elmHandlers) elmHandlers = [];
-						elmHandlers.push(elmHandler);
-					}
-				})
-
-				if (elmHandlers)
-				{
-					return { htmlElement, elmHandlers };
-				}
-			}
-
-			// NOTE: in IE 11 parentElement of SVG element is undefined
-
-			const parentNode = htmlElement.parentNode;
-			htmlElement = parentNode instanceof Element ? parentNode : null;
-		}
-
-		return null;
 	}
 }

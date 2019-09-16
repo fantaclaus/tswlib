@@ -1,6 +1,11 @@
-export interface EventHandler<T = Event>
+export interface EventHandler<T>
 {
 	(e: T, target: Element): void;
 }
 
-export type EventHandlerMap = Map<string, EventHandler>;
+export interface ElmEventMapItem
+{
+	eventName: string;
+	isJQuery: boolean;
+	handler: EventHandler<Event> | EventHandler<JQuery.Event>;
+}

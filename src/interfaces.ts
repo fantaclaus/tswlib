@@ -1,4 +1,4 @@
-import { EventHandlerMap } from './EventHandler';
+import { ElmEventMapItem } from './EventHandler';
 import { Ctx } from "./Ctx";
 
 /**
@@ -41,7 +41,7 @@ export interface ICtxRoot
 {
 	beforeAttach(): void;
 	getNextChildId(): string;
-	attachElmEventHandlers(elmId: string, eventHandlers: EventHandlerMap): void;
+	attachElmEventHandlers(elmId: string, ...elmEventHandlers: ElmEventMapItem[]): void;
 	detachElmEventHandlers(elmId: string): void;
 }
 
