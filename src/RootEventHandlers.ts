@@ -39,9 +39,28 @@ export class RootEventHandlers
 
 			result.elmHandlersItems.forEach(i =>
 			{
-				(i.handler as EventHandler<JQuery.Event | Event>)(e, result.htmlElement);
+				if (this.isJQueryHandler(i.handler) && this.isJQueryEvent(e, isJQuery))
+				{
+					i.handler(e, result.htmlElement);
+				}
+				else if (!this.isJQueryHandler(i.handler) && !this.isJQueryEvent(e, isJQuery))
+				{
+					i.handler(e, result.htmlElement);
+				}
+				else
+				{
+					throw new Error("Argument type mismatch");
+				}
 			});
 		}
+	}
+	protected isJQueryHandler(cb: EventHandler<JQuery.Event> | EventHandler<Event>): cb is EventHandler<JQuery.Event>
+	{
+		return true;
+	}
+	protected isJQueryEvent(e: JQuery.Event | Event, isJQuery: boolean): e is JQuery.Event
+	{
+		return isJQuery;
 	}
 	private findEventHandlers(htmlElement: Element | null, eventName: string, isJQuery: boolean)
 	{
@@ -71,9 +90,9 @@ export class RootEventHandlersDom extends RootEventHandlers
 {
 	protected eventsListener = (e: Event) => this.handleEvent(e, false);
 
-	constructor(htmlElement: HTMLElement, eventHandlers: Map<string, ElmEventMapItem[]>)
+	protected isJQueryHandler(cb: EventHandler<JQuery.Event> | EventHandler<Event>): cb is EventHandler<JQuery.Event>
 	{
-		super(htmlElement, eventHandlers);
+		return false;
 	}
 	protected addEventListener(eventName: string)
 	{
@@ -85,9 +104,9 @@ export class RootEventHandlersJQ extends RootEventHandlers
 {
 	protected eventsListener = (e: JQuery.Event) => this.handleEvent(e, true);
 
-	constructor(htmlElement: HTMLElement, eventHandlers: Map<string, ElmEventMapItem[]>)
+	protected isJQueryHandler(cb: EventHandler<JQuery.Event> | EventHandler<Event>): cb is EventHandler<JQuery.Event>
 	{
-		super(htmlElement, eventHandlers);
+		return true;
 	}
 	protected addEventListener(eventName: string)
 	{

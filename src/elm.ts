@@ -96,7 +96,10 @@ export class ElementGeneric
 	}
 	on(eventName: string, handler: EventHandler<JQuery.Event> | null | undefined)
 	{
-		this.addHandler(eventName, true, handler);
+		if (eventName && handler instanceof Function)
+		{
+			this.addHandler({ eventName, isJQuery: true, handler });
+		}
 
 		return this;
 	}
@@ -108,18 +111,19 @@ export class ElementGeneric
 	onEvent<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | null | undefined): this;
 	onEvent(eventName: string, handler: EventHandler<Event> | null | undefined)
 	{
-		this.addHandler(eventName, false, handler);
+		if (eventName && handler instanceof Function)
+		{
+			this.addHandler({ eventName, isJQuery: false, handler });
+		}
 
 		return this;
 	}
 
-	private addHandler(eventName: string, isJQuery: boolean, handler: EventHandler<Event> | EventHandler<JQuery.Event> | null | undefined)
+	private addHandler(item: ElmEventMapItem)
 	{
-		if (eventName && handler instanceof Function)
-		{
-			if (this._eventHandlers == null) this._eventHandlers = [];
-			this._eventHandlers.push({ eventName, isJQuery, handler });
-		}
+		if (this._eventHandlers == null) this._eventHandlers = [];
+
+		this._eventHandlers.push(item);
 	}
 
 	addRef(ref: Ref | null)

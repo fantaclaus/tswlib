@@ -41,7 +41,7 @@ export interface ICtxRoot
 {
 	beforeAttach(): void;
 	getNextChildId(): string;
-	attachElmEventHandlers(elmId: string, ...elmEventHandlers: ElmEventMapItem[]): void;
+	attachElmEventHandler(elmId: string, elmEventMapItem: ElmEventMapItem): void;
 	detachElmEventHandlers(elmId: string): void;
 }
 

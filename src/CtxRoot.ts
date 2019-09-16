@@ -63,38 +63,19 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	{
 		htmlElement.innerHTML = innerHtml;
 	}
-	attachElmEventHandlers(elmId: string, ...elmEventHandlers: ElmEventMapItem[])
+	attachElmEventHandler(elmId: string, elmEventMapItem: ElmEventMapItem)
 	{
-		let elmHandlers = this.eventHandlers.get(elmId);
-		if (elmHandlers == null)
+		let elmEventMapItems = this.eventHandlers.get(elmId);
+		if (elmEventMapItems == null)
 		{
-			elmHandlers = [];
-			this.eventHandlers.set(elmId, elmHandlers);
+			elmEventMapItems = [];
+			this.eventHandlers.set(elmId, elmEventMapItems);
 		}
 
-		elmHandlers.push(...elmEventHandlers);
+		elmEventMapItems.push(elmEventMapItem);
 
-		elmEventHandlers.forEach(elmEventHandler =>
-		{
-			const rh = elmEventHandler.isJQuery ? this.rootHandlersJQ : this.rootHandlersDom;
-			rh.attachEventListenerIfNeeded(elmEventHandler);
-		})
-
-		// if (elmEventHandlers instanceof Array)
-		// {
-		// 	elmHandlers.push(...elmEventHandlers);
-
-		// 	elmEventHandlers.forEach(elmEventHandler =>
-		// 	{
-		// 		this.attachEventListenerIfNeeded(elmEventHandler);
-		// 	})
-		// }
-		// else
-		// {
-		// 	elmHandlers.push(elmEventHandlers);
-
-		// 	this.attachEventListenerIfNeeded(elmEventHandlers);
-		// }
+		const rh = elmEventMapItem.isJQuery ? this.rootHandlersJQ : this.rootHandlersDom;
+		rh.attachEventListenerIfNeeded(elmEventMapItem);
 
 		// this.dumpAttachedEvents();
 	}

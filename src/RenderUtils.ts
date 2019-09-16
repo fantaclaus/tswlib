@@ -207,8 +207,8 @@ function attachEventHandlersPropVal(ctxRoot: ICtxRoot, elmId: string, valData: V
 	{
 		const handler = createHandler(propDef, valData.valPropName, valData.ctx);
 
-		ctxRoot.attachElmEventHandlers(elmId, { eventName: 'change', isJQuery: false, handler });
-		ctxRoot.attachElmEventHandlers(elmId, { eventName: 'input', isJQuery: false, handler });
+		ctxRoot.attachElmEventHandler(elmId, { eventName: 'change', isJQuery: false, handler });
+		ctxRoot.attachElmEventHandler(elmId, { eventName: 'input', isJQuery: false, handler });
 
 		return true;
 	}
@@ -236,10 +236,13 @@ function createHandler(propDef: PropDef<elmValue>, valPropName: string, ctx: Ctx
 }
 function attachEventHandlersOfElm(ctxRoot: ICtxRoot, elmId: string, elm: ElementGeneric)
 {
-	const eventHanders = elm.z_getEventHandlers();
-	if (!eventHanders) return false;
+	const elmEventMapItems = elm.z_getEventHandlers();
+	if (!elmEventMapItems) return false;
 
-	ctxRoot.attachElmEventHandlers(elmId, ...eventHanders);
+	elmEventMapItems.forEach(elmEventMapItem =>
+	{
+		ctxRoot.attachElmEventHandler(elmId, elmEventMapItem);
+	})
 
 	return true;
 }
