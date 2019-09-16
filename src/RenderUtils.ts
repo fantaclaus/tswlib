@@ -207,8 +207,8 @@ function attachEventHandlersPropVal(ctxRoot: ICtxRoot, elmId: string, valData: V
 	{
 		const handler = createHandler(propDef, valData.valPropName, valData.ctx);
 
-		ctxRoot.attachElmEventHandler(elmId, { eventName: 'change', isJQuery: false, handler });
-		ctxRoot.attachElmEventHandler(elmId, { eventName: 'input', isJQuery: false, handler });
+		ctxRoot.attachElmEventHandler(elmId, { eventName: 'change', eventType: 'dom', handler });
+		ctxRoot.attachElmEventHandler(elmId, { eventName: 'input', eventType: 'dom', handler });
 
 		return true;
 	}

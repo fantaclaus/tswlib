@@ -98,7 +98,7 @@ export class ElementGeneric
 	{
 		if (eventName && handler instanceof Function)
 		{
-			this.addHandler({ eventName, isJQuery: true, handler });
+			this.addHandler({ eventName, eventType: 'jquery', handler });
 		}
 
 		return this;
@@ -113,7 +113,7 @@ export class ElementGeneric
 	{
 		if (eventName && handler instanceof Function)
 		{
-			this.addHandler({ eventName, isJQuery: false, handler });
+			this.addHandler({ eventName, eventType: 'dom', handler });
 		}
 
 		return this;

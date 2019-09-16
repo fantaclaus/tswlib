@@ -4,7 +4,7 @@ import { ElmEventMapItem, EventHandler } from './EventHandler';
 import { ICtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot, implements_ICtxRoot } from './interfaces';
 import { appendDelimited } from "./utils";
 import { Ctx } from './Ctx';
-import { RootEventHandlers, RootEventHandlersDom, RootEventHandlersJQ } from './RootEventHandlers';
+import { RootEventHandler, RootEventHandlerDom, RootEventHandlerJQ } from './RootEventHandlers';
 
 export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 {
@@ -15,8 +15,7 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	private htmlElement: HTMLElement;
 	private id: string;
 	private eventHandlers = new Map<string, ElmEventMapItem[]>();
-	private rootHandlersDom: RootEventHandlers;
-	private rootHandlersJQ: RootEventHandlers;
+	private rootEventHandlers = new Map<string, RootEventHandler>();
 
 	onBeforeAttach: (() => void) | undefined;
 
@@ -27,8 +26,12 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 		this.htmlElement = htmlElement;
 		this.id = htmlElement.id || (htmlElement instanceof HTMLBodyElement ? '' : Math.random().toFixed(4).substring(2));
 
-		this.rootHandlersDom = new RootEventHandlersDom(htmlElement, this.eventHandlers);
-		this.rootHandlersJQ = new RootEventHandlersJQ(htmlElement, this.eventHandlers);
+		this.registerRootEventHanler(new RootEventHandlerJQ(htmlElement, this.eventHandlers));
+		this.registerRootEventHanler(new RootEventHandlerDom(htmlElement, this.eventHandlers));
+	}
+	registerRootEventHanler(rh: RootEventHandler)
+	{
+		this.rootEventHandlers.set(rh.getEventType(), rh);
 	}
 	getRootCtx()
 	{
@@ -74,7 +77,8 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 
 		elmEventMapItems.push(elmEventMapItem);
 
-		const rh = elmEventMapItem.isJQuery ? this.rootHandlersJQ : this.rootHandlersDom;
+		const rh = this.rootEventHandlers.get(elmEventMapItem.eventType);
+		if (rh == null) throw new Error(`Root EventHandler is not found for eventType='${elmEventMapItem.eventType}'`);
 		rh.attachEventListenerIfNeeded(elmEventMapItem);
 
 		// this.dumpAttachedEvents();
