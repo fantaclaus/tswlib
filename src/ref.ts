@@ -30,6 +30,10 @@ export class Ref<T extends HTMLElement = HTMLElement> extends PropValBase implem
 		const el = document.getElementById(this.refId);
 		return !!el;
 	}
+	asJQuery()
+	{
+		return jQuery(this.asHtmlElement());
+	}
 	asHtmlElement<T2 extends HTMLElement = T>()
 	{
 		if (!this.refId) throw new Error("refId is not initialized");
