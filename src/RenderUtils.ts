@@ -7,12 +7,12 @@ import { ElementGeneric } from "./elm";
 import { ElementWithValue, elmValue, RawHtml, IElementWithValue } from "./htmlElements";
 import { PropDefReadable } from "./PropDefs";
 import { attrValType, childValType, PropDefReadableAttrValType, PropDefReadableChildValType, Renderer, StyleRule } from "./types";
-import { EventHandler } from './EventHandler';
 import * as utils from "./utils";
 import { HtmlBlockMarkers } from "./HtmlBlockMarkers";
 import { ICtxRoot } from "./interfaces";
 import { Ctx } from "./Ctx";
 import { PropDef } from "./PropDefs";
+import { RootEventHandlerDom } from "./RootEventHandler";
 
 type MapStringToArrayOfAttrValType = Map<string, attrValType[]>;
 type ValDataType = { value: elmValue; ctx: CtxUpdatableValue; valPropName: string; };
@@ -207,8 +207,8 @@ function attachEventHandlersPropVal(ctxRoot: ICtxRoot, elmId: string, valData: V
 	{
 		const handler = createHandler(propDef, valData.valPropName, valData.ctx);
 
-		ctxRoot.attachElmEventHandler(elmId, { eventName: 'change', eventType: 'dom', handler });
-		ctxRoot.attachElmEventHandler(elmId, { eventName: 'input', eventType: 'dom', handler });
+		ctxRoot.attachElmEventHandler(elmId, { eventName: 'change', handler, eventType: RootEventHandlerDom.EventType });
+		ctxRoot.attachElmEventHandler(elmId, { eventName: 'input', handler, eventType: RootEventHandlerDom.EventType });
 
 		return true;
 	}

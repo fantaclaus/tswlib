@@ -1,6 +1,7 @@
 ﻿import { Ref } from './Ref';
 import { attrValType, childValType, StyleRule, boolValType } from "./types";
 import { EventHandler, ElmEventMapItem } from './EventHandler';
+import { RootEventHandlerDom } from './RootEventHandler';
 
 interface AttrNameValue
 {
@@ -90,20 +91,6 @@ export class ElementGeneric
 		return this;
 	}
 
-	onclick(handler: EventHandler<JQuery.Event> | null | undefined)
-	{
-		return this.on('click', handler);
-	}
-	on(eventName: string, handler: EventHandler<JQuery.Event> | null | undefined)
-	{
-		if (eventName && handler instanceof Function)
-		{
-			this.addHandler({ eventName, eventType: 'jquery', handler });
-		}
-
-		return this;
-	}
-
 	onClick(handler: EventHandler<MouseEvent> | null | undefined)
 	{
 		return this.onEvent('click', handler);
@@ -113,13 +100,13 @@ export class ElementGeneric
 	{
 		if (eventName && handler instanceof Function)
 		{
-			this.addHandler({ eventName, eventType: 'dom', handler });
+			this.addHandler({ eventName, handler, eventType: RootEventHandlerDom.EventType });
 		}
 
 		return this;
 	}
 
-	private addHandler(item: ElmEventMapItem)
+	addHandler(item: ElmEventMapItem)
 	{
 		if (this._eventHandlers == null) this._eventHandlers = [];
 

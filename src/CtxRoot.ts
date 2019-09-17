@@ -4,7 +4,7 @@ import { ElmEventMapItem, EventHandler } from './EventHandler';
 import { ICtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot, implements_ICtxRoot } from './interfaces';
 import { appendDelimited } from "./utils";
 import { Ctx } from './Ctx';
-import { RootEventHandler, RootEventHandlerDom, RootEventHandlerJQ } from './RootEventHandlers';
+import { RootEventHandler } from './RootEventHandler';
 
 export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 {
@@ -18,6 +18,7 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 	private rootEventHandlers = new Map<string, RootEventHandler>();
 
 	onBeforeAttach: (() => void) | undefined;
+	cleanupEventListeners = false; // unsubscribe from events on last event detached
 
 	constructor(htmlElement: HTMLElement)
 	{
@@ -26,12 +27,11 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 		this.htmlElement = htmlElement;
 		this.id = htmlElement.id || (htmlElement instanceof HTMLBodyElement ? '' : Math.random().toFixed(4).substring(2));
 
-		this.registerRootEventHanler(new RootEventHandlerJQ(htmlElement, this.eventHandlers));
-		this.registerRootEventHanler(new RootEventHandlerDom(htmlElement, this.eventHandlers));
-	}
-	registerRootEventHanler(rh: RootEventHandler)
-	{
-		this.rootEventHandlers.set(rh.getEventType(), rh);
+		RootEventHandler.REHTypes.forEach(t =>
+		{
+			const rh = new t(htmlElement, this.eventHandlers);
+			this.rootEventHandlers.set(rh.getEventType(), rh);
+		})
 	}
 	getRootCtx()
 	{
@@ -77,19 +77,36 @@ export class CtxRoot extends Ctx implements ICtxHtmlElementOwner, ICtxRoot
 
 		elmEventMapItems.push(elmEventMapItem);
 
-		const rh = this.rootEventHandlers.get(elmEventMapItem.eventType);
-		if (rh == null) throw new Error(`Root EventHandler is not found for eventType='${elmEventMapItem.eventType}'`);
-		rh.attachEventListenerIfNeeded(elmEventMapItem);
+		const rh = this.getRootEventHandler(elmEventMapItem.eventType);
+		rh.attachEventListener(elmEventMapItem.eventName);
 
 		// this.dumpAttachedEvents();
 	}
 	detachElmEventHandlers(elmId: string)
 	{
-		// this.removeEventListeners(elmId);
+		// by default, we only remove elm's handlers from map without detaching event listeners from this.htmlElement to improve performance
+		if (this.cleanupEventListeners)
+		{
+			let elmHandlers = this.eventHandlers.get(elmId);
+			if (elmHandlers)
+			{
+				elmHandlers.forEach(elmEventMapItem =>
+				{
+					const rh = this.getRootEventHandler(elmEventMapItem.eventType);
+					rh.detachEventListener(elmEventMapItem.eventName);
+				});
+			}
+		}
 
-		// we only remove elm's handlers from map without detaching event listeners from this.htmlElement for optimization sake
 		this.eventHandlers.delete(elmId);
 
 		// this.dumpAttachedEvents();
+	}
+	private getRootEventHandler(eventType: string)
+	{
+		const rh = this.rootEventHandlers.get(eventType);
+		if (rh == null) throw new Error(`Root EventHandler is not found for eventType='${eventType}'`);
+
+		return rh;
 	}
 }

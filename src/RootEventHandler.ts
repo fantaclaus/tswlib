@@ -1,7 +1,16 @@
-import { ElmEventMapItem, IEvent } from "./EventHandler";
+import { ElmEventMapItem } from "./EventHandler";
+
+interface IEvent
+{
+	target: any;
+	type: string;
+	preventDefault(): void;
+}
 
 export class RootEventHandler
 {
+	static REHTypes: (typeof RootEventHandler)[] = [];
+
 	//private htmlElement: HTMLElement;
 	//private eventHandlers: Map<string, ElmEventMapItem[]>;
 	protected attachedEventListeners = new Map<string, number>();
@@ -13,19 +22,38 @@ export class RootEventHandler
 	{
 		throw new Error("Not implemented");
 	}
-	attachEventListenerIfNeeded(elmEventMapItem: ElmEventMapItem)
+	attachEventListener(eventName: string)
 	{
-		const eventName = elmEventMapItem.eventName;
-
 		const count = this.attachedEventListeners.get(eventName) || 0;
 		this.attachedEventListeners.set(eventName, count + 1);
 
 		if (count == 0) this.addEventListener(eventName);
 	}
+	detachEventListener(eventName: string)
+	{
+		const count = this.attachedEventListeners.get(eventName) || 0;
+		const countNew = count - 1;
+
+		if (countNew > 0)
+		{
+			this.attachedEventListeners.set(eventName, countNew);
+		}
+		else
+		{
+			this.removeEventListener(eventName);
+
+			this.attachedEventListeners.delete(eventName);
+		}
+	}
 	protected addEventListener(eventName: string)
 	{
 		throw new Error("Not implemented");
 	}
+	protected removeEventListener(eventName: string)
+	{
+		throw new Error("Not implemented");
+	}
+
 	protected handleEvent(e: IEvent)
 	{
 		// console.log('handleEvent: %o for: %o', e.type, e.target);
@@ -71,68 +99,35 @@ export class RootEventHandler
 
 		return null;
 	}
+	// private dumpAttachedEvents()
+	// {
+	// 	let s = '';
+	// 	this.attachedEventListeners.forEach((count, eventName) =>
+	// 	{
+	// 		s += `${eventName}=${count}; `;
+	// 	});
+	// 	console.log('eventHandlers: ', this.eventHandlers.size, ' attachedEventListeners:', s);
+	// }
 }
 
 export class RootEventHandlerDom extends RootEventHandler
 {
+	static EventType = 'dom';
+
 	protected eventsListener = (e: Event) => this.handleEvent(e);
 
 	getEventType(): string
 	{
-		return 'dom';
+		return RootEventHandlerDom.EventType;
 	}
 	protected addEventListener(eventName: string)
 	{
 		this.htmlElement.addEventListener(eventName, this.eventsListener);
 	}
-}
-
-export class RootEventHandlerJQ extends RootEventHandler
-{
-	protected eventsListener = (e: JQuery.Event) => this.handleEvent(e);
-
-	getEventType(): string
+	protected removeEventListener(eventName: string)
 	{
-		return 'jquery';
-	}
-	protected addEventListener(eventName: string)
-	{
-		jQuery(this.htmlElement).on(eventName, this.eventsListener);
+		this.htmlElement.removeEventListener(eventName, this.eventsListener);
 	}
 }
 
-// private removeEventListeners(elmId: string)
-// {
-// 	let elmHandlers = this.eventHandlers.get(elmId);
-// 	if (elmHandlers)
-// 	{
-// 		elmHandlers.forEach(i =>
-// 		{
-// 			const eventName = i.eventName;
-
-// 			const count = this.attachedEventListeners.get(eventName) || 0;
-
-// 			const countNew = count - 1;
-
-// 			if (countNew == 0)
-// 			{
-// 				this.htmlElement.removeEventListener(eventName, this.eventsListener);
-
-// 				this.attachedEventListeners.delete(eventName);
-// 			}
-// 			else
-// 			{
-// 				this.attachedEventListeners.set(eventName, count - 1);
-// 			}
-// 		});
-// 	}
-// }
-// private dumpAttachedEvents()
-// {
-// 	let s = '';
-// 	this.attachedEventListeners.forEach((count, eventName) =>
-// 	{
-// 		s += `${eventName}=${count}; `;
-// 	});
-// 	console.log('eventHandlers: ', this.eventHandlers.size, ' attachedEventListeners:', s);
-// }
+RootEventHandler.REHTypes.push(RootEventHandlerDom);
