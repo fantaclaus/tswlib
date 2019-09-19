@@ -6,7 +6,7 @@ import { CtxUpdatableValue } from "./CtxUpdatableValue";
 import { ElementGeneric } from "./elm";
 import { ElementWithValue, elmValue, RawHtml, IElementWithValue } from "./htmlElements";
 import { PropDefReadable } from "./PropDefs";
-import { attrValType, childValType, PropDefReadableAttrValType, PropDefReadableChildValType, Renderer, StyleRule } from "./types";
+import { attrValType, childValType, attrValTypePropDefReadable, childValTypePropDefReadable, Renderer, StyleRule } from "./types";
 import * as utils from "./utils";
 import { HtmlBlockMarkers } from "./HtmlBlockMarkers";
 import { ICtxRoot } from "./interfaces";
@@ -17,9 +17,9 @@ import { RootEventHandlerDom } from "./RootEventHandler";
 type MapStringToArrayOfAttrValType = Map<string, attrValType[]>;
 type ValDataType = { value: elmValue; ctx: CtxUpdatableValue; valPropName: string; };
 
-function isPropDefChild(attrVal: childValType): attrVal is PropDefReadableChildValType
+function isPropDefChild(attrVal: childValType): attrVal is childValTypePropDefReadable
 {
-	return (<PropDefReadableChildValType>attrVal).get instanceof Function;
+	return (<childValTypePropDefReadable>attrVal).get instanceof Function;
 }
 function isRenderer(item: childValType): item is Renderer
 {
@@ -185,9 +185,9 @@ function getValData(rootCtx: ICtxRoot, elmWithVal: IElementWithValue | null, pro
 		return null;
 	}
 }
-function isPropDefAttr(attrVal: attrValType): attrVal is PropDefReadableAttrValType
+function isPropDefAttr(attrVal: attrValType): attrVal is attrValTypePropDefReadable
 {
-	return (<PropDefReadableAttrValType>attrVal).get instanceof Function;
+	return (<attrValTypePropDefReadable>attrVal).get instanceof Function;
 }
 function renderInnerHtml(rootCtx: ICtxRoot, valData: ValDataType | null, tagName: string, elm: ElementGeneric, ctx: Ctx)
 {

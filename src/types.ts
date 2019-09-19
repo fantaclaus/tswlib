@@ -11,19 +11,25 @@ export interface Renderer
 	beforeDetachPost?: () => void;
 }
 
-export interface PropDefReadableAttrValType extends PropDefReadable<attrValType> { }
+interface Fn<T>
+{
+	(): T;
+}
 
 export interface attrValTypeArray extends Array<attrValType> { }
-export interface attrValTypeFn { (): attrValType; }
-export type attrValType = string | number | boolean | StyleRule | null | undefined | attrValTypeArray | PropDefReadableAttrValType | attrValTypeFn;
+export interface attrValTypeFn extends Fn<attrValType> {}
+export interface attrValTypePropDefReadable extends PropDefReadable<attrValType> { }
+export type attrValType = string | number | boolean | StyleRule | null | undefined | attrValTypeArray | attrValTypePropDefReadable | attrValTypeFn;
 
-export interface PropDefReadableChildValType extends PropDefReadable<childValType> { }
 export interface childValTypeArray extends Array<childValType> { }
-export interface childValTypeFn { (): childValType; }
-export type childValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null | undefined | childValTypeArray | childValTypeFn | PropDefReadableChildValType;
+export interface childValTypeFn extends Fn<childValType> { }
+export interface childValTypePropDefReadable extends PropDefReadable<childValType> { }
 
-export type stringValType = string | null | (() => string | null) | PropDefReadable<string | null>;
-export type boolValType = boolean | (() => boolean) | PropDefReadable<boolean>;
+export type childValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
+
+type StringNullable = string | null;
+export type stringValType = StringNullable | Fn<StringNullable> | PropDefReadable<StringNullable>;
+export type boolValType = boolean | Fn<boolean> | PropDefReadable<boolean>;
 
 export class StyleRule
 {
