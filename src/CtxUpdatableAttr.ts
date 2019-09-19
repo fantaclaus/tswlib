@@ -25,11 +25,11 @@ export class CtxUpdatableAttr extends CtxUpdatable
 
 		if (this.attrName == 'checked')
 		{
-			(<any>htmlElement).checked = v != null;
+			(<HTMLInputElement>htmlElement).checked = v != null;
 		}
 		else if (this.attrName == 'value')
 		{
-			(<any>htmlElement).value = v || '';
+			(<HTMLInputElement>htmlElement).value = v || '';
 		}
 		else
 		{
