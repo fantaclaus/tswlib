@@ -1,42 +1,19 @@
-import { PropDef } from './PropDefs';
-import { PropValBase } from './PropValBase';
-
-export class Ref<T extends HTMLElement = HTMLElement> extends PropValBase implements PropDef<string | null>
+export class Ref<T extends HTMLElement = HTMLElement>
 {
-	private refId: string | null = null;
-
 	get(): string | null
 	{
-		this.ctxAttach();
-
-		return this.refId;
+		throw new Error("not implemented");
 	}
 	set(v: string | null): void
 	{
-		if (this.refId !== v)
-		{
-			//console.group('ref %s %o: set value %o', this.name, this, v);
-
-			this.refId = v;
-
-			this.ctxUpdate();
-
-			//console.groupEnd();
-		}
+		throw new Error("not implemented");
 	}
 	isValid()
 	{
-		if (!this.refId) return false;
-		const el = document.getElementById(this.refId);
-		return !!el;
+		throw new Error("not implemented");
 	}
 	asHtmlElement<T2 extends HTMLElement = T>()
 	{
-		if (!this.refId) throw new Error("refId is not initialized");
-
-		const el = document.getElementById(this.refId);
-		if (!el) throw new Error("element is not found by refId");
-
-		return el as T2;
+		throw new Error("not implemented");
 	}
 }

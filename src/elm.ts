@@ -1,7 +1,5 @@
 ﻿import { Ref } from './Ref';
-import { attrValType, childValType, StyleRule, boolValType } from "./types";
-import { EventHandler, ElmEventMapItem } from './EventHandler';
-import { RootEventHandlerDom } from './RootEventHandler';
+import { attrValType, childValType, StyleRule, boolValType, stringValType } from "./types";
 
 interface AttrNameValue
 {
@@ -14,13 +12,25 @@ interface WindowEventMap2 extends WindowEventMap
 	"input": InputEvent;
 }
 
+interface EventHandler<T>
+{
+	(e: T, target: Element): void;
+}
+
+interface ElmEventMapItem
+{
+	eventName: string;
+	eventType: string;
+	handler: EventHandler<any>;
+}
+
 export class ElementGeneric
 {
-	private _tagName: string | null = null;
-	private _attrs: AttrNameValue[] | null = null;
-	private _children: childValType[] | null = null;
-	private _eventHandlers: ElmEventMapItem[] | null = null;
-	private _refs: Ref[] | null = null;
+	private _tagName: string;
+	private _attrs: AttrNameValue[] | undefined;
+	private _children: childValType[] | undefined;
+	private _eventHandlers: ElmEventMapItem[] | undefined;
+	private _refs: Ref[] | undefined;
 
 	constructor(tagName: string)
 	{
@@ -65,7 +75,7 @@ export class ElementGeneric
 
 		return this;
 	}
-	data(name: string, val: attrValType)
+	data(name: string, val: stringValType)
 	{
 		this.attr('data-' + name, val);
 
@@ -100,7 +110,7 @@ export class ElementGeneric
 	{
 		if (eventName && handler instanceof Function)
 		{
-			this.addHandler({ eventName, handler, eventType: RootEventHandlerDom.EventType });
+			this.addHandler({ eventName, handler, eventType: 'dom' });
 		}
 
 		return this;
@@ -127,28 +137,5 @@ export class ElementGeneric
 	{
 		this._attrs = this._attrs || [];
 		this._attrs.push({ attrName: name.toLowerCase(), attrValue: val });
-	}
-
-	// internal methods
-
-	z_getTagName()
-	{
-		return this._tagName;
-	}
-	z_getChildren()
-	{
-		return this._children;
-	}
-	z_getAttrs()
-	{
-		return this._attrs;
-	}
-	z_getEventHandlers()
-	{
-		return this._eventHandlers;
-	}
-	z_getRefs()
-	{
-		return this._refs;
 	}
 }

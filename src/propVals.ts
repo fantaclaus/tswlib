@@ -1,7 +1,6 @@
 import { PropDef, PropDefReadable } from './PropDefs';
-import { PropValBase } from './PropValBase';
 
-export class PropVal<T> extends PropValBase implements PropDef<T>
+export class PropVal<T> implements PropDef<T>
 {
 	val: T;
 	private insideSet = false; // to prevent infinite loops
@@ -9,8 +8,6 @@ export class PropVal<T> extends PropValBase implements PropDef<T>
 
 	constructor(initialValue: T)
 	{
-		super();
-
 		this.val = initialValue;
 	}
 
@@ -34,8 +31,6 @@ export class PropVal<T> extends PropValBase implements PropDef<T>
 				this.val = v;
 
 				this.ctxUpdate();
-
-				if (this.onChanged) this.onChanged();
 			}
 		}
 		finally
@@ -46,16 +41,14 @@ export class PropVal<T> extends PropValBase implements PropDef<T>
 		}
 	}
 
-	//getWithoutAttach(): T
-	//{
-	//	return this.val;
-	//}
-	//setWithoutUpdate(newVal: T): void
-	//{
-	//	this.val = newVal;
-	//}
-
-	onChanged: (() => void) | undefined;
+	protected ctxAttach()
+	{
+		throw new Error("not implemented");
+	}
+	protected ctxUpdate()
+	{
+		throw new Error("not implemented");
+	}
 
 	isTrue(contentTrue: any, contentFalse?: any): () => any
 	{
