@@ -16,10 +16,8 @@ interface Fn<T>
 	(): T;
 }
 
-export interface attrValTypeArray extends Array<attrValType> { }
-export interface attrValTypeFn extends Fn<attrValType> {}
-export interface attrValTypePropDefReadable extends PropDefReadable<attrValType> { }
-export type attrValType = string | number | boolean | StyleRule | null | undefined | attrValTypeArray | attrValTypePropDefReadable | attrValTypeFn;
+export type attrValTypeSimple = string | number | boolean | null; // NOTE: undefined is treated as '' by attr(), so it is excluded from this type
+export type attrValType = attrValTypeSimple | Fn<attrValTypeSimple> | PropDefReadable<attrValTypeSimple>;
 
 export interface childValTypeArray extends Array<childValType> { }
 export interface childValTypeFn extends Fn<childValType> { }
@@ -27,16 +25,21 @@ export interface childValTypePropDefReadable extends PropDefReadable<childValTyp
 
 export type childValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
 
-type StringNullable = string | null;
-export type stringValType = StringNullable | Fn<StringNullable> | PropDefReadable<StringNullable>;
+type stringNullable = string | null;
+
+export interface multiStringValTypeFn extends Fn<multiStringValType> { }
+export interface multiStringValTypePropDefReadable extends PropDefReadable<multiStringValType> { }
+export interface multiStringValTypeArray extends Array<multiStringValType> { }
+
+export type multiStringValType = stringNullable | multiStringValTypeFn | multiStringValTypePropDefReadable | multiStringValTypeArray;
+
+export type singleStringValType = stringNullable | Fn<stringNullable> | PropDefReadable<stringNullable>;
+
 export type boolValType = boolean | Fn<boolean> | PropDefReadable<boolean>;
 
 export class StyleRule
 {
-	// propName: string;
-	// propValue: attrValType;
-
-	constructor(public propName: string, public propValue: attrValType)
+	constructor(public propName: string, public propValue: singleStringValType)
 	{
 	}
 }

@@ -1,7 +1,7 @@
 import { ElementGeneric } from './elm';
 import * as elements from "./htmlElements";
 
-export function nbsp() { return new elements.RawHtml("&nbsp;"); }
+export function nbsp() { return '\xA0'; }
 export function raw(s: string) { return new elements.RawHtml(s); }
 
 export function el(tagName: string = '') { return new ElementGeneric(tagName); }

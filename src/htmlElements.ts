@@ -1,7 +1,7 @@
 import { ElementGeneric } from './elm';
 import { Ref } from './Ref';
 import { PropDef } from './PropDefs';
-import { stringValType, boolValType } from "./types";
+import { boolValType, singleStringValType } from "./types";
 
 export class RawHtml
 {
@@ -16,7 +16,7 @@ export class ElementButton extends ElementGeneric
 	{
 		super('button')
 	}
-	type(val: stringValType)
+	type(val: singleStringValType)
 	{
 		this.attr('type', val);
 
@@ -30,7 +30,7 @@ export class ElementA extends ElementGeneric
 		super('a')
 		this.href("#");
 	}
-	href(val: stringValType)
+	href(val: singleStringValType)
 	{
 		this.attr('href', val);
 
@@ -43,7 +43,7 @@ export class ElementImg extends ElementGeneric
 	{
 		super('img')
 	}
-	src(val: stringValType)
+	src(val: singleStringValType)
 	{
 		this.attr('src', val);
 
@@ -125,7 +125,7 @@ export class ElementInputText extends ElementInput<string>
 
 		return this;
 	}
-	autocomplete(v: stringValType)
+	autocomplete(v: singleStringValType)
 	{
 		this.attr('autocomplete', v);
 
@@ -234,7 +234,7 @@ export class ElementOption extends ElementGeneric
 	{
 		super('option')
 	}
-	value(val: stringValType | undefined)
+	value(val: singleStringValType)
 	{
 		this.attr('value', val);
 
