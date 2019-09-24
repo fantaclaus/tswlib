@@ -93,7 +93,12 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 	}
 	protected ctxUpdate()
 	{
-		this.ctxs.forEach(ctx => ctx.update());
+		const ctxs: ICtx[] = [];
+
+		// clone ctx list since it is changed during ctx.update()
+		this.ctxs.forEach(ctx => ctxs.push(ctx));
+
+		ctxs.forEach(ctx => ctx.update());
 	}
 }
 

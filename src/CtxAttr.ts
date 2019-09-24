@@ -28,6 +28,11 @@ export class CtxAttr extends Ctx
 		this.removePropVals();
 
 		this._setAttrVal();
+
+		if (this.hasPropVals())
+		{
+			this.attachToPropVals();
+		}
 	}
 	private _setAttrVal()
 	{
