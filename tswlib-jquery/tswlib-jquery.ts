@@ -1,11 +1,11 @@
-import { ElementGeneric } from "./elm"
-import { EventHandler } from "./EventHandler";
-import { Ref } from "./Ref";
-import { RootEventHandler } from "./RootEventHandler";
+import { ElementGeneric } from "tswlib/elm"
+import { EventHandler } from "tswlib/EventHandler";
+import { Ref } from "tswlib/Ref";
+import { RootEventHandler } from "tswlib/RootEventHandler";
 
 // jQuery support
 
-declare module "./elm"
+declare module "tswlib/elm"
 {
 	interface ElementGeneric
 	{
@@ -14,7 +14,7 @@ declare module "./elm"
 	}
 }
 
-declare module "./ref"
+declare module "tswlib/ref"
 {
 	interface Ref
 	{

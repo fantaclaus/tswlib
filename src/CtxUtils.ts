@@ -1,5 +1,5 @@
 ﻿import { CtxScope } from "./CtxScope";
-import { ICtxUpdatable, IPropVal, isCtxUpdatable } from './interfaces';
+import { ICtxUpdatable, IPropVal } from './interfaces';
 
 type CtxEventHandler = () => void;
 
