@@ -1,9 +1,10 @@
 import { childValType, childValTypePropDefReadable, Renderer } from "./types";
 import { RawHtml } from "./htmlElements";
 import { ElementGeneric } from "./elm";
-import { PropDefReadable } from "./PropDefs";
+import { Scope } from "./CtxScope";
+import { Ctx } from "./Ctx";
 
-export class CtxRoot
+export class CtxRoot extends Ctx
 {
 	private htmlElement: HTMLElement;
 
@@ -11,16 +12,27 @@ export class CtxRoot
 
 	constructor(htmlElement: HTMLElement)
 	{
+		super();
+
 		this.htmlElement = htmlElement;
 	}
 	setContent(content: childValType)
 	{
 		const f = document.createDocumentFragment();
 
-		this.addNodesTo(f, content);
+		Scope.use(this, () =>
+		{
+			this.addNodesTo(f, content);
+		});
 
+		if (this.onBeforeAttach) this.onBeforeAttach();
+		
 		this.htmlElement.innerHTML = '';
 		this.htmlElement.appendChild(f);
+	}
+	update()
+	{
+		throw new Error("not implemented");
 	}
 
 	addNodesTo(f: DocumentFragment, item: childValType)

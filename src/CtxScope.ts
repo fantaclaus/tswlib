@@ -1,8 +1,8 @@
-import { Ctx } from "./Ctx";
+import { ICtx } from "./types";
 
 export class Scope
 {
-	private static current: Ctx | null = null;
+	private static current: ICtx | null = null;
 
 	static getCurrentSafe()
 	{
@@ -15,7 +15,7 @@ export class Scope
 	{
 		return this.current;
 	}
-	static use<T>(ctx: Ctx, action: () => T): T
+	static use<T>(ctx: ICtx, action: () => T): T
 	{
 		const prevCtx = this.current;
 		this.current = ctx;

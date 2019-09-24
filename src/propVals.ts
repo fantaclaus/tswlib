@@ -1,16 +1,24 @@
 import { PropDef, PropDefReadable } from './PropDefs';
+import { Scope } from './CtxScope';
+import { IPropVal, ICtx } from './types';
 
-export class PropVal<T> implements PropDef<T>
+export class PropVal<T> implements PropDef<T>, IPropVal
 {
+	private ctxs = new Set<ICtx>();
+	private insideSet: boolean | undefined; // to prevent infinite loops
+	private _name: string | undefined;
 	val: T;
-	private insideSet = false; // to prevent infinite loops
-	//name: string;
 
-	constructor(initialValue: T)
+	constructor(initialValue: T, name?: string)
 	{
 		this.val = initialValue;
+		this._name = name;
 	}
 
+	get name()
+	{
+		return this._name;
+	}
 	get()
 	{
 		this.ctxAttach();
@@ -24,8 +32,6 @@ export class PropVal<T> implements PropDef<T>
 
 		try
 		{
-			// console.group('propDef %o: set value %o', this, v);
-
 			if (this.val !== v)
 			{
 				this.val = v;
@@ -35,21 +41,9 @@ export class PropVal<T> implements PropDef<T>
 		}
 		finally
 		{
-			// console.groupEnd();
-
-			this.insideSet = false;
+			this.insideSet = undefined;
 		}
 	}
-
-	protected ctxAttach()
-	{
-		throw new Error("not implemented");
-	}
-	protected ctxUpdate()
-	{
-		throw new Error("not implemented");
-	}
-
 	isTrue(contentTrue: any, contentFalse?: any): () => any
 	{
 		return () => this.get() ? contentTrue : contentFalse;
@@ -82,6 +76,24 @@ export class PropVal<T> implements PropDef<T>
 		return {
 			get: () => to(this.get()),
 		};
+	}
+
+	ctxAdd(ctx: ICtx)
+	{
+		this.ctxs.add(ctx);
+	}
+	ctxRemove(ctx: ICtx)
+	{
+		this.ctxs.delete(ctx);
+	}
+	protected ctxAttach()
+	{
+		const ctx = Scope.getCurrent();
+		if (ctx) ctx.addPropVal(this);
+	}
+	protected ctxUpdate()
+	{
+		this.ctxs.forEach(ctx => ctx.update());
 	}
 }
 

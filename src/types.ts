@@ -43,3 +43,19 @@ export class StyleRule
 	{
 	}
 }
+
+export type attrValTypeInternal = attrValType | singleStringValType | multiStringValType | StyleRule;
+export type attrValTypeInternal2 = attrValTypeInternal | attrValTypeInternal[];
+
+export interface ICtx
+{
+	addPropVal(propVal: IPropVal): void;
+	addChild(ctx: ICtx): void;
+	update(): void;
+}
+
+export interface IPropVal
+{
+	ctxAdd(ctx: ICtx): void;
+	ctxRemove(ctx: ICtx): void;
+}
