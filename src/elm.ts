@@ -179,11 +179,24 @@ export class ElementGeneric
 					ctx.update();
 				});
 			}
+
+			this.addChldrenTo(el);
+
 			f.appendChild(el);
 		}
 		else
 		{
-			throw new Error("not implemented");
+			this.addChldrenTo(f);
+		}
+	}
+	private addChldrenTo(f: Node)
+	{
+		if (this._children)
+		{
+			this._children.forEach(ch =>
+			{
+				
+			});
 		}
 	}
 }

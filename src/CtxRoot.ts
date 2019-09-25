@@ -18,60 +18,65 @@ export class CtxRoot extends Ctx
 	}
 	setContent(content: childValType)
 	{
-		const f = document.createDocumentFragment();
-
 		Scope.use(this, () =>
 		{
-			this.addNodesTo(f, content);
+			this.addNodesTo(content);
 		});
-
-		if (this.onBeforeAttach) this.onBeforeAttach();
-		
-		this.htmlElement.innerHTML = '';
-		this.htmlElement.appendChild(f);
 	}
 	update()
 	{
 		throw new Error("not implemented");
 	}
 
-	addNodesTo(f: DocumentFragment, item: childValType)
+	addNodesTo(item: childValType)
 	{
-		if (item == null || item === true || item === false || item === '')
-		{
+		const f = document.createDocumentFragment();
 
-		}
-		else if (item instanceof Array)
-		{
-			item.forEach(i => this.addNodesTo(f, i));
-		}
-		else if (item instanceof Function)
-		{
-			const r = item();
-			this.addNodesTo(f, r);
-		}
-		else if (isRenderer(item))
-		{
-			const r = item.render();
-			this.addNodesTo(f, r);
-		}
-		else if (item instanceof RawHtml)
-		{
-			const el = document.createElement('div');
-			el.innerHTML = item.value;
+		_addNodesTo(item);
 
-			while (el.firstChild) f.appendChild(el.firstChild);
-		}
-		else if (item instanceof ElementGeneric)
-		{
-			item.z_addNodesTo(f);
-		}
-		else
-		{
-			const s = item.toString();
+		if (this.onBeforeAttach) this.onBeforeAttach();
 
-			const n = document.createTextNode(s);
-			f.appendChild(n);
+		this.htmlElement.innerHTML = '';
+		this.htmlElement.appendChild(f);
+
+		function _addNodesTo(item: childValType)
+		{
+			if (item == null || item === true || item === false || item === '')
+			{
+
+			}
+			else if (item instanceof Array)
+			{
+				item.forEach(i => _addNodesTo(i));
+			}
+			else if (item instanceof Function)
+			{
+				const r = item();
+				_addNodesTo(r);
+			}
+			else if (isRenderer(item))
+			{
+				const r = item.render();
+				_addNodesTo(r);
+			}
+			else if (item instanceof RawHtml)
+			{
+				const el = document.createElement('div');
+				el.innerHTML = item.value;
+
+				while (el.firstChild) f.appendChild(el.firstChild);
+			}
+			else if (item instanceof ElementGeneric)
+			{
+				item.z_addNodesTo(f);
+			}
+			else
+			{
+				const s = item.toString();
+
+				const n = document.createTextNode(s);
+				f.appendChild(n);
+			}
 		}
 	}
 }
