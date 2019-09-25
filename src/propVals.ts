@@ -2,23 +2,57 @@ import { PropDef, PropDefReadable } from './PropDefs';
 import { Scope } from './CtxScope';
 import { IPropVal, ICtx } from './types';
 
+export interface IPropValDbg
+{
+	dbg_name: string | undefined;
+	dbg_ctxs(): Set<ICtx> | undefined | null;
+	val: any;
+}
+
 export class PropVal<T> implements PropDef<T>, IPropVal
 {
-	private ctxs = new Set<ICtx>();
-	private insideSet: boolean | undefined; // to prevent infinite loops
-	private _name: string | undefined;
+	private ctxs: Set<ICtx> | undefined | null;
+	private insideSet = false; // to prevent infinite loops
+	dbg_name: string | undefined;
 	val: T;
 
 	constructor(initialValue: T, name?: string)
 	{
 		this.val = initialValue;
-		this._name = name;
+		this.dbg_name = name;
 	}
 
-	get name()
+	dbg_ctxs()
 	{
-		return this._name;
+		return this.ctxs;
 	}
+	ctxAdd(ctx: ICtx)
+	{
+		if (!this.ctxs) this.ctxs = new Set<ICtx>();
+		this.ctxs.add(ctx);
+	}
+	ctxRemove(ctx: ICtx)
+	{
+		if (this.ctxs) this.ctxs.delete(ctx);
+	}
+	protected ctxAttach()
+	{
+		const ctx = Scope.getCurrent();
+		if (ctx)
+		{
+			ctx.addPropVal(this);
+			this.ctxAdd(ctx);
+		}
+	}
+	protected ctxUpdate()
+	{
+		// detach first since it could be changed inside ctx.update()
+		const ctxs = this.ctxs;
+		this.ctxs = null;
+
+		if (ctxs) ctxs.forEach(ctx => ctx.update());
+	}
+
 	get()
 	{
 		this.ctxAttach();
@@ -41,7 +75,7 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 		}
 		finally
 		{
-			this.insideSet = undefined;
+			this.insideSet = false;
 		}
 	}
 	isTrue(contentTrue: any, contentFalse?: any): () => any
@@ -76,29 +110,6 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 		return {
 			get: () => to(this.get()),
 		};
-	}
-
-	ctxAdd(ctx: ICtx)
-	{
-		this.ctxs.add(ctx);
-	}
-	ctxRemove(ctx: ICtx)
-	{
-		this.ctxs.delete(ctx);
-	}
-	protected ctxAttach()
-	{
-		const ctx = Scope.getCurrent();
-		if (ctx) ctx.addPropVal(this);
-	}
-	protected ctxUpdate()
-	{
-		const ctxs: ICtx[] = [];
-
-		// clone ctx list since it is changed during ctx.update()
-		this.ctxs.forEach(ctx => ctxs.push(ctx));
-
-		ctxs.forEach(ctx => ctx.update());
 	}
 }
 

@@ -9,39 +9,24 @@ export class CtxAttr extends Ctx
 	{
 		super();
 	}
-	setAttrVal()
+	update()
 	{
-		this._setAttrVal();
+		this.detachPropVals();
+
+		Scope.use(this, () =>
+		{
+			this.setAttrVal();
+		});
 
 		if (this.hasPropVals())
 		{
-			this.attachToPropVals();
-
 			const ctxParent = Scope.getCurrent();
 			if (ctxParent) ctxParent.addChild(this);
 
-			console.debug(`setAttrVal("${this.attrName}"=`, this.attrVals, ') for ', this.el, 'ctx:', this);
+			console.debug(`CtxAttr.update("${this.attrName}"=`, this.attrVals, ') for ', this.el, 'ctx:', this);
 		}
 	}
-	update()
-	{
-		this.removePropVals();
-
-		this._setAttrVal();
-
-		if (this.hasPropVals())
-		{
-			this.attachToPropVals();
-		}
-	}
-	private _setAttrVal()
-	{
-		Scope.use(this, () =>
-		{
-			this.__setAttrVal();
-		});
-	}
-	private __setAttrVal()
+	private setAttrVal()
 	{
 		let result: string | null = null;
 
