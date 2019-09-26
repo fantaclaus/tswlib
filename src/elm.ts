@@ -2,6 +2,7 @@
 import { attrValType, childValType, StyleRule, boolValType, multiStringValType, singleStringValType, attrValTypeInternal, attrValTypeInternal2 } from "./types";
 import { Scope } from './CtxScope';
 import { CtxAttr } from './CtxAttr';
+import { addNodesTo } from './renderNodes';
 
 interface AttrNameValue
 {
@@ -137,65 +138,56 @@ export class ElementGeneric
 
 	// implementation
 
-	z_addNodesTo(f: DocumentFragment)
+	z_addNodesTo(parentNode: Node)
 	{
 		if (this._tagName)
 		{
 			const el = document.createElement(this._tagName);
 
-			if (this._attrs)
-			{
-				const attrs = new Map<string, attrValTypeInternal2>();
+			this.createAttrs(el);
 
-				this._attrs.forEach(a =>
-				{
-					if (a.attrName)
-					{
-						const attrName = a.attrName.toLowerCase();
+			addNodesTo(el, this._children);
 
-						const v = attrs.get(attrName);
-						if (v == null)
-						{
-							attrs.set(attrName, a.attrValue);
-						}
-						else if (v instanceof Array)
-						{
-							const vals: attrValTypeInternal[] = v;
-							vals.push(a.attrValue);
-						}
-						else
-						{
-							const vals: attrValTypeInternal[] = [];
-							vals.push(v);
-							vals.push(a.attrValue);
-							attrs.set(attrName, vals);
-						}
-					}
-				});
-
-				attrs.forEach((attrValue, attrName) =>
-				{
-					const ctx = new CtxAttr(el, attrName, attrValue);
-					ctx.update();
-				});
-			}
-
-			this.addChldrenTo(el);
-
-			f.appendChild(el);
+			parentNode.appendChild(el);
 		}
 		else
 		{
-			this.addChldrenTo(f);
+			addNodesTo(parentNode, this._children);
 		}
 	}
-	private addChldrenTo(f: Node)
+	private createAttrs(el: HTMLElement)
 	{
-		if (this._children)
+		if (this._attrs)
 		{
-			this._children.forEach(ch =>
+			const attrs = new Map<string, attrValTypeInternal2>();
+			this._attrs.forEach(a =>
 			{
-				
+				if (a.attrName)
+				{
+					const attrName = a.attrName.toLowerCase();
+					const v = attrs.get(attrName);
+					if (v == null)
+					{
+						attrs.set(attrName, a.attrValue);
+					}
+					else if (v instanceof Array)
+					{
+						const vals: attrValTypeInternal[] = v;
+						vals.push(a.attrValue);
+					}
+					else
+					{
+						const vals: attrValTypeInternal[] = [];
+						vals.push(v);
+						vals.push(a.attrValue);
+						attrs.set(attrName, vals);
+					}
+				}
+			});
+			attrs.forEach((attrValue, attrName) =>
+			{
+				const ctx = new CtxAttr(el, attrName, attrValue);
+				ctx.update();
 			});
 		}
 	}
