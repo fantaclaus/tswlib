@@ -20,13 +20,13 @@ export function addNodesTo(parentNode: Node, item: childValType)
 	}
 	else if (isPropDef(item))
 	{
-		const r = item.get();
-		addNodesTo(parentNode, r);
+		const ctx = new CtxNodes(item.get);
+		ctx.setup(parentNode);
 	}
 	else if (isRenderer(item))
 	{
-		const r = item.render();
-		addNodesTo(parentNode, r);
+		const ctx = new CtxNodes(item.render);
+		ctx.setup(parentNode);
 	}
 	else if (item instanceof RawHtml)
 	{

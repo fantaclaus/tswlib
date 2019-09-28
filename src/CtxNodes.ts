@@ -2,6 +2,7 @@ import { Ctx } from './Ctx';
 import { Scope } from './CtxScope';
 import { childValType } from './types';
 import { addNodesTo } from './renderNodes';
+import { log } from '../dbgutils';
 
 export class CtxNodes extends Ctx
 {
@@ -18,19 +19,11 @@ export class CtxNodes extends Ctx
 
 		this.updateNodes(parentNode, null);
 
-		if (this.hasPropVals())
-		{
-			const ctxParent = Scope.getCurrent();
-			if (ctxParent) ctxParent.addChild(this);
-
-			console.debug('%O added as child into %O', this, ctxParent);
-		}
+		this.addCtxToParent();
 	}
 	update()
 	{
-		console.debug('CtxNodes update:', this);
-
-		this.detachPropVals();
+		log(console.debug, 'CtxNodes update:', this);
 
 		if (!this.lastChild) throw new Error("this.lastChild is null");
 
@@ -38,6 +31,8 @@ export class CtxNodes extends Ctx
 		if (!parentNode) throw new Error("parentNode is null");
 
 		const nodeBefore = this.lastChild.nextSibling;
+
+		this.detachPropVals();
 
 		this.removeNodes(parentNode);
 		this.removeChildren();

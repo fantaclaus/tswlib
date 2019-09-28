@@ -1,13 +1,7 @@
 import { PropDef, PropDefReadable } from './PropDefs';
 import { Scope } from './CtxScope';
 import { IPropVal, ICtx } from './types';
-
-export interface IPropValDbg
-{
-	dbg_name: string | undefined;
-	dbg_ctxs(): Set<ICtx> | undefined | null;
-	val: any;
-}
+import { log } from '../dbgutils';
 
 export class PropVal<T> implements PropDef<T>, IPropVal
 {
@@ -20,6 +14,15 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 	{
 		this.val = initialValue;
 		this.dbg_name = name;
+		log(console.debug,
+			`PV: `,
+			['%c', "color: #a900ff"],
+			`new`,
+			['%c', "color: black"],
+			['%c', "color: blue"],
+			` <${this.dbg_name}> `,
+			['%c', "color: black"],
+			this);
 	}
 
 	dbg_ctxs()
@@ -30,6 +33,19 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 	{
 		if (!this.ctxs) this.ctxs = new Set<ICtx>();
 		this.ctxs.add(ctx);
+		log(console.debug,
+			`PV: ctxAdd: `,
+			['%c', "color: blue"],
+			`<${ctx.id}>`,
+			['%c', "color: black"],
+			` `,
+			ctx,
+			` into pv `,
+			['%c', "color: blue"],
+			`<${this.dbg_name}>`,
+			['%c', "color: black"],
+			` `,
+			this);
 	}
 	ctxRemove(ctx: ICtx)
 	{

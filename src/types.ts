@@ -49,6 +49,7 @@ export type attrValTypeInternal2 = attrValTypeInternal | attrValTypeInternal[];
 
 export interface ICtx
 {
+	id: number;
 	addPropVal(propVal: IPropVal): void;
 	addChild(ctx: ICtx): void;
 	update(): void;
@@ -56,6 +57,10 @@ export interface ICtx
 
 export interface IPropVal
 {
+	dbg_name: string | undefined;
+	dbg_ctxs(): Set<ICtx> | undefined | null;
+	val: any;
+
 	ctxAdd(ctx: ICtx): void;
 	ctxRemove(ctx: ICtx): void;
 }

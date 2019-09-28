@@ -187,7 +187,7 @@ export class ElementGeneric
 			attrs.forEach((attrValue, attrName) =>
 			{
 				const ctx = new CtxAttr(el, attrName, attrValue);
-				ctx.update();
+				ctx.setup();
 			});
 		}
 	}

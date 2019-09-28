@@ -9,6 +9,17 @@ export class CtxAttr extends Ctx
 	{
 		super();
 	}
+	setup()
+	{
+		// this.detachPropVals();
+
+		Scope.use(this, () =>
+		{
+			this.setAttrVal();
+		});
+
+		this.addCtxToParent();
+	}
 	update()
 	{
 		this.detachPropVals();
@@ -18,13 +29,7 @@ export class CtxAttr extends Ctx
 			this.setAttrVal();
 		});
 
-		if (this.hasPropVals())
-		{
-			const ctxParent = Scope.getCurrent();
-			if (ctxParent) ctxParent.addChild(this);
-
-			console.debug('%O added as child into %O', this, ctxParent);
-		}
+		// this.addCtxToParent();
 	}
 	private setAttrVal()
 	{
