@@ -29,6 +29,11 @@ export abstract class Ctx implements ICtx, ICtxDbg
 		this.propVals = null;
 
 		if (propVals) propVals.forEach(pv => pv.ctxRemove(this));
+		if (this.childCtxs) this.childCtxs.forEach(ch => ch.detachPropVals());
+	}
+	protected removeChildren()
+	{
+		if (this.childCtxs) this.childCtxs.clear();
 	}
 	abstract update(): void;
 

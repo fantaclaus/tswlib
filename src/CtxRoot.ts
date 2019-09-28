@@ -7,11 +7,11 @@ import { addNodesTo } from "./renderNodes";
 
 export class CtxRoot extends Ctx
 {
-	private htmlElement: HTMLElement;
+	private htmlElement: Element;
 
 	onBeforeAttach: (() => void) | undefined;
 
-	constructor(htmlElement: HTMLElement)
+	constructor(htmlElement: Element)
 	{
 		super();
 

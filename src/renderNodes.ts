@@ -1,6 +1,7 @@
 import { childValType, childValTypePropDefReadable, Renderer } from "../tswlibDom/types";
 import { RawHtml } from "../tswlibDom/htmlElements";
 import { ElementGeneric } from "tswlibDom/elm";
+import { CtxNodes } from "./CtxNodes";
 
 export function addNodesTo(parentNode: Node, item: childValType)
 {
@@ -14,8 +15,8 @@ export function addNodesTo(parentNode: Node, item: childValType)
 	}
 	else if (item instanceof Function)
 	{
-		const r = item();
-		addNodesTo(parentNode, r);
+		const ctx = new CtxNodes(item);
+		ctx.setup(parentNode);
 	}
 	else if (isPropDef(item))
 	{

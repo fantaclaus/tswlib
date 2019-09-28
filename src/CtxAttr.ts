@@ -23,7 +23,7 @@ export class CtxAttr extends Ctx
 			const ctxParent = Scope.getCurrent();
 			if (ctxParent) ctxParent.addChild(this);
 
-			console.debug(`CtxAttr.update("${this.attrName}"=`, this.attrVals, ') for ', this.el, 'ctx:', this);
+			console.debug('%O added as child into %O', this, ctxParent);
 		}
 	}
 	private setAttrVal()
