@@ -1,6 +1,5 @@
 ﻿import { Ref } from './Ref';
 import { attrValType, childValType, StyleRule, boolValType, multiStringValType, singleStringValType, attrValTypeInternal, attrValTypeInternal2 } from "./types";
-import { Scope } from './CtxScope';
 import { CtxAttr } from './CtxAttr';
 import { addNodesTo } from './renderNodes';
 

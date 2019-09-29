@@ -1,5 +1,5 @@
-import { childValType, childValTypePropDefReadable, Renderer } from "../tswlibDom/types";
-import { RawHtml } from "../tswlibDom/htmlElements";
+import { childValType, childValTypePropDefReadable, Renderer } from "tswlibDom/types";
+import { RawHtml } from "tswlibDom/htmlElements";
 import { ElementGeneric } from "tswlibDom/elm";
 import { CtxNodes } from "./CtxNodes";
 
@@ -20,12 +20,12 @@ export function addNodesTo(parentNode: Node, item: childValType)
 	}
 	else if (isPropDef(item))
 	{
-		const ctx = new CtxNodes(item.get);
+		const ctx = new CtxNodes(item.get.bind(item));
 		ctx.setup(parentNode);
 	}
 	else if (isRenderer(item))
 	{
-		const ctx = new CtxNodes(item.render);
+		const ctx = new CtxNodes(item.render.bind(item));
 		ctx.setup(parentNode);
 	}
 	else if (item instanceof RawHtml)

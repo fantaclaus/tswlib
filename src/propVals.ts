@@ -1,7 +1,7 @@
 import { PropDef, PropDefReadable } from './PropDefs';
 import { Scope } from './CtxScope';
 import { IPropVal, ICtx } from './types';
-import { log } from '../dbgutils';
+import { log } from 'lib/dbgutils';
 
 export class PropVal<T> implements PropDef<T>, IPropVal
 {

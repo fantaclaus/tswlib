@@ -1,6 +1,6 @@
 import { IPropVal, ICtx } from "./types";
 import { Scope } from "./CtxScope";
-import { log } from "../dbgutils";
+import { log } from "lib/dbgutils";
 
 export abstract class Ctx implements ICtx
 {
@@ -75,7 +75,7 @@ export abstract class Ctx implements ICtx
 			`<${propVal.dbg_name}> `,
 			["%c", "color: black"],
 			['%O', propVal],
-			`to `,
+			` to `,
 			["%c", "color: blue"],
 			`<${this.id}> `,
 			["%c", "color: black"],

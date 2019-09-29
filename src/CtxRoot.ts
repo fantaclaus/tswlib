@@ -1,6 +1,4 @@
-import { childValType, childValTypePropDefReadable, Renderer } from "./types";
-import { RawHtml } from "./htmlElements";
-import { ElementGeneric } from "./elm";
+import { childValType } from "./types";
 import { Scope } from "./CtxScope";
 import { Ctx } from "./Ctx";
 import { addNodesTo } from "./renderNodes";
@@ -21,14 +19,7 @@ export class CtxRoot extends Ctx
 	{
 		Scope.use(this, () =>
 		{
-			const f = document.createDocumentFragment();
-
-			addNodesTo(f, content);
-
-			if (this.onBeforeAttach) this.onBeforeAttach();
-
-			this.htmlElement.innerHTML = '';
-			this.htmlElement.appendChild(f);
+			addNodesTo(this.htmlElement, content);
 		});
 	}
 	update()
