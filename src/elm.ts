@@ -1,7 +1,5 @@
 ﻿import { Ref } from './Ref';
-import { attrValType, childValType, StyleRule, boolValType, multiStringValType, singleStringValType, attrValTypeInternal, attrValTypeInternal2 } from "./types";
-import { CtxAttr } from './CtxAttr';
-import { addNodesTo } from './renderNodes';
+import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, attrValTypeInternal } from "./types";
 
 interface AttrNameValue
 {
@@ -24,6 +22,13 @@ interface ElmEventMapItem
 	eventName: string;
 	eventType: string;
 	handler: EventHandler<any>;
+}
+
+export class StyleRule
+{
+	constructor(public propName: string, public propValue: singleStringValType)
+	{
+	}
 }
 
 export class ElementGeneric
@@ -137,57 +142,17 @@ export class ElementGeneric
 
 	// implementation
 
-	z_addNodesTo(parentNode: Node)
+	z_tagName()
 	{
-		if (this._tagName)
-		{
-			const el = document.createElement(this._tagName);
-
-			this.createAttrs(el);
-
-			addNodesTo(el, this._children);
-
-			parentNode.appendChild(el);
-		}
-		else
-		{
-			addNodesTo(parentNode, this._children);
-		}
+		return this._tagName;
 	}
-	private createAttrs(el: HTMLElement)
+	z_children()
 	{
-		if (this._attrs)
-		{
-			const attrs = new Map<string, attrValTypeInternal2>();
-			this._attrs.forEach(a =>
-			{
-				if (a.attrName)
-				{
-					const attrName = a.attrName.toLowerCase();
-					const v = attrs.get(attrName);
-					if (v == null)
-					{
-						attrs.set(attrName, a.attrValue);
-					}
-					else if (v instanceof Array)
-					{
-						const vals: attrValTypeInternal[] = v;
-						vals.push(a.attrValue);
-					}
-					else
-					{
-						const vals: attrValTypeInternal[] = [];
-						vals.push(v);
-						vals.push(a.attrValue);
-						attrs.set(attrName, vals);
-					}
-				}
-			});
-			attrs.forEach((attrValue, attrName) =>
-			{
-				const ctx = new CtxAttr(el, attrName, attrValue);
-				ctx.setup();
-			});
-		}
+		return this._children;
+	}
+	z_attrs()
+	{
+		return this._attrs;
 	}
 }
+

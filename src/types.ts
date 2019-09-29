@@ -1,6 +1,6 @@
 import { PropDefReadable } from './PropDefs';
 import { RawHtml } from "./htmlElements";
-import { ElementGeneric } from "./elm";
+import { ElementGeneric, StyleRule } from "./elm";
 
 export interface Renderer
 {
@@ -36,13 +36,6 @@ export type multiStringValType = stringNullable | multiStringValTypeFn | multiSt
 export type singleStringValType = stringNullable | Fn<stringNullable> | PropDefReadable<stringNullable>;
 
 export type boolValType = boolean | Fn<boolean> | PropDefReadable<boolean>;
-
-export class StyleRule
-{
-	constructor(public propName: string, public propValue: singleStringValType)
-	{
-	}
-}
 
 export type attrValTypeInternal = attrValType | singleStringValType | multiStringValType | StyleRule;
 export type attrValTypeInternal2 = attrValTypeInternal | attrValTypeInternal[];

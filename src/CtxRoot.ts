@@ -1,7 +1,7 @@
 import { childValType } from "./types";
 import { Scope } from "./CtxScope";
 import { Ctx } from "./Ctx";
-import { addNodesTo } from "./renderNodes";
+import { addNodesTo } from "./CtxNodes";
 
 export class CtxRoot extends Ctx
 {

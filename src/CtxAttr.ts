@@ -1,7 +1,8 @@
 import { Ctx } from "./Ctx";
-import { attrValTypeInternal2, StyleRule, singleStringValType } from "./types";
+import { attrValTypeInternal2, singleStringValType } from "./types";
 import { PropDefReadable } from "./PropDefs";
 import { Scope } from "./CtxScope";
+import { StyleRule } from "./elm";
 
 export class CtxAttr extends Ctx
 {
