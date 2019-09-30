@@ -57,3 +57,9 @@ export interface IPropVal
 	ctxAdd(ctx: ICtx): void;
 	ctxRemove(ctx: ICtx): void;
 }
+
+export interface IPropValEx extends IPropVal
+{
+	vals: any[];
+	set: (v: any) => void;
+}

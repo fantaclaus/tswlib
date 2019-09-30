@@ -1,6 +1,6 @@
 import { PropDef, PropDefReadable } from './PropDefs';
 import { Scope } from './CtxScope';
-import { IPropVal, ICtx } from './types';
+import { IPropVal, ICtx, IPropValEx } from './types';
 import { log } from 'lib/dbgutils';
 
 export class PropVal<T> implements PropDef<T>, IPropVal
@@ -14,15 +14,15 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 	{
 		this.val = initialValue;
 		this.dbg_name = name;
-		log(console.debug,
-			`PV: `,
-			['%c', "color: #a900ff"],
-			`new`,
-			['%c', "color: black"],
-			['%c', "color: blue"],
-			` <${this.dbg_name}> `,
-			['%c', "color: black"],
-			this);
+		// log(console.debug,
+		// 	`PV: `,
+		// 	['%c', "color: #a900ff"],
+		// 	`new`,
+		// 	['%c', "color: black"],
+		// 	['%c', "color: blue"],
+		// 	` <${this.dbg_name}> `,
+		// 	['%c', "color: black"],
+		// 	this);
 	}
 
 	dbg_ctxs()
@@ -165,5 +165,13 @@ export class PropValArray<T> extends PropVal<T[]>
 
 			this.ctxUpdate();
 		}
+	}
+}
+
+export class PropValEx<T> extends PropVal<T> implements IPropValEx
+{
+	constructor(public vals: T[])
+	{
+		super(vals[0]);
 	}
 }
