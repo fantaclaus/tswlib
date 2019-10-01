@@ -29,24 +29,6 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 	{
 		return this.ctxs;
 	}
-	ctxAdd(ctx: ICtx)
-	{
-		if (!this.ctxs) this.ctxs = new Set<ICtx>();
-		this.ctxs.add(ctx);
-		log(console.debug,
-			`PV: ctxAdd: `,
-			['%c', "color: blue"],
-			`<${ctx.id}>`,
-			['%c', "color: black"],
-			` `,
-			ctx,
-			` into pv `,
-			['%c', "color: blue"],
-			`<${this.dbg_name}>`,
-			['%c', "color: black"],
-			` `,
-			this);
-	}
 	ctxRemove(ctx: ICtx)
 	{
 		if (this.ctxs) this.ctxs.delete(ctx);
@@ -57,7 +39,19 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 		if (ctx)
 		{
 			ctx.addPropVal(this);
-			this.ctxAdd(ctx);
+
+			if (!this.ctxs) this.ctxs = new Set<ICtx>();
+			this.ctxs.add(ctx);
+
+			log(console.debug,
+				`PV: ctxAttach: `,
+
+				['%c', "color: blue"], `<${this.dbg_name}>`, ['%c', "color: black"], ` `, this,
+
+				` <--o--> `,
+
+				['%c', "color: blue"], `<${ctx.id}>`, ['%c', "color: black"], ` `, ctx,
+			);
 		}
 	}
 	protected ctxUpdate()

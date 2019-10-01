@@ -12,8 +12,6 @@ export class CtxAttr extends Ctx
 	}
 	setup()
 	{
-		// this.detachPropVals();
-
 		Scope.use(this, () =>
 		{
 			this.setAttrVal();

@@ -1,4 +1,4 @@
-import { IPropVal, ICtx } from "./types";
+import { IPropVal, ICtx, ICtxRoot } from "./types";
 import { Scope } from "./CtxScope";
 import { log } from "lib/dbgutils";
 
@@ -7,7 +7,8 @@ export abstract class Ctx implements ICtx
 	id: number;
 	private propVals: Set<IPropVal> | undefined | null;
 	private childCtxs: Set<Ctx> | undefined;
-	private ctxParent: Ctx | null = null;
+	protected ctxParent: Ctx | null = null;
+	protected ctxRoot: ICtxRoot | undefined;
 
 	private static CtxLastId = 0;
 	private static Ctxs = new Set<Ctx>();
@@ -25,6 +26,10 @@ export abstract class Ctx implements ICtx
 			["%c", "color: black"],
 			this);
 	}
+	getRootCtx()
+	{
+		return this.ctxRoot;
+	}
 	addCtxToParent()
 	{
 		const ctxParent = Scope.getCurrent();
@@ -34,6 +39,9 @@ export abstract class Ctx implements ICtx
 		}
 		else if (this.hasPropVals() || this.hasChildren())
 		{
+			// const ctxParent = Scope.getCurrent();
+			// if (!ctxParent) throw new Error("No scope parent");
+
 			ctxParent.addChild(this);
 
 			log(console.debug,
@@ -68,18 +76,6 @@ export abstract class Ctx implements ICtx
 		if (!this.propVals) this.propVals = new Set<IPropVal>();
 
 		this.propVals.add(propVal);
-
-		log(console.debug,
-			`CTX: addPropVal: `,
-			["%c", "color: blue"],
-			`<${propVal.dbg_name}> `,
-			["%c", "color: black"],
-			['%O', propVal],
-			` to `,
-			["%c", "color: blue"],
-			`<${this.id}> `,
-			["%c", "color: black"],
-			["%O", this]);
 	}
 	protected hasPropVals()
 	{
@@ -145,6 +141,10 @@ export abstract class Ctx implements ICtx
 		this.childCtxs.add(ctx);
 		ctx.ctxParent = this;
 	}
+	replaceNode(oldNode: Node | null, newNode: Node | null): void
+	{
+	}
+
 	dbg_getChildren()
 	{
 		return this.childCtxs;

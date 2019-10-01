@@ -1,6 +1,6 @@
 import { Ctx } from './Ctx';
 import { Scope } from './CtxScope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal } from './types';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, ICtxRoot } from './types';
 import { log } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
 import { RawHtml } from './htmlElements';
@@ -8,8 +8,8 @@ import { CtxAttr } from './CtxAttr';
 
 export class CtxNodes extends Ctx
 {
-	private firstChild: ChildNode | null = null;
-	private lastChild: ChildNode | null = null;
+	private firstChild: Node | null = null;
+	private lastChild: Node | null = null;
 
 	constructor(private content: () => childValType)
 	{
@@ -17,9 +17,13 @@ export class CtxNodes extends Ctx
 	}
 	setup(parentNode: Node)
 	{
-		//this.detachPropVals();
+		const ctxParent = Scope.getCurrent();
+		if (!ctxParent) throw new Error("No scope parent");
 
-		this.updateNodes(parentNode, null);
+		this.ctxRoot = ctxParent.getRootCtx();
+
+		//console.log('this.ctxRoot=', this.ctxRoot);
+		this.createNodes(parentNode, null, null);
 
 		this.addCtxToParent();
 	}
@@ -36,15 +40,30 @@ export class CtxNodes extends Ctx
 
 		this.detachPropVals();
 
+		const firstChildOld = this.firstChild;
+		const lastChildOld = this.lastChild;
+
 		this.removeNodes(parentNode);
 		this.removeChildren();
 
-		this.updateNodes(parentNode, nodeBefore);
+		this.createNodes(parentNode, nodeBefore, this.ctxRoot);
+
+		if (this.ctxParent)
+		{
+			this.ctxParent.replaceNode(firstChildOld, this.firstChild);
+			this.ctxParent.replaceNode(lastChildOld, this.lastChild);
+		}
+	}
+	replaceNode(oldNode: Node | null, newNode: Node | null): void
+	{
+		if (this.firstChild == oldNode) this.firstChild = newNode;
+		if (this.lastChild == oldNode) this.lastChild = newNode;
+
+		if (this.ctxParent) this.ctxParent.replaceNode(oldNode, newNode);
 	}
 	private removeNodes(parentNode: Node)
 	{
 		let node = this.firstChild;
-		//if (!node) throw new Error("this.firstChild is null");
 
 		while (true)
 		{
@@ -57,9 +76,11 @@ export class CtxNodes extends Ctx
 			node = nextNode;
 		}
 	}
-	private updateNodes(parentNode: Node, nodeBefore: ChildNode | null)
+	private createNodes(parentNode: Node, nodeBefore: ChildNode | null, ctxRoot: ICtxRoot | null | undefined)
 	{
 		const f = document.createDocumentFragment();
+
+		// f.appendChild(document.createComment(`${this.id} start`));
 
 		Scope.use(this, () =>
 		{
@@ -67,14 +88,17 @@ export class CtxNodes extends Ctx
 			addNodesTo(f, r);
 		});
 
+		// f.appendChild(document.createComment(`${this.id} end`));
+
 		if (!f.hasChildNodes())
 		{
-			const placeHolderNode = document.createComment("placeholder");
-			f.appendChild(placeHolderNode);
+			f.appendChild(document.createComment('placeholder'));
 		}
 
 		this.firstChild = f.firstChild;
 		this.lastChild = f.lastChild;
+
+		if (ctxRoot) ctxRoot.invokeBeforeAttach();
 
 		// TODO: if (this.onBeforeAttach) this.onBeforeAttach();
 
