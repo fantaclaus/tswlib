@@ -2,6 +2,12 @@ import { IPropVal, ICtx, ICtxRoot } from "./types";
 import { Scope } from "./CtxScope";
 import { log } from "lib/dbgutils";
 
+export const enum NodeKind
+{
+	first,
+	last,
+}
+
 export abstract class Ctx implements ICtx
 {
 	id: number;
@@ -141,7 +147,7 @@ export abstract class Ctx implements ICtx
 		this.childCtxs.add(ctx);
 		ctx.ctxParent = this;
 	}
-	replaceNode(oldNode: Node | null, newNode: Node | null): void
+	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
 	{
 	}
 

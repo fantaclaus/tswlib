@@ -17,10 +17,17 @@ export class CtxRoot extends Ctx implements ICtxRoot
 	}
 	setContent(content: childValType)
 	{
+		const f = document.createDocumentFragment();
+
 		Scope.use(this, () =>
 		{
-			addNodesTo(this.htmlElement, content);
+			addNodesTo(f, content);
 		});
+
+		this.invokeBeforeAttach();
+
+		//this.htmlElement.insertBefore(f, null);
+		this.htmlElement.appendChild(f);
 	}
 	update()
 	{
@@ -33,7 +40,7 @@ export class CtxRoot extends Ctx implements ICtxRoot
 	invokeBeforeAttach()
 	{
 		console.debug('invokeBeforeAttach');
-		
+
 		if (this.onBeforeAttach) this.onBeforeAttach();
 	}
 }

@@ -1,4 +1,4 @@
-import { Ctx } from './Ctx';
+import { Ctx, NodeKind } from './Ctx';
 import { Scope } from './CtxScope';
 import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, ICtxRoot } from './types';
 import { log } from 'lib/dbgutils';
@@ -46,21 +46,44 @@ export class CtxNodes extends Ctx
 		this.removeNodes(parentNode);
 		this.removeChildren();
 
-		this.createNodes(parentNode, nodeBefore, this.ctxRoot);
+		const f = document.createDocumentFragment();
+
+		this.addNodes(f);
+
+		if (this.ctxRoot) this.ctxRoot.invokeBeforeAttach();
+
+		parentNode.insertBefore(f, nodeBefore);
 
 		if (this.ctxParent)
 		{
-			// TODO: optimize: stop propagation when no match
-			this.ctxParent.replaceNode(firstChildOld, this.firstChild);
-			this.ctxParent.replaceNode(lastChildOld, this.lastChild);
+			this.ctxParent.replaceNode(NodeKind.first, firstChildOld, this.firstChild);
+			this.ctxParent.replaceNode(NodeKind.last, lastChildOld, this.lastChild);
 		}
 	}
-	replaceNode(oldNode: Node | null, newNode: Node | null): void
+	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
 	{
-		if (this.firstChild == oldNode) this.firstChild = newNode;
-		if (this.lastChild == oldNode) this.lastChild = newNode;
+		let matched = false;
 
-		if (this.ctxParent) this.ctxParent.replaceNode(oldNode, newNode);
+		switch (nodeKind)
+		{
+			case NodeKind.first:
+				if (this.firstChild == oldNode)
+				{
+					this.firstChild = newNode;
+					matched = true;
+				}
+				break;
+
+			case NodeKind.last:
+				if (this.lastChild == oldNode)
+				{
+					this.lastChild = newNode;
+					matched = true;
+				}
+				break;
+		}
+
+		if (matched && this.ctxParent) this.ctxParent.replaceNode(nodeKind, oldNode, newNode);
 	}
 	private removeNodes(parentNode: Node)
 	{
@@ -76,16 +99,6 @@ export class CtxNodes extends Ctx
 			if (node == this.lastChild) break;
 			node = nextNode;
 		}
-	}
-	private createNodes(parentNode: Node, nodeBefore: Node | null, ctxRoot: ICtxRoot | null | undefined)
-	{
-		const f = document.createDocumentFragment();
-
-		this.addNodes(f);
-
-		if (ctxRoot) ctxRoot.invokeBeforeAttach();
-
-		parentNode.insertBefore(f, nodeBefore);
 	}
 	private addNodes(parentNode: DocumentFragment | Element)
 	{
