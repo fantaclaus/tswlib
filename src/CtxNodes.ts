@@ -15,15 +15,15 @@ export class CtxNodes extends Ctx
 	{
 		super();
 	}
-	setup(parentNode: Node)
+	setup(parentNode: DocumentFragment | Element)
 	{
 		const ctxParent = Scope.getCurrent();
 		if (!ctxParent) throw new Error("No scope parent");
 
 		this.ctxRoot = ctxParent.getRootCtx();
-
 		//console.log('this.ctxRoot=', this.ctxRoot);
-		this.createNodes(parentNode, null, null);
+
+		this.addNodes(parentNode);
 
 		this.addCtxToParent();
 	}
@@ -50,6 +50,7 @@ export class CtxNodes extends Ctx
 
 		if (this.ctxParent)
 		{
+			// TODO: optimize: stop propagation when no match
 			this.ctxParent.replaceNode(firstChildOld, this.firstChild);
 			this.ctxParent.replaceNode(lastChildOld, this.lastChild);
 		}
@@ -76,43 +77,51 @@ export class CtxNodes extends Ctx
 			node = nextNode;
 		}
 	}
-	private createNodes(parentNode: Node, nodeBefore: ChildNode | null, ctxRoot: ICtxRoot | null | undefined)
+	private createNodes(parentNode: Node, nodeBefore: Node | null, ctxRoot: ICtxRoot | null | undefined)
 	{
 		const f = document.createDocumentFragment();
+
+		this.addNodes(f);
+
+		if (ctxRoot) ctxRoot.invokeBeforeAttach();
+
+		parentNode.insertBefore(f, nodeBefore);
+	}
+	private addNodes(parentNode: DocumentFragment | Element)
+	{
+		const parentLastChild = parentNode.lastChild;
 
 		// f.appendChild(document.createComment(`${this.id} start`));
 
 		Scope.use(this, () =>
 		{
 			const r = this.content();
-			addNodesTo(f, r);
+			addNodesTo(parentNode, r);
 		});
 
 		// f.appendChild(document.createComment(`${this.id} end`));
 
-		if (!f.hasChildNodes())
+		let firstAddedNode = parentLastChild == null ? parentNode.firstChild : parentLastChild.nextSibling;
+
+		// if nothing was added, add placeholder
+		if (firstAddedNode == null)
 		{
-			f.appendChild(document.createComment('placeholder'));
+			const placeholderNode = document.createComment('placeholder');
+			parentNode.appendChild(placeholderNode);
+
+			firstAddedNode = placeholderNode;
 		}
 
-		this.firstChild = f.firstChild;
-		this.lastChild = f.lastChild;
-
-		if (ctxRoot) ctxRoot.invokeBeforeAttach();
-
-		// TODO: if (this.onBeforeAttach) this.onBeforeAttach();
-
-		parentNode.insertBefore(f, nodeBefore);
+		this.firstChild = firstAddedNode;
+		this.lastChild = parentNode.lastChild;
 	}
 }
 
-export function addNodesTo(parentNode: Node, item: childValType)
+export function addNodesTo(parentNode: DocumentFragment | Element, item: childValType)
 {
-	if (item == null || item === true || item === false || item === '')
-	{
+	if (item == null || item === true || item === false || item === '') return;
 
-	}
-	else if (item instanceof Array)
+	if (item instanceof Array)
 	{
 		item.forEach(i => addNodesTo(parentNode, i));
 	}
@@ -140,7 +149,22 @@ export function addNodesTo(parentNode: Node, item: childValType)
 	}
 	else if (item instanceof ElementGeneric)
 	{
-		addElmContentTo(item, parentNode);
+		const children = item.z_children();
+		const tagName = item.z_tagName();
+		if (tagName)
+		{
+			const el = document.createElement(tagName);
+
+			createAttrs(item, el);
+
+			addNodesTo(el, children);
+
+			parentNode.appendChild(el);
+		}
+		else
+		{
+			addNodesTo(parentNode, children);
+		}
 	}
 	else
 	{
@@ -148,7 +172,6 @@ export function addNodesTo(parentNode: Node, item: childValType)
 		const n = document.createTextNode(s);
 		parentNode.appendChild(n);
 	}
-
 }
 
 function isPropDef(v: childValType): v is childValTypePropDefReadable
@@ -158,24 +181,6 @@ function isPropDef(v: childValType): v is childValTypePropDefReadable
 function isRenderer(item: childValType): item is Renderer
 {
 	return (<Renderer>item).render instanceof Function;
-}
-
-function addElmContentTo(elm: ElementGeneric, parentNode: Node)
-{
-	if (elm.z_tagName())
-	{
-		const el = document.createElement(elm.z_tagName());
-
-		createAttrs(elm, el);
-
-		addNodesTo(el, elm.z_children());
-
-		parentNode.appendChild(el);
-	}
-	else
-	{
-		addNodesTo(parentNode, elm.z_children());
-	}
 }
 
 function createAttrs(elm: ElementGeneric, el: HTMLElement)
