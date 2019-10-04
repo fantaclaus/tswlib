@@ -1,28 +1,5 @@
 ﻿import { Ref } from './Ref';
-import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, attrValTypeInternal } from "./types";
-
-interface AttrNameValue
-{
-	attrName: string;
-	attrValue: attrValTypeInternal;
-}
-
-interface WindowEventMap2 extends WindowEventMap
-{
-	"input": InputEvent;
-}
-
-interface EventHandler<T>
-{
-	(e: T, target: Element): void;
-}
-
-interface ElmEventMapItem
-{
-	eventName: string;
-	eventType: string;
-	handler: EventHandler<any>;
-}
+import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2 } from "./types";
 
 export class StyleRule
 {
@@ -42,7 +19,7 @@ export class ElementGeneric
 	constructor(tagName: string)
 	{
 		// empty tagName means this is a document fragment
-		this._tagName = tagName.toLowerCase();
+		this._tagName = tagName.toUpperCase();
 	}
 
 	attr(name: string, val: attrValType = '')
@@ -108,7 +85,7 @@ export class ElementGeneric
 	{
 		if (eventName && handler instanceof Function)
 		{
-			this.addHandler({ eventName, handler, eventType: 'dom' });
+			this.addHandler({ eventName, handleEvent: handler, eventType: 'dom' });
 		}
 
 		return this;
@@ -153,6 +130,10 @@ export class ElementGeneric
 	z_attrs()
 	{
 		return this._attrs;
+	}
+	z_events()
+	{
+		return this._eventHandlers;
 	}
 }
 

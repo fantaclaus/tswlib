@@ -12,10 +12,7 @@ export class CtxAttr extends Ctx
 	}
 	setup()
 	{
-		Scope.use(this, () =>
-		{
-			this.setAttrVal();
-		});
+		this._setAttrVal();
 
 		this.addCtxToParent();
 	}
@@ -23,12 +20,16 @@ export class CtxAttr extends Ctx
 	{
 		this.detachPropVals();
 
+		this._setAttrVal();
+
+		// this.addCtxToParent();
+	}
+	private _setAttrVal()
+	{
 		Scope.use(this, () =>
 		{
 			this.setAttrVal();
 		});
-
-		// this.addCtxToParent();
 	}
 	private setAttrVal()
 	{

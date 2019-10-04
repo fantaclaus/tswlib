@@ -1,9 +1,9 @@
 import { Ctx, NodeKind } from './Ctx';
 import { Scope } from './CtxScope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, ICtxRoot } from './types';
-import { log } from 'lib/dbgutils';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, EventHandler, AttrNameValue } from './types';
+import { log, logCtx } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
-import { RawHtml } from './htmlElements';
+import { RawHtml, ElementWithValue, IElementWithValue } from './htmlElements';
 import { CtxAttr } from './CtxAttr';
 
 export class CtxNodes extends Ctx
@@ -29,7 +29,7 @@ export class CtxNodes extends Ctx
 	}
 	update()
 	{
-		log(console.debug, 'CtxNodes update:', this);
+		log(console.debug, 'CtxNodes update:', logCtx(this));
 
 		if (!this.lastChild) throw new Error("this.lastChild is null");
 
@@ -136,7 +136,10 @@ export function addNodesTo(parentNode: DocumentFragment | Element, item: childVa
 
 	if (item instanceof Array)
 	{
-		item.forEach(i => addNodesTo(parentNode, i));
+		for (let i of item)
+		{
+			addNodesTo(parentNode, i);
+		}
 	}
 	else if (item instanceof Function)
 	{
@@ -166,9 +169,7 @@ export function addNodesTo(parentNode: DocumentFragment | Element, item: childVa
 		const tagName = item.z_tagName();
 		if (tagName)
 		{
-			const el = document.createElement(tagName);
-
-			createAttrs(item, el);
+			const el = createElement(tagName, item);
 
 			addNodesTo(el, children);
 
@@ -196,42 +197,101 @@ function isRenderer(item: childValType): item is Renderer
 	return (<Renderer>item).render instanceof Function;
 }
 
+
+function createElement(tagName: string, item: ElementGeneric)
+{
+	const el = document.createElement(tagName);
+
+	createAttrs(item, el);
+
+	if (item instanceof ElementWithValue)
+	{
+		const pd = item.z_getPropDef();
+		if (pd)
+		{
+			const elInput = item as IElementWithValue;
+			const valuePropName = elInput.z_getValuePropName();
+			const pv = pd;
+
+			function inputHandler(this: Element, e: Event)
+			{
+				const value = (el as unknown as { [name: string]: any })[valuePropName];
+				pv.set(value);
+			}
+
+			el.addEventListener('input', inputHandler);
+			el.addEventListener('change', inputHandler);
+		}
+	}
+
+	const events = item.z_events();
+	if (events)
+	{
+		for (let eh of events)
+		{
+			if (tagName == 'A' && eh.eventName.toLowerCase() == 'click')
+			{
+				const handler = eh.handleEvent;
+				el.addEventListener(eh.eventName, function (this: Element, e)
+				{
+					e.preventDefault();
+					handler.call(this, e);
+				});
+			}
+			else
+			{
+				el.addEventListener(eh.eventName, eh.handleEvent);
+			}
+		}
+	}
+
+	return el;
+}
 function createAttrs(elm: ElementGeneric, el: HTMLElement)
 {
 	const elm_attrs = elm.z_attrs();
 
 	if (elm_attrs)
 	{
-		const attrs = new Map<string, attrValTypeInternal2>();
-		elm_attrs.forEach(a =>
-		{
-			if (a.attrName)
-			{
-				const attrName = a.attrName.toLowerCase();
-				const v = attrs.get(attrName);
-				if (v == null)
-				{
-					attrs.set(attrName, a.attrValue);
-				}
-				else if (v instanceof Array)
-				{
-					const vals: attrValTypeInternal[] = v;
-					vals.push(a.attrValue);
-				}
-				else
-				{
-					const vals: attrValTypeInternal[] = [];
-					vals.push(v);
-					vals.push(a.attrValue);
-					attrs.set(attrName, vals);
-				}
-			}
-		});
-		attrs.forEach((attrValue, attrName) =>
+		const attrs = createAttrMap(elm_attrs);
+
+		for (let [attrName, attrValue] of attrs)
 		{
 			const ctx = new CtxAttr(el, attrName, attrValue);
 			ctx.setup();
-		});
+		}
 	}
+}
+
+function createAttrMap(elm_attrs: AttrNameValue[])
+{
+	const attrs = new Map<string, attrValTypeInternal2>();
+
+	for (let a of elm_attrs)
+	{
+		if (a.attrName)
+		{
+			const attrName = a.attrName.toLowerCase();
+			const v = attrs.get(attrName);
+			if (v == null)
+			{
+				attrs.set(attrName, a.attrValue);
+			}
+			else if (v instanceof Array)
+			{
+				const vals: attrValTypeInternal[] = v;
+				vals.push(a.attrValue);
+			}
+			else
+			{
+				const vals: attrValTypeInternal[] = [];
+				vals.push(v);
+				vals.push(a.attrValue);
+				attrs.set(attrName, vals);
+			}
+		}
+	}
+
+	return attrs;
 }
 

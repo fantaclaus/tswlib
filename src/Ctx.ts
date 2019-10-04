@@ -1,6 +1,6 @@
 import { IPropVal, ICtx, ICtxRoot } from "./types";
 import { Scope } from "./CtxScope";
-import { log } from "lib/dbgutils";
+import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
 
 export const enum NodeKind
 {
@@ -17,20 +17,12 @@ export abstract class Ctx implements ICtx
 	protected ctxRoot: ICtxRoot | undefined;
 
 	private static CtxLastId = 0;
-	private static Ctxs = new Set<Ctx>();
 
 	constructor()
 	{
 		this.id = ++Ctx.CtxLastId;
-		Ctx.Ctxs.add(this);
 
-		log(console.debug,
-			["%c", "color: orange"],
-			`CTX: new `,
-			["%c", "color: blue"],
-			`<${this.id}> `,
-			["%c", "color: black"],
-			this);
+		log(console.debug, logcolor("orange"), `CTX: new `, logCtx(this));
 	}
 	getRootCtx()
 	{
@@ -41,7 +33,7 @@ export abstract class Ctx implements ICtx
 		const ctxParent = Scope.getCurrent();
 		if (ctxParent == null)
 		{
-			log(console.warn, `CTX: not added: ctx <${this.id}> this NO PARENT`);
+			log(console.warn, `CTX: not added: ctx `, logCtx(this), ` NO PARENT`);
 		}
 		else if (this.hasPropVals() || this.hasChildren())
 		{
@@ -50,31 +42,11 @@ export abstract class Ctx implements ICtx
 
 			ctxParent.addChild(this);
 
-			log(console.debug,
-				`CTX: addChild: `,
-				["%c", "color: blue"],
-				`<${this.id}> `,
-				["%c", "color: black"],
-				["%O", this],
-				` to parent `,
-				["%c", "color: blue"],
-				`<${ctxParent.id}> `,
-				["%c", "color: black"],
-				["%O", ctxParent]);
+			log(console.debug, `CTX: addChild: `, logCtx(this), ` to parent `, logCtx(ctxParent));
 		}
 		else
 		{
-			log(console.warn,
-				`CTX: not added: `,
-				["%c", "color: blue"],
-				`<${this.id}> `,
-				["%c", "color: black"],
-				["%O", this],
-				` to parent `,
-				["%c", "color: blue"],
-				`<${ctxParent.id}> `,
-				["%c", "color: black"],
-				["%O", ctxParent]);
+			log(console.warn, `CTX: not added: `, logCtx(this), ` to parent `, logCtx(ctxParent));
 		}
 	}
 	addPropVal(propVal: IPropVal)
@@ -94,23 +66,23 @@ export abstract class Ctx implements ICtx
 		const propVals = this.propVals;
 		this.propVals = null;
 
-		if (propVals) propVals.forEach(pv =>
+		if (propVals)
 		{
-			log(console.debug,
-				`CTX: remove pv: `,
-				["%c", "color: blue"],
-				`<${pv.dbg_name}> `,
-				["%c", "color: black"],
-				['%O', pv],
-				` from `,
-				["%c", "color: blue"],
-				`<${this.id}> `,
-				["%c", "color: black"],
-				['%O', this]);
+			for (let pv of propVals)
+			{
+				log(console.debug, `CTX: remove pv: `, logPV(pv), ` from `, logCtx(this));
 
-			pv.ctxRemove(this);
-		});
-		if (this.childCtxs) this.childCtxs.forEach(ch => ch.detachPropVals());
+				pv.ctxRemove(this);
+			}
+		}
+
+		if (this.childCtxs)
+		{
+			for (let ctx of this.childCtxs)
+			{
+				ctx.detachPropVals();
+			}
+		}
 	}
 	protected hasChildren()
 	{
@@ -120,22 +92,13 @@ export abstract class Ctx implements ICtx
 	{
 		if (this.childCtxs)
 		{
-			this.childCtxs.forEach(ctx =>
+			for (let ctx of this.childCtxs)
 			{
-				log(console.debug,
-					`CTX: remove child `,
-					["%c", "color: blue"],
-					`<${ctx.id}> `,
-					["%c", "color: black"],
-					['%O', ctx],
-					` from `,
-					["%c", "color: blue"],
-					`<${this.id}> `,
-					["%c", "color: black"],
-					['%O', this]);
+				log(console.debug, `CTX: remove child `, logCtx(ctx), ` from `, logCtx(this));
 
 				ctx.ctxParent = null;
-			});
+			}
+
 			this.childCtxs.clear();
 		}
 	}

@@ -10,12 +10,12 @@
 
 /* TODO
 
-- onBeforeAttach: call before nodes inserted
++ onBeforeAttach: call before nodes inserted
 - event handlers (unsubscribe)
 - handle 'input', 'change' for input and select elements to change attached propval
 - refs (set null & detach)
 - before/after attach/detach (call)
 - delayed context updates
 - jquery support
-
+- IE 9-11 support
 */

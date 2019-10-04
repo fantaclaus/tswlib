@@ -2,6 +2,7 @@ import { childValType, ICtxRoot } from "./types";
 import { Scope } from "./CtxScope";
 import { Ctx } from "./Ctx";
 import { addNodesTo } from "./CtxNodes";
+import { log } from "lib/dbgutils";
 
 export class CtxRoot extends Ctx implements ICtxRoot
 {
@@ -26,7 +27,6 @@ export class CtxRoot extends Ctx implements ICtxRoot
 
 		this.invokeBeforeAttach();
 
-		//this.htmlElement.insertBefore(f, null);
 		this.htmlElement.appendChild(f);
 	}
 	update()
@@ -39,7 +39,7 @@ export class CtxRoot extends Ctx implements ICtxRoot
 	}
 	invokeBeforeAttach()
 	{
-		console.debug('invokeBeforeAttach');
+		log(console.debug, 'invokeBeforeAttach');
 
 		if (this.onBeforeAttach) this.onBeforeAttach();
 	}

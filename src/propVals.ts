@@ -1,7 +1,7 @@
 import { PropDef, PropDefReadable } from './PropDefs';
 import { Scope } from './CtxScope';
 import { IPropVal, ICtx, IPropValEx } from './types';
-import { log } from 'lib/dbgutils';
+import { log, logPV, logCtx } from 'lib/dbgutils';
 
 export class PropVal<T> implements PropDef<T>, IPropVal
 {
@@ -14,15 +14,6 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 	{
 		this.val = initialValue;
 		this.dbg_name = name;
-		// log(console.debug,
-		// 	`PV: `,
-		// 	['%c', "color: #a900ff"],
-		// 	`new`,
-		// 	['%c', "color: black"],
-		// 	['%c', "color: blue"],
-		// 	` <${this.dbg_name}> `,
-		// 	['%c', "color: black"],
-		// 	this);
 	}
 
 	dbg_ctxs()
@@ -43,15 +34,7 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 			if (!this.ctxs) this.ctxs = new Set<ICtx>();
 			this.ctxs.add(ctx);
 
-			log(console.debug,
-				`PV: ctxAttach: `,
-
-				['%c', "color: blue"], `<${this.dbg_name}>`, ['%c', "color: black"], ` `, this,
-
-				` <--o--> `,
-
-				['%c', "color: blue"], `<${ctx.id}>`, ['%c', "color: black"], ` `, ctx,
-			);
+			log(console.debug, `PV: ctxAttach: `, logPV(this), ` <--o--> `, logCtx(ctx));
 		}
 	}
 	protected ctxUpdate()
@@ -60,7 +43,13 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 		const ctxs = this.ctxs;
 		this.ctxs = null;
 
-		if (ctxs) ctxs.forEach(ctx => ctx.update());
+		if (ctxs)
+		{
+			for (let ctx of ctxs)
+			{
+				ctx.update();
+			}
+		}
 	}
 
 	get()

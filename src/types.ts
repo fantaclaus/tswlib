@@ -68,3 +68,26 @@ export interface IPropValEx extends IPropVal
 	vals: any[];
 	set: (v: any) => void;
 }
+
+export interface AttrNameValue
+{
+	attrName: string;
+	attrValue: attrValTypeInternal;
+}
+
+export interface WindowEventMap2 extends WindowEventMap
+{
+	"input": InputEvent;
+}
+
+export interface EventHandler<T>
+{
+	(e: T): void;
+}
+
+export interface ElmEventMapItem
+{
+	eventName: string;
+	eventType: string;
+	handleEvent: EventHandler<any>;
+}
