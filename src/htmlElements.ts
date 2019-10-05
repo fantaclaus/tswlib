@@ -1,7 +1,6 @@
 import { ElementGeneric } from './elm';
 import { Ref } from './Ref';
-import { PropDef } from './PropDefs';
-import { boolValType, singleStringValType } from "./types";
+import { boolValType, singleStringValType, PropDef, ElementValueInfo, IElementWithValue } from "./types";
 
 export class RawHtml
 {
@@ -53,40 +52,25 @@ export class ElementImg extends ElementGeneric
 
 export type elmValue = string | number | boolean | null;
 
-export interface IElementWithValue
-{
-	z_getValueAttrName(): string | null;
-	z_getValuePropName(): string;
-}
-
 export abstract class ElementWithValue<T extends elmValue> extends ElementGeneric implements IElementWithValue
 {
 	protected propDef: PropDef<T> | undefined;
 
-	/**
-	 * @internal
-	 */
-	z_getPropDef()
+	constructor(tagName: string, private propName: string)
 	{
-		return this.propDef;
+		super(tagName);
 	}
-	/**
-	 * @internal
-	 */
-	z_getValueAttrName(): string | null
+	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined
 	{
-		return null;
+		return this.propDef == null ? null : { propName: this.propName, propVal: this.propDef };
 	}
-	/**
-	 * @internal
-	 */
-	abstract z_getValuePropName(): string;
 }
 export class ElementInput<T extends elmValue> extends ElementWithValue<T>
 {
-	constructor(type: string)
+	constructor(type: string, propName: string)
 	{
-		super('input')
+		super('input', propName);
+
 		this.attr('type', type);
 	}
 	value(propDef: PropDef<T>)
@@ -95,28 +79,13 @@ export class ElementInput<T extends elmValue> extends ElementWithValue<T>
 
 		return this;
 	}
-	/**
-	 * @internal
-	 */
-	z_getValuePropName(): string
-	{
-		return 'value';
-	}
 }
 export class ElementInputText extends ElementInput<string>
 {
 	constructor()
 	{
-		super('text');
+		super('text', 'value');
 		this.autocomplete('off');
-	}
-
-	/**
-	 * @internal
-	 */
-	z_getValueAttrName(): string
-	{
-		return 'value';
 	}
 
 	placeholder(v: string)
@@ -134,19 +103,9 @@ export class ElementInputText extends ElementInput<string>
 }
 export class ElementInputCheckboxBase extends ElementInput<boolean>
 {
-	/**
-	 * @internal
-	 */
-	z_getValueAttrName(): string
+	constructor(type: string)
 	{
-		return 'checked';
-	}
-	/**
-	 * @internal
-	 */
-	z_getValuePropName(): string
-	{
-		return 'checked';
+		super(type, 'checked');
 	}
 }
 export class ElementInputCheckbox extends ElementInputCheckboxBase
@@ -167,30 +126,25 @@ export class ElementTextArea extends ElementWithValue<string>
 {
 	constructor()
 	{
-		super('textarea')
+		super('textarea', 'value')
 	}
-	value(propDef: PropDef<string>)
-	{
-		this.propDef = propDef;
+	// value(propDef: PropDef<string>)
+	// {
+	// 	this.propDef = propDef;
 
-		return this;
-	}
+	// 	return this;
+	// }
 	placeholder(v: string)
 	{
 		this.attr('placeholder', v);
 
 		return this;
 	}
-	/**
-	 * @internal
-	 */
-	z_getValuePropName(): string
-	{
-		return 'value';
-	}
 }
-export class ElementSelect extends ElementWithValue<string | null>
+export class ElementSelect extends ElementGeneric implements IElementWithValue
 {
+	private propInfos: ElementValueInfo[] | undefined;
+
 	constructor()
 	{
 		super('select')
@@ -198,7 +152,17 @@ export class ElementSelect extends ElementWithValue<string | null>
 
 	value(propDef: PropDef<string | null>)
 	{
-		this.propDef = propDef;
+		if (this.propInfos == null) this.propInfos = [];
+
+		this.propInfos.push({ propVal: propDef, propName: 'value' });
+
+		return this;
+	}
+	selectedIndex(propDef: PropDef<number | null>)
+	{
+		if (this.propInfos == null) this.propInfos = [];
+
+		this.propInfos.push({ propVal: propDef, propName: 'selectedIndex' });
 
 		return this;
 	}
@@ -206,26 +170,9 @@ export class ElementSelect extends ElementWithValue<string | null>
 	{
 		return "value";
 	}
-}
-export class ElementSelectByIndex extends ElementWithValue<number | null>
-{
-	constructor()
+	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined
 	{
-		super('select')
-	}
-
-	selectedIndex(propDef: PropDef<number | null>)
-	{
-		this.propDef = propDef;
-
-		return this;
-	}
-	/**
-	 * @internal
-	 */
-	z_getValuePropName(): string
-	{
-		return "selectedIndex";
+		return this.propInfos;
 	}
 }
 export class ElementOption extends ElementGeneric

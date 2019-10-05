@@ -1,5 +1,5 @@
 import { IPropVal, ICtx, ICtxRoot } from "./types";
-import { Scope } from "./CtxScope";
+import { g_CurrentContext } from "./Scope";
 import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
 
 export const enum NodeKind
@@ -30,23 +30,23 @@ export abstract class Ctx implements ICtx
 	}
 	addCtxToParent()
 	{
-		const ctxParent = Scope.getCurrent();
+		const ctxParent = g_CurrentContext.getCurrent();
 		if (ctxParent == null)
 		{
-			log(console.warn, `CTX: not added: ctx `, logCtx(this), ` NO PARENT`);
+			log(console.warn, logcolor("orange"), `CTX: not added: ctx `, logCtx(this), ` NO PARENT`);
 		}
 		else if (this.hasPropVals() || this.hasChildren())
 		{
-			// const ctxParent = Scope.getCurrent();
+			// const ctxParent = g_CurrentContext.getCurrent();
 			// if (!ctxParent) throw new Error("No scope parent");
 
 			ctxParent.addChild(this);
 
-			log(console.debug, `CTX: addChild: `, logCtx(this), ` to parent `, logCtx(ctxParent));
+			log(console.debug, logcolor("orange"), `CTX: addChild: `, logCtx(this), ` to parent `, logCtx(ctxParent));
 		}
 		else
 		{
-			log(console.warn, `CTX: not added: `, logCtx(this), ` to parent `, logCtx(ctxParent));
+			log(console.warn, logcolor("orange"), `CTX: not added: `, logCtx(this), ` to parent `, logCtx(ctxParent));
 		}
 	}
 	addPropVal(propVal: IPropVal)
@@ -70,7 +70,7 @@ export abstract class Ctx implements ICtx
 		{
 			for (let pv of propVals)
 			{
-				log(console.debug, `CTX: remove pv: `, logPV(pv), ` from `, logCtx(this));
+				log(console.debug, logcolor("orange"), `CTX: remove pv: `, logPV(pv), ` from `, logCtx(this));
 
 				pv.ctxRemove(this);
 			}
@@ -94,7 +94,7 @@ export abstract class Ctx implements ICtx
 		{
 			for (let ctx of this.childCtxs)
 			{
-				log(console.debug, `CTX: remove child `, logCtx(ctx), ` from `, logCtx(this));
+				log(console.debug, logcolor("orange"), `CTX: remove child `, logCtx(ctx), ` from `, logCtx(this));
 
 				ctx.ctxParent = null;
 			}

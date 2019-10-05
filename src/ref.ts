@@ -1,4 +1,4 @@
-export class Ref<T extends HTMLElement = HTMLElement>
+export class Ref<T extends Element = Element>
 {
 	get(): string | null
 	{
@@ -12,7 +12,7 @@ export class Ref<T extends HTMLElement = HTMLElement>
 	{
 		throw new Error("not implemented");
 	}
-	asHtmlElement<T2 extends HTMLElement = T>()
+	asHtmlElement<T2 extends Element = T>()
 	{
 		throw new Error("not implemented");
 	}

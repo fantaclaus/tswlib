@@ -1,10 +1,11 @@
 import { Ctx, NodeKind } from './Ctx';
-import { Scope } from './CtxScope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, EventHandler, AttrNameValue } from './types';
-import { log, logCtx } from 'lib/dbgutils';
+import { g_CurrentContext, g_ElementHandleEvent } from './Scope';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, EventHandler, AttrNameValue, ElementValueInfo } from './types';
+import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
-import { RawHtml, ElementWithValue, IElementWithValue } from './htmlElements';
+import { RawHtml, ElementWithValue, ElementSelect } from './htmlElements';
 import { CtxAttr } from './CtxAttr';
+import { CtxValue } from './CtxValue';
 
 export class CtxNodes extends Ctx
 {
@@ -17,7 +18,7 @@ export class CtxNodes extends Ctx
 	}
 	setup(parentNode: DocumentFragment | Element)
 	{
-		const ctxParent = Scope.getCurrent();
+		const ctxParent = g_CurrentContext.getCurrent();
 		if (!ctxParent) throw new Error("No scope parent");
 
 		this.ctxRoot = ctxParent.getRootCtx();
@@ -106,7 +107,7 @@ export class CtxNodes extends Ctx
 
 		// f.appendChild(document.createComment(`${this.id} start`));
 
-		Scope.use(this, () =>
+		g_CurrentContext.use(this, () =>
 		{
 			const r = this.content();
 			addNodesTo(parentNode, r);
@@ -204,23 +205,13 @@ function createElement(tagName: string, item: ElementGeneric)
 
 	createAttrs(item, el);
 
-	if (item instanceof ElementWithValue)
+	if (item instanceof ElementWithValue || item instanceof ElementSelect)
 	{
-		const pd = item.z_getPropDef();
-		if (pd)
+		const valInfos = item.z_getValueInfos();
+		if (valInfos)
 		{
-			const elInput = item as IElementWithValue;
-			const valuePropName = elInput.z_getValuePropName();
-			const pv = pd;
-
-			function inputHandler(this: Element, e: Event)
-			{
-				const value = (el as unknown as { [name: string]: any })[valuePropName];
-				pv.set(value);
-			}
-
-			el.addEventListener('input', inputHandler);
-			el.addEventListener('change', inputHandler);
+			addValueContext(el, valInfos);
+			addValueEventHandlers(el, valInfos);
 		}
 	}
 
@@ -247,7 +238,55 @@ function createElement(tagName: string, item: ElementGeneric)
 
 	return el;
 }
-function createAttrs(elm: ElementGeneric, el: HTMLElement)
+function addValueContext(el: Element, valInfos: ElementValueInfo | ElementValueInfo[])
+{
+	if (valInfos instanceof Array)
+	{
+		for (let valInfo of valInfos)
+		{
+			addValueContext(el, valInfo);
+		}
+	}
+	else
+	{
+		const pv = valInfos.propVal;
+		const ctx = new CtxValue(el, valInfos.propName, pv.get.bind(pv));
+		ctx.setup();
+	}
+}
+function addValueEventHandlers(el: HTMLElement, valInfos: ElementValueInfo | ElementValueInfo[])
+{
+	el.addEventListener('input', inputHandler);
+	el.addEventListener('change', inputHandler);
+
+	function inputHandler(this: Element, e: Event)
+	{
+		handleValueEvent(valInfos);
+
+		function handleValueEvent(valInfos: ElementValueInfo | ElementValueInfo[])
+		{
+			if (valInfos instanceof Array)
+			{
+				for (let valInfo of valInfos)
+				{
+					handleValueEvent(valInfo);
+				}
+			}
+			else
+			{
+				const value = (el as unknown as { [name: string]: any })[valInfos.propName];
+
+				log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
+
+				g_ElementHandleEvent.use(el, () =>
+				{
+					valInfos.propVal.set(value);
+				});
+			}
+		}
+	}
+}
+function createAttrs(elm: ElementGeneric, el: Element)
 {
 	const elm_attrs = elm.z_attrs();
 

@@ -1,7 +1,6 @@
-import { PropDef, PropDefReadable } from './PropDefs';
-import { Scope } from './CtxScope';
-import { IPropVal, ICtx, IPropValEx } from './types';
-import { log, logPV, logCtx } from 'lib/dbgutils';
+import { g_CurrentContext } from './Scope';
+import { IPropVal, ICtx, IPropValEx, PropDef, PropDefReadable } from './types';
+import { log, logPV, logCtx, logcolor } from 'lib/dbgutils';
 
 export class PropVal<T> implements PropDef<T>, IPropVal
 {
@@ -26,7 +25,7 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 	}
 	protected ctxAttach()
 	{
-		const ctx = Scope.getCurrent();
+		const ctx = g_CurrentContext.getCurrent();
 		if (ctx)
 		{
 			ctx.addPropVal(this);
@@ -34,7 +33,7 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 			if (!this.ctxs) this.ctxs = new Set<ICtx>();
 			this.ctxs.add(ctx);
 
-			log(console.debug, `PV: ctxAttach: `, logPV(this), ` <--o--> `, logCtx(ctx));
+			log(console.debug, logcolor("magenta"), `PV: ctxAttach: `, logPV(this), ` <--o--> `, logCtx(ctx));
 		}
 	}
 	protected ctxUpdate()

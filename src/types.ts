@@ -1,4 +1,3 @@
-import { PropDefReadable } from './PropDefs';
 import { RawHtml } from "./htmlElements";
 import { ElementGeneric, StyleRule } from "./elm";
 
@@ -63,6 +62,15 @@ export interface IPropVal
 	ctxRemove(ctx: ICtx): void;
 }
 
+export interface PropDefReadable<T>
+{
+	get: () => T;
+}
+export interface PropDef<T> extends PropDefReadable<T>
+{
+	set: (v: T) => void;
+}
+
 export interface IPropValEx extends IPropVal
 {
 	vals: any[];
@@ -90,4 +98,15 @@ export interface ElmEventMapItem
 	eventName: string;
 	eventType: string;
 	handleEvent: EventHandler<any>;
+}
+
+export interface ElementValueInfo
+{
+	propName: string;
+	propVal: PropDef<any>;
+}
+
+export interface IElementWithValue
+{
+	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined;
 }

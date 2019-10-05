@@ -1,5 +1,5 @@
 import { childValType, ICtxRoot } from "./types";
-import { Scope } from "./CtxScope";
+import { g_CurrentContext } from "./Scope";
 import { Ctx } from "./Ctx";
 import { addNodesTo } from "./CtxNodes";
 import { log } from "lib/dbgutils";
@@ -20,7 +20,7 @@ export class CtxRoot extends Ctx implements ICtxRoot
 	{
 		const f = document.createDocumentFragment();
 
-		Scope.use(this, () =>
+		g_CurrentContext.use(this, () =>
 		{
 			addNodesTo(f, content);
 		});

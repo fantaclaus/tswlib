@@ -1,28 +1,28 @@
 import { ICtx } from "./types";
 
-export class Scope
+class Scope<T>
 {
-	private static current: ICtx | null = null;
+	private current: T | null = null;
 
-	static getCurrentSafe()
+	getCurrentSafe()
 	{
 		const ctx = this.getCurrent();
 		if (ctx == null) throw new Error("No current context.");
 
 		return ctx;
 	}
-	static getCurrent()
+	getCurrent()
 	{
 		return this.current;
 	}
-	static use<T>(ctx: ICtx, action: () => T): T
+	use(ctx: T, action: () => void)
 	{
 		const prevCtx = this.current;
 		this.current = ctx;
 
 		try
 		{
-			return action();
+			action();
 		}
 		finally
 		{
@@ -30,3 +30,6 @@ export class Scope
 		}
 	}
 }
+
+export const g_ElementHandleEvent = new Scope<Element>();
+export const g_CurrentContext = new Scope<ICtx>();

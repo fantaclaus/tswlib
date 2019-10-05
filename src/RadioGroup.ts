@@ -5,15 +5,15 @@ import { Ref } from './Ref';
 export class RadioGroup<T>
 {
 	private propVal: PropVal<T>;
-	private groupName: string;
+	private groupName?: string;
 	private refs: { key: T; ref: Ref }[] = [];
 
-	constructor(propVal: PropVal<T>, groupName: string)
+	constructor(propVal: PropVal<T>, groupName?: string)
 	{
 		this.propVal = propVal;
 		this.groupName = groupName;
 	}
-	item(v: T)
+	item(v: T, groupName?: string)
 	{
 		const p =
 			{
@@ -22,7 +22,7 @@ export class RadioGroup<T>
 			};
 
 		const elm = new elements.ElementInputRadio();
-		elm.value(p).attr('name', this.groupName).addRef(this.getRefFor(v));
+		elm.value(p).attr('name', groupName || this.groupName).addRef(this.getRefFor(v));
 		return elm;
 	}
 	label(v: T)

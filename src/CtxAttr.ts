@@ -1,12 +1,11 @@
 import { Ctx } from "./Ctx";
-import { attrValTypeInternal2, singleStringValType } from "./types";
-import { PropDefReadable } from "./PropDefs";
-import { Scope } from "./CtxScope";
+import { attrValTypeInternal2, singleStringValType, PropDefReadable } from "./types";
+import { g_CurrentContext } from "./Scope";
 import { StyleRule } from "./elm";
 
 export class CtxAttr extends Ctx
 {
-	constructor(private el: HTMLElement, private attrName: string, private attrVals: attrValTypeInternal2)
+	constructor(private el: Element, private attrName: string, private attrVals: attrValTypeInternal2)
 	{
 		super();
 	}
@@ -26,7 +25,7 @@ export class CtxAttr extends Ctx
 	}
 	private _setAttrVal()
 	{
-		Scope.use(this, () =>
+		g_CurrentContext.use(this, () =>
 		{
 			this.setAttrVal();
 		});

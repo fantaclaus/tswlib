@@ -31,7 +31,6 @@ export function option() { return new elements.ElementOption(); }
 export function p() { return new ElementGeneric('p'); }
 export function pre() { return new ElementGeneric('pre'); }
 export function select() { return new elements.ElementSelect(); }
-export function selectByIndex() { return new elements.ElementSelectByIndex(); }
 export function small() { return new ElementGeneric('small'); }
 export function span() { return new ElementGeneric('span'); }
 export function table() { return new ElementGeneric('table'); }
