@@ -1,19 +1,18 @@
 import { PropVal } from './PropVals';
-import * as elements from './htmlElements';
-import { Ref } from './Ref';
+import * as html from "./html";
 
 export class RadioGroup<T>
 {
 	private propVal: PropVal<T>;
 	private groupName?: string;
-	private refs: { key: T; ref: Ref }[] = [];
+	private ids = new Map<T, string>();
 
 	constructor(propVal: PropVal<T>, groupName?: string)
 	{
 		this.propVal = propVal;
 		this.groupName = groupName;
 	}
-	item(v: T, groupName?: string)
+	radioButton(v: T, groupName?: string)
 	{
 		const p =
 			{
@@ -21,24 +20,24 @@ export class RadioGroup<T>
 				set: () => this.propVal.set(v),
 			};
 
-		const elm = new elements.ElementInputRadio();
-		elm.value(p).attr('name', groupName || this.groupName).addRef(this.getRefFor(v));
-		return elm;
+		return html.inputRadio().value(p).attr('name', groupName || this.groupName).id(this.getId(v));
 	}
 	label(v: T)
 	{
-		const elm = new elements.ElementLabel();
-		elm.forRef(this.getRefFor(v));
-		return elm;
+		return html.label().forId(this.getId(v));
 	}
-	private getRefFor(v: T)
+	private getId(v: T)
 	{
-		let keyRef = this.refs.find(kr => kr.key == v);
-		if (keyRef == null)
+		let id = this.ids.get(v);
+		if (id == null)
 		{
-			keyRef = { key: v, ref: new Ref() };
-			this.refs.push(keyRef);
+			id = this.getNextId();
+			this.ids.set(v, id);
 		}
-		return keyRef.ref;
+		return id;
+	}
+	private getNextId()
+	{
+		return 'radioButton-' + Math.round((Math.random() * 1000));
 	}
 }

@@ -1,6 +1,6 @@
 import { Ctx, NodeKind } from './Ctx';
 import { g_CurrentContext, g_ElementHandleEvent } from './Scope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, EventHandler, AttrNameValue, ElementValueInfo } from './types';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
 import { RawHtml, ElementWithValue, ElementSelect } from './htmlElements';
@@ -167,7 +167,7 @@ export function addNodesTo(parentNode: DocumentFragment | Element, item: childVa
 	else if (item instanceof ElementGeneric)
 	{
 		const children = item.z_children();
-		const tagName = item.z_tagName();
+		const tagName = item[privates.ElementGeneric.tagName]();
 		if (tagName)
 		{
 			const el = createElement(tagName, item);
@@ -202,6 +202,15 @@ function isRenderer(item: childValType): item is Renderer
 function createElement(tagName: string, item: ElementGeneric)
 {
 	const el = document.createElement(tagName);
+
+	const refs = item.z_getRefs();
+	if (refs)
+	{
+		for (let ref of refs)
+		{
+			ref.set(el);
+		}
+	}
 
 	createAttrs(item, el);
 

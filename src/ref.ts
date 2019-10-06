@@ -1,19 +1,21 @@
 export class Ref<T extends Element = Element>
 {
-	get(): string | null
+	private val: T | undefined;
+
+	constructor(private dbg_name?: string)
 	{
-		throw new Error("not implemented");
 	}
-	set(v: string | null): void
+	set(v: T)
 	{
-		throw new Error("not implemented");
+		this.val = v;
 	}
 	isValid()
 	{
-		throw new Error("not implemented");
+		return this.val != null;
 	}
-	asHtmlElement<T2 extends Element = T>()
+	asHtmlElement<T2 extends T = T>()
 	{
-		throw new Error("not implemented");
+		if (this.val == null) throw new Error("ref is invalid");
+		return this.val as T2;
 	}
 }

@@ -1,5 +1,5 @@
 ﻿import { Ref } from './Ref';
-import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2 } from "./types";
+import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, privates } from "./types";
 
 export class StyleRule
 {
@@ -14,7 +14,7 @@ export class ElementGeneric
 	private _attrs: AttrNameValue[] | undefined;
 	private _children: childValType[] | undefined;
 	private _eventHandlers: ElmEventMapItem[] | undefined;
-	private _refs: Ref[] | undefined;
+	protected _refs: Ref[] | undefined;
 
 	constructor(tagName: string)
 	{
@@ -25,6 +25,12 @@ export class ElementGeneric
 	attr(name: string, val: attrValType = '')
 	{
 		this.addAttr(name, val);
+
+		return this;
+	}
+	id(val: singleStringValType)
+	{
+		this.addAttr('id', val);
 
 		return this;
 	}
@@ -90,15 +96,14 @@ export class ElementGeneric
 
 		return this;
 	}
-
-	addHandler(item: ElmEventMapItem)
+	private addHandler(item: ElmEventMapItem)
 	{
 		if (this._eventHandlers == null) this._eventHandlers = [];
 
 		this._eventHandlers.push(item);
 	}
 
-	addRef(ref: Ref | null)
+	addRef(ref: Ref<Element> | null)
 	{
 		if (ref != null)
 		{
@@ -119,7 +124,7 @@ export class ElementGeneric
 
 	// implementation
 
-	z_tagName()
+	[privates.ElementGeneric.tagName]()
 	{
 		return this._tagName;
 	}
@@ -135,5 +140,8 @@ export class ElementGeneric
 	{
 		return this._eventHandlers;
 	}
+	z_getRefs()
+	{
+		return this._refs;
+	}
 }
-

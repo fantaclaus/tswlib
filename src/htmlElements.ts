@@ -1,6 +1,6 @@
 import { ElementGeneric } from './elm';
 import { Ref } from './Ref';
-import { boolValType, singleStringValType, PropDef, ElementValueInfo, IElementWithValue } from "./types";
+import { boolValType, singleStringValType, PropDef, ElementValueInfo, IElementWithValue, attrValType } from "./types";
 
 export class RawHtml
 {
@@ -60,6 +60,12 @@ export abstract class ElementWithValue<T extends elmValue> extends ElementGeneri
 	{
 		super(tagName);
 	}
+	value(propDef: PropDef<T>)
+	{
+		this.propDef = propDef;
+
+		return this;
+	}
 	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined
 	{
 		return this.propDef == null ? null : { propName: this.propName, propVal: this.propDef };
@@ -72,12 +78,6 @@ export class ElementInput<T extends elmValue> extends ElementWithValue<T>
 		super('input', propName);
 
 		this.attr('type', type);
-	}
-	value(propDef: PropDef<T>)
-	{
-		this.propDef = propDef;
-
-		return this;
 	}
 }
 export class ElementInputText extends ElementInput<string>
@@ -128,12 +128,6 @@ export class ElementTextArea extends ElementWithValue<string>
 	{
 		super('textarea', 'value')
 	}
-	// value(propDef: PropDef<string>)
-	// {
-	// 	this.propDef = propDef;
-
-	// 	return this;
-	// }
 	placeholder(v: string)
 	{
 		this.attr('placeholder', v);
@@ -202,9 +196,9 @@ export class ElementLabel extends ElementGeneric
 	}
 
 	// "for" is a keyword. it can not be used as a property name in IE before version 9. so we use name "forRef" instead.
-	forRef(ref: Ref)
+	forId(id: singleStringValType)
 	{
-		this.attr('for', ref);
+		this.attr('for', id);
 
 		return this;
 	}

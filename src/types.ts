@@ -110,3 +110,11 @@ export interface IElementWithValue
 {
 	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined;
 }
+
+export namespace privates
+{
+	export namespace ElementGeneric
+	{
+		export const tagName = Symbol('ElementGeneric_tagName');
+	}
+}
