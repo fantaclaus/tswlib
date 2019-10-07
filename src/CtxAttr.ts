@@ -39,7 +39,14 @@ export class CtxAttr extends Ctx
 
 		addAttrString(this.attrVals);
 
-		if (result != null) this.el.setAttribute(this.attrName, result);
+		if (result != null)
+		{
+			this.el.setAttribute(this.attrName, result);
+		}
+		else
+		{
+			this.el.removeAttribute(this.attrName);
+		}
 
 		function addAttrString(attrValue: attrValTypeInternal2)
 		{
