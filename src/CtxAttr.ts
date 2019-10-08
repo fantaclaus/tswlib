@@ -112,6 +112,8 @@ export class CtxAttr extends Ctx
 			}
 		}
 	}
+	get dbg_attrName() { return this.attrName; }
+	get dbg_el() { return this.el; }
 }
 
 

@@ -12,7 +12,7 @@ export abstract class Ctx implements ICtx
 {
 	id: number;
 	private propVals: Set<IPropVal> | undefined | null;
-	private childCtxs: Set<Ctx> | undefined;
+	protected childCtxs: Set<Ctx> | undefined;
 	protected ctxParent: Ctx | null = null;
 	protected ctxRoot: ICtxRoot | undefined;
 
@@ -111,6 +111,21 @@ export abstract class Ctx implements ICtx
 		ctx.ctxParent = this;
 	}
 	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
+	{
+	}
+	protected notifyChildren(action: (ctx: Ctx, beforeChildren: boolean) => void)
+	{
+		if (this.childCtxs)
+		{
+			for (let ctx of this.childCtxs)
+			{
+				action(ctx, true);
+				ctx.notifyChildren(action);
+				action(ctx, false);
+			}
+		}
+	}
+	domChange(beforeChildren: boolean, attach: boolean): void
 	{
 	}
 

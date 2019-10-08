@@ -40,4 +40,5 @@ export class CtxValue extends Ctx
 			el[this.valuePropName] = v;
 		}
 	}
+	get dbg_el() { return this.el; }
 }

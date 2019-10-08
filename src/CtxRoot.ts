@@ -29,6 +29,8 @@ export class CtxRoot extends Ctx implements ICtxRoot
 		this.invokeBeforeAttach();
 
 		this.htmlElement.appendChild(f);
+
+		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, true));
 	}
 	update()
 	{

@@ -12,7 +12,7 @@ export class CtxNodes extends Ctx
 	private firstChild: Node | null = null;
 	private lastChild: Node | null = null;
 
-	constructor(private content: () => childValType)
+	constructor(private content: () => childValType, private renderer?: Renderer)
 	{
 		super();
 	}
@@ -39,13 +39,15 @@ export class CtxNodes extends Ctx
 
 		const nodeBefore = this.lastChild.nextSibling;
 
+		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
+
 		this.detachPropVals();
 
 		const firstChildOld = this.firstChild;
 		const lastChildOld = this.lastChild;
 
 		this.removeNodes(parentNode);
-		this.removeChildren();
+		this.removeChildren(); // only one level
 
 		const f = document.createDocumentFragment();
 
@@ -55,10 +57,24 @@ export class CtxNodes extends Ctx
 
 		parentNode.insertBefore(f, nodeBefore);
 
+		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, true));
+
 		if (this.ctxParent)
 		{
 			this.ctxParent.replaceNode(NodeKind.first, firstChildOld, this.firstChild);
 			this.ctxParent.replaceNode(NodeKind.last, lastChildOld, this.lastChild);
+		}
+	}
+	domChange(beforeChildren: boolean, attach: boolean): void
+	{
+		if (this.renderer)
+		{
+			const f =
+				beforeChildren ?
+					(attach ? this.renderer.afterAttachPre : this.renderer.beforeDetachPre) :
+					(attach ? this.renderer.afterAttachPost : this.renderer.beforeDetachPost);
+
+			if (f) f.call(this.renderer);
 		}
 	}
 	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
@@ -129,6 +145,9 @@ export class CtxNodes extends Ctx
 		this.firstChild = firstAddedNode;
 		this.lastChild = parentNode.lastChild;
 	}
+	get dbg_firstChild() { return this.firstChild; }
+	get dbg_lastChild() { return this.lastChild; }
+	get dbg_content() { return this.renderer || this.content; }
 }
 
 export function addNodesTo(parentNode: DocumentFragment | Element, item: childValType)
@@ -154,7 +173,7 @@ export function addNodesTo(parentNode: DocumentFragment | Element, item: childVa
 	}
 	else if (isRenderer(item))
 	{
-		const ctx = new CtxNodes(item.render.bind(item));
+		const ctx = new CtxNodes(item.render.bind(item), item);
 		ctx.setup(parentNode);
 	}
 	else if (item instanceof RawHtml)
