@@ -15,7 +15,7 @@
 + handle 'input', 'change' for input and select elements to change attached propval
 + refs
 + before/after attach/detach (call)
-- delayed context updates with hierarchy
+- delayed context updates
 - jquery support
 - IE 9-11 support, maybe IE8
 - sync propVals of 'select' elm: value and selectedIndex

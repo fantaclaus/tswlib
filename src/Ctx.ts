@@ -28,6 +28,10 @@ export abstract class Ctx implements ICtx
 	{
 		return this.ctxRoot;
 	}
+	getParent(): ICtx | null
+	{
+		return this.ctxParent;
+	}
 	addCtxToParent()
 	{
 		const ctxParent = g_CurrentContext.getCurrent();

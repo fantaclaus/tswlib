@@ -6,13 +6,14 @@ import { ElementGeneric } from './elm';
 import { RawHtml, ElementWithValue, ElementSelect } from './htmlElements';
 import { CtxAttr } from './CtxAttr';
 import { CtxValue } from './CtxValue';
+import { removeFromUpdateQueue } from './UpdateQueue';
 
 export class CtxNodes extends Ctx
 {
 	private firstChild: Node | null = null;
 	private lastChild: Node | null = null;
 
-	constructor(private content: () => childValType, private renderer?: Renderer)
+	constructor(private content: () => childValType, private renderer?: Renderer, private fn?: Function)
 	{
 		super();
 	}
@@ -40,6 +41,8 @@ export class CtxNodes extends Ctx
 		const nodeBefore = this.lastChild.nextSibling;
 
 		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
+
+		removeFromUpdateQueue(this);
 
 		this.detachPropVals();
 
@@ -147,7 +150,7 @@ export class CtxNodes extends Ctx
 	}
 	get dbg_firstChild() { return this.firstChild; }
 	get dbg_lastChild() { return this.lastChild; }
-	get dbg_content() { return this.renderer || this.content; }
+	get dbg_content() { return this.fn; }
 }
 
 export function addNodesTo(parentNode: DocumentFragment | Element, item: childValType)
@@ -163,17 +166,17 @@ export function addNodesTo(parentNode: DocumentFragment | Element, item: childVa
 	}
 	else if (item instanceof Function)
 	{
-		const ctx = new CtxNodes(item);
+		const ctx = new CtxNodes(item, undefined, item);
 		ctx.setup(parentNode);
 	}
 	else if (isPropDef(item))
 	{
-		const ctx = new CtxNodes(item.get.bind(item));
+		const ctx = new CtxNodes(item.get.bind(item), undefined);
 		ctx.setup(parentNode);
 	}
 	else if (isRenderer(item))
 	{
-		const ctx = new CtxNodes(item.render.bind(item), item);
+		const ctx = new CtxNodes(item.render.bind(item), item, item.render);
 		ctx.setup(parentNode);
 	}
 	else if (item instanceof RawHtml)

@@ -1,6 +1,7 @@
 import { g_CurrentContext } from './Scope';
 import { IPropVal, ICtx, IPropValEx, PropDef, PropDefReadable } from './types';
 import { log, logPV, logCtx, logcolor } from 'lib/dbgutils';
+import { addToUpdateQueue } from './UpdateQueue';
 
 export class PropVal<T> implements PropDef<T>, IPropVal
 {
@@ -42,13 +43,7 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 		const ctxs = this.ctxs;
 		this.ctxs = null;
 
-		if (ctxs)
-		{
-			for (let ctx of ctxs)
-			{
-				ctx.update();
-			}
-		}
+		if (ctxs) addToUpdateQueue(ctxs);
 	}
 
 	get()

@@ -46,6 +46,7 @@ export interface ICtx
 	addPropVal(propVal: IPropVal): void;
 	addChild(ctx: ICtx): void;
 	update(): void;
+	getParent(): ICtx | null;
 }
 
 export interface ICtxRoot
