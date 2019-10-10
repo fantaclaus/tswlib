@@ -8,22 +8,26 @@ let _updatedCbs: (() => void)[] = [];
 
 export function addToUpdateQueue(ctxs: Set<ICtx>)
 {
-	const newQueue = _updateQueue || new Set<ICtx>();
-
 	for (let ctx of ctxs)
 	{
-		newQueue.add(ctx);
 		log(console.debug, `add to queue`, logCtx(ctx));
 	}
 
-	if (newQueue.size > 0)
+	if (_updateQueue == null)
 	{
-		_updateQueue = newQueue;
-
-		if (_timerId == null)
+		_updateQueue = ctxs;
+	}
+	else
+	{
+		for (let ctx of ctxs)
 		{
-			_timerId = setTimeout(processQueue, 0);
+			_updateQueue.add(ctx);
 		}
+	}
+
+	if (_updateQueue.size > 0 && _timerId == null)
+	{
+		_timerId = setTimeout(processQueue, 0);
 	}
 }
 
@@ -55,8 +59,8 @@ function processQueue()
 			// collect into contextsToUpdate before ctx.update(), since parents will be set to null
 
 			// const t0 = performance.now();
-			//const contextsToUpdate = getContextsToUpdate(updateQueue);
-			const contextsToUpdate = Array.from(updateQueue);
+			const contextsToUpdate = getContextsToUpdate(updateQueue);
+			//const contextsToUpdate = Array.from(updateQueue);
 
 			console.debug(`processQueue: contextsToUpdate.length=${contextsToUpdate.length}; begin`);
 
@@ -68,7 +72,9 @@ function processQueue()
 
 			for (let ctx of contextsToUpdate)
 			{
-				ctx.update();
+				// while invoking ctx.update() some contexts could be removed,
+				// so don't update removed contexts to avoid re-attaching them to propVals
+				if (ctx.getParent() != null) ctx.update();
 			}
 
 			// dbgutils.options.logEnabled = logEnabled;

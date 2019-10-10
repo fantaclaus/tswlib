@@ -1,9 +1,9 @@
 import { Ctx, NodeKind } from './Ctx';
-import { g_CurrentContext, g_ElementHandleEvent } from './Scope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates } from './types';
+import { g_CurrentContext } from './Scope';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
-import { RawHtml, ElementWithValue, ElementSelect } from './htmlElements';
+import { RawHtml, ElementWithValueBase } from './htmlElements';
 import { CtxAttr } from './CtxAttr';
 import { CtxValue } from './CtxValue';
 import { removeFromUpdateQueue } from './UpdateQueue';
@@ -13,7 +13,7 @@ export class CtxNodes extends Ctx
 	private firstChild: Node | null = null;
 	private lastChild: Node | null = null;
 
-	constructor(private content: () => childValType, private renderer?: Renderer, private fn?: Function)
+	constructor(private content: childValTypeFn | childValTypePropDefReadable | Renderer)
 	{
 		super();
 	}
@@ -70,14 +70,14 @@ export class CtxNodes extends Ctx
 	}
 	domChange(beforeChildren: boolean, attach: boolean): void
 	{
-		if (this.renderer)
+		if (isRenderer(this.content))
 		{
 			const f =
 				beforeChildren ?
-					(attach ? this.renderer.afterAttachPre : this.renderer.beforeDetachPre) :
-					(attach ? this.renderer.afterAttachPost : this.renderer.beforeDetachPost);
+					(attach ? this.content.afterAttachPre : this.content.beforeDetachPre) :
+					(attach ? this.content.afterAttachPost : this.content.beforeDetachPost);
 
-			if (f) f.call(this.renderer);
+			if (f) f.call(this.content);
 		}
 	}
 	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
@@ -128,7 +128,8 @@ export class CtxNodes extends Ctx
 
 		g_CurrentContext.use(this, () =>
 		{
-			const r = this.content();
+			const r = this.getContent();
+
 			addNodesTo(parentNode, r);
 		});
 
@@ -148,9 +149,17 @@ export class CtxNodes extends Ctx
 		this.firstChild = firstAddedNode;
 		this.lastChild = parentNode.lastChild;
 	}
+	private getContent()
+	{
+		if (this.content instanceof Function) return this.content();
+		if (isPropDef(this.content)) return this.content.get();
+		if (isRenderer(this.content)) return this.content.render();
+
+		throw new Error("this.content is not valid");
+	}
 	get dbg_firstChild() { return this.firstChild; }
 	get dbg_lastChild() { return this.lastChild; }
-	get dbg_content() { return this.fn; }
+	get dbg_content() { return this.content; }
 }
 
 export function addNodesTo(parentNode: DocumentFragment | Element, item: childValType)
@@ -164,19 +173,9 @@ export function addNodesTo(parentNode: DocumentFragment | Element, item: childVa
 			addNodesTo(parentNode, i);
 		}
 	}
-	else if (item instanceof Function)
+	else if (item instanceof Function || isPropDef(item) || isRenderer(item))
 	{
-		const ctx = new CtxNodes(item, undefined, item);
-		ctx.setup(parentNode);
-	}
-	else if (isPropDef(item))
-	{
-		const ctx = new CtxNodes(item.get.bind(item), undefined);
-		ctx.setup(parentNode);
-	}
-	else if (isRenderer(item))
-	{
-		const ctx = new CtxNodes(item.render.bind(item), item, item.render);
+		const ctx = new CtxNodes(item);
 		ctx.setup(parentNode);
 	}
 	else if (item instanceof RawHtml)
@@ -220,7 +219,6 @@ function isRenderer(item: childValType): item is Renderer
 	return (<Renderer>item).render instanceof Function;
 }
 
-
 function createElement(tagName: string, item: ElementGeneric)
 {
 	const el = document.createElement(tagName);
@@ -236,7 +234,7 @@ function createElement(tagName: string, item: ElementGeneric)
 
 	createAttrs(item, el);
 
-	if (item instanceof ElementWithValue || item instanceof ElementSelect)
+	if (item instanceof ElementWithValueBase)
 	{
 		const valInfos = item.z_getValueInfos();
 		if (valInfos)
@@ -280,8 +278,7 @@ function addValueContext(el: Element, valInfos: ElementValueInfo | ElementValueI
 	}
 	else
 	{
-		const pv = valInfos.propVal;
-		const ctx = new CtxValue(el, valInfos.propName, pv.get.bind(pv));
+		const ctx = new CtxValue(el, valInfos.propName, valInfos.propVal);
 		ctx.setup();
 	}
 }
@@ -309,10 +306,7 @@ function addValueEventHandlers(el: HTMLElement, valInfos: ElementValueInfo | Ele
 
 				log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
 
-				g_ElementHandleEvent.use(el, () =>
-				{
-					valInfos.propVal.set(value);
-				});
+				valInfos.propVal.set(value);
 			}
 		}
 	}

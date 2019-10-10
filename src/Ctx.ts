@@ -106,6 +106,7 @@ export abstract class Ctx implements ICtx
 			this.childCtxs.clear();
 		}
 	}
+
 	abstract update(): void;
 
 	addChild(ctx: Ctx)

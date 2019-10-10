@@ -31,5 +31,4 @@ class Scope<T>
 	}
 }
 
-export const g_ElementHandleEvent = new Scope<Element>();
 export const g_CurrentContext = new Scope<ICtx>();

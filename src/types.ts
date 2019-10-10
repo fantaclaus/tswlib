@@ -72,12 +72,6 @@ export interface PropDef<T> extends PropDefReadable<T>
 	set: (v: T) => void;
 }
 
-export interface IPropValEx extends IPropVal
-{
-	vals: any[];
-	set: (v: any) => void;
-}
-
 export interface AttrNameValue
 {
 	attrName: string;
@@ -105,11 +99,6 @@ export interface ElementValueInfo
 {
 	propName: string;
 	propVal: PropDef<any>;
-}
-
-export interface IElementWithValue
-{
-	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined;
 }
 
 export namespace privates

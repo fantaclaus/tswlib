@@ -1,5 +1,5 @@
 import { g_CurrentContext } from './Scope';
-import { IPropVal, ICtx, IPropValEx, PropDef, PropDefReadable } from './types';
+import { IPropVal, ICtx, PropDef, PropDefReadable } from './types';
 import { log, logPV, logCtx, logcolor } from 'lib/dbgutils';
 import { addToUpdateQueue } from './UpdateQueue';
 
@@ -37,15 +37,6 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 			log(console.debug, logcolor("magenta"), `PV: ctxAttach: `, logPV(this), ` <--o--> `, logCtx(ctx));
 		}
 	}
-	protected ctxUpdate()
-	{
-		// detach first since it could be changed inside ctx.update()
-		const ctxs = this.ctxs;
-		this.ctxs = null;
-
-		if (ctxs) addToUpdateQueue(ctxs);
-	}
-
 	get()
 	{
 		this.ctxAttach();
@@ -63,13 +54,21 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 			{
 				this.val = v;
 
-				this.ctxUpdate();
+				this.updateContexts();
 			}
 		}
 		finally
 		{
 			this.insideSet = false;
 		}
+	}
+	protected updateContexts()
+	{
+		// detach first since it could be changed inside ctx.update()
+		const ctxs = this.ctxs;
+		this.ctxs = null;
+
+		if (ctxs) addToUpdateQueue(ctxs); // UpdateQueue may take ownership of ctxs
 	}
 	isTrue(contentTrue: any, contentFalse?: any): () => any
 	{
@@ -130,7 +129,7 @@ export class PropValArray<T> extends PropVal<T[]>
 			a.splice(index, 0, item);
 		}
 
-		this.ctxUpdate();
+		this.updateContexts();
 	}
 	setLength(length: number)
 	{
@@ -140,15 +139,7 @@ export class PropValArray<T> extends PropVal<T[]>
 		{
 			a.length = length;
 
-			this.ctxUpdate();
+			this.updateContexts();
 		}
-	}
-}
-
-export class PropValEx<T> extends PropVal<T> implements IPropValEx
-{
-	constructor(public vals: T[])
-	{
-		super(vals[0]);
 	}
 }

@@ -1,6 +1,5 @@
 import { ElementGeneric } from './elm';
-import { Ref } from './Ref';
-import { boolValType, singleStringValType, PropDef, ElementValueInfo, IElementWithValue, attrValType } from "./types";
+import { boolValType, singleStringValType, PropDef, ElementValueInfo } from "./types";
 
 export class RawHtml
 {
@@ -52,7 +51,12 @@ export class ElementImg extends ElementGeneric
 
 export type elmValue = string | number | boolean | null;
 
-export abstract class ElementWithValue<T extends elmValue> extends ElementGeneric implements IElementWithValue
+export abstract class ElementWithValueBase extends ElementGeneric
+{
+	abstract z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined;
+}
+
+export abstract class ElementWithValue<T extends elmValue> extends ElementWithValueBase
 {
 	protected propDef: PropDef<T> | undefined;
 
@@ -135,7 +139,7 @@ export class ElementTextArea extends ElementWithValue<string>
 		return this;
 	}
 }
-export class ElementSelect extends ElementGeneric implements IElementWithValue
+export class ElementSelect extends ElementWithValueBase
 {
 	private propInfos: ElementValueInfo[] | undefined;
 
@@ -159,10 +163,6 @@ export class ElementSelect extends ElementGeneric implements IElementWithValue
 		this.propInfos.push({ propVal: propDef, propName: 'selectedIndex' });
 
 		return this;
-	}
-	z_getValuePropName(): string
-	{
-		return "value";
 	}
 	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined
 	{

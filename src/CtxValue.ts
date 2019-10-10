@@ -1,10 +1,11 @@
 import { Ctx } from "./Ctx";
-import { g_CurrentContext, g_ElementHandleEvent } from "./Scope";
-import { log, logcolor } from "lib/dbgutils";
+import { g_CurrentContext } from "./Scope";
+import { log, logcolor, logCtx } from "lib/dbgutils";
+import { PropDef } from "./types";
 
 export class CtxValue extends Ctx
 {
-	constructor(private el: Element, private valuePropName: string, private content: () => any)
+	constructor(private el: Element, private valuePropName: string, private pv: PropDef<any>)
 	{
 		super();
 	}
@@ -29,14 +30,14 @@ export class CtxValue extends Ctx
 	}
 	private _setValue()
 	{
-		const v = this.content();
+		const v = this.pv.get();
 
-		const el2 = g_ElementHandleEvent.getCurrent();
-		if (this.el != el2)
+		const el = this.el as unknown as { [name: string]: any };
+		const currentValue = el[this.valuePropName];
+		if (v !== currentValue)
 		{
-			log(console.debug, logcolor("orange"), `CTX: setValue ${this.valuePropName} of `, this.el, ` to ${v}`);
+			log(console.debug, logcolor("brown"), `CTX: setValue `, logCtx(this), ` [${this.valuePropName}] of `, ['%o', this.el], ` to '${v}'`);
 
-			const el = this.el as unknown as { [name: string]: any };
 			el[this.valuePropName] = v;
 		}
 	}
