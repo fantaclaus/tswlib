@@ -52,6 +52,8 @@ export interface ICtx
 export interface ICtxRoot
 {
 	invokeBeforeAttach(): void;
+	attachElmEventHandler(el: Element, elmEventMapItem: ElmEventMapItem): void;
+	detachElmEventHandlers(el: Element): void;
 }
 
 export interface IPropVal
@@ -106,5 +108,7 @@ export namespace privates
 	export namespace ElementGeneric
 	{
 		export const tagName = Symbol('ElementGeneric_tagName');
+		export const ns = Symbol('ElementGeneric_ns');
+		export const addHandler = Symbol('ElementGeneric_addHandler');
 	}
 }

@@ -11,15 +11,17 @@ export class StyleRule
 export class ElementGeneric
 {
 	private _tagName: string;
+	private _ns: string | undefined;
 	private _attrs: AttrNameValue[] | undefined;
 	private _children: childValType[] | undefined;
 	private _eventHandlers: ElmEventMapItem[] | undefined;
 	protected _refs: Ref[] | undefined;
 
-	constructor(tagName: string)
+	constructor(tagName: string, ns?: string)
 	{
 		// empty tagName means this is a document fragment
-		this._tagName = tagName.toUpperCase();
+		this._tagName = tagName;
+		this._ns = ns;
 	}
 
 	attr(name: string, val: attrValType = '')
@@ -91,12 +93,12 @@ export class ElementGeneric
 	{
 		if (eventName && handler instanceof Function)
 		{
-			this.addHandler({ eventName, handleEvent: handler, eventType: 'dom' });
+			this[privates.ElementGeneric.addHandler]({ eventName, handleEvent: handler, eventType: 'dom' });
 		}
 
 		return this;
 	}
-	private addHandler(item: ElmEventMapItem)
+	[privates.ElementGeneric.addHandler](item: ElmEventMapItem)
 	{
 		if (this._eventHandlers == null) this._eventHandlers = [];
 
@@ -124,24 +126,10 @@ export class ElementGeneric
 
 	// implementation
 
-	[privates.ElementGeneric.tagName]()
-	{
-		return this._tagName;
-	}
-	z_children()
-	{
-		return this._children;
-	}
-	z_attrs()
-	{
-		return this._attrs;
-	}
-	z_events()
-	{
-		return this._eventHandlers;
-	}
-	z_getRefs()
-	{
-		return this._refs;
-	}
+	[privates.ElementGeneric.tagName]() { return this._tagName; }
+	[privates.ElementGeneric.ns]() { return this._ns; }
+	z_children() { return this._children; }
+	z_attrs() { return this._attrs; }
+	z_events() { return this._eventHandlers; }
+	z_getRefs() { return this._refs; }
 }

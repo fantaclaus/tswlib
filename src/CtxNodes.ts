@@ -1,6 +1,6 @@
 import { Ctx, NodeKind } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn } from './types';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
 import { RawHtml, ElementWithValueBase } from './htmlElements';
@@ -12,6 +12,7 @@ export class CtxNodes extends Ctx
 {
 	private firstChild: Node | null = null;
 	private lastChild: Node | null = null;
+	private elementsWithRootEvents: Set<Element> | undefined;
 
 	constructor(private content: childValTypeFn | childValTypePropDefReadable | Renderer)
 	{
@@ -45,6 +46,7 @@ export class CtxNodes extends Ctx
 		removeFromUpdateQueue(this);
 
 		this.detachPropVals();
+		this.detachEventHandlers();
 
 		const firstChildOld = this.firstChild;
 		const lastChildOld = this.lastChild;
@@ -66,6 +68,23 @@ export class CtxNodes extends Ctx
 		{
 			this.ctxParent.replaceNode(NodeKind.first, firstChildOld, this.firstChild);
 			this.ctxParent.replaceNode(NodeKind.last, lastChildOld, this.lastChild);
+		}
+	}
+	detachEventHandlers()
+	{
+		super.detachEventHandlers();
+
+		if (this.elementsWithRootEvents)
+		{
+			for (let el of this.elementsWithRootEvents)
+			{
+				if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
+
+				log(console.debug, logcolor('orange'), 'CTX: detach event hadlers ', logCtx(this), ' for ', el)
+				this.ctxRoot.detachElmEventHandlers(el);
+			}
+
+			this.elementsWithRootEvents.clear();
 		}
 	}
 	domChange(beforeChildren: boolean, attach: boolean): void
@@ -157,9 +176,19 @@ export class CtxNodes extends Ctx
 
 		throw new Error("this.content is not valid");
 	}
+	addEventHandlers(el: Element, elmEventMapItem: ElmEventMapItem)
+	{
+		if (this.elementsWithRootEvents == null) this.elementsWithRootEvents = new Set();
+		this.elementsWithRootEvents.add(el);
+
+		if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
+		this.ctxRoot.attachElmEventHandler(el, elmEventMapItem);
+	}
+
 	get dbg_firstChild() { return this.firstChild; }
 	get dbg_lastChild() { return this.lastChild; }
 	get dbg_content() { return this.content; }
+	get dbg_elementsWithRootEvents() { return this.elementsWithRootEvents; }
 }
 
 export function addNodesTo(parentNode: DocumentFragment | Element, item: childValType)
@@ -191,7 +220,8 @@ export function addNodesTo(parentNode: DocumentFragment | Element, item: childVa
 		const tagName = item[privates.ElementGeneric.tagName]();
 		if (tagName)
 		{
-			const el = createElement(tagName, item);
+			const ns = item[privates.ElementGeneric.ns]();
+			const el = createElement(tagName, ns, item);
 
 			addNodesTo(el, children);
 
@@ -219,9 +249,9 @@ function isRenderer(item: childValType): item is Renderer
 	return (<Renderer>item).render instanceof Function;
 }
 
-function createElement(tagName: string, item: ElementGeneric)
+function createElement(tagName: string, ns: string | undefined, item: ElementGeneric)
 {
-	const el = document.createElement(tagName);
+	const el = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);
 
 	const refs = item.z_getRefs();
 	if (refs)
@@ -247,26 +277,39 @@ function createElement(tagName: string, item: ElementGeneric)
 	const events = item.z_events();
 	if (events)
 	{
-		for (let eh of events)
+		//addEventListener(events, tagName, el);
+
+		const ctx = g_CurrentContext.getCurrentSafe();
+		if (!(ctx instanceof CtxNodes)) throw new Error("ctx is not CtxNodes");
+
+		for (let elmEventMapItem of events)
 		{
-			if (tagName == 'A' && eh.eventName.toLowerCase() == 'click')
-			{
-				const handler = eh.handleEvent;
-				el.addEventListener(eh.eventName, function (this: Element, e)
-				{
-					e.preventDefault();
-					handler.call(this, e);
-				});
-			}
-			else
-			{
-				el.addEventListener(eh.eventName, eh.handleEvent);
-			}
+			ctx.addEventHandlers(el, elmEventMapItem);
 		}
 	}
 
 	return el;
 }
+function addEventListener(events: ElmEventMapItem[], tagName: string, el: Element)
+{
+	for (let eh of events)
+	{
+		if (tagName.toUpperCase() == 'A' && eh.eventName.toLowerCase() == 'click')
+		{
+			const handler = eh.handleEvent;
+			el.addEventListener(eh.eventName, function (this: Element, e)
+			{
+				e.preventDefault();
+				handler.call(this, e);
+			});
+		}
+		else
+		{
+			el.addEventListener(eh.eventName, eh.handleEvent);
+		}
+	}
+}
+
 function addValueContext(el: Element, valInfos: ElementValueInfo | ElementValueInfo[])
 {
 	if (valInfos instanceof Array)
@@ -282,7 +325,7 @@ function addValueContext(el: Element, valInfos: ElementValueInfo | ElementValueI
 		ctx.setup();
 	}
 }
-function addValueEventHandlers(el: HTMLElement, valInfos: ElementValueInfo | ElementValueInfo[])
+function addValueEventHandlers(el: Element, valInfos: ElementValueInfo | ElementValueInfo[])
 {
 	el.addEventListener('input', inputHandler);
 	el.addEventListener('change', inputHandler);

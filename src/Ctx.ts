@@ -88,6 +88,16 @@ export abstract class Ctx implements ICtx
 			}
 		}
 	}
+	detachEventHandlers(): void
+	{
+		if (this.childCtxs)
+		{
+			for (let ctx of this.childCtxs)
+			{
+				ctx.detachEventHandlers();
+			}
+		}
+	}
 	protected hasChildren()
 	{
 		return this.childCtxs && this.childCtxs.size > 0;
