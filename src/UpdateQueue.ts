@@ -8,10 +8,10 @@ let _updatedCbs: (() => void)[] = [];
 
 export function addToUpdateQueue(ctxs: Set<ICtx>)
 {
-	for (let ctx of ctxs)
+	ctxs.forEach(ctx =>
 	{
 		log(console.debug, `add to queue`, logCtx(ctx));
-	}
+	});
 
 	if (_updateQueue == null)
 	{
@@ -19,10 +19,11 @@ export function addToUpdateQueue(ctxs: Set<ICtx>)
 	}
 	else
 	{
-		for (let ctx of ctxs)
+		const updateQueue = _updateQueue;
+		ctxs.forEach(ctx =>
 		{
-			_updateQueue.add(ctx);
-		}
+			updateQueue.add(ctx);
+		});
 	}
 
 	if (_updateQueue.size > 0 && _timerId == null)
@@ -49,10 +50,10 @@ function processQueue()
 
 		if (updateQueue.size == 1)
 		{
-			for (let ctx of updateQueue)
+			updateQueue.forEach(ctx =>
 			{
 				ctx.update();
-			}
+			});
 		}
 		else
 		{
@@ -96,13 +97,13 @@ function getContextsToUpdate(updateQueue: Set<ICtx>)
 {
 	const contextsToUpdate: ICtx[] = [];
 
-	for (let ctx of updateQueue)
+	updateQueue.forEach(ctx =>
 	{
 		if (!isAnyParentInQueue(ctx, updateQueue))
 		{
 			contextsToUpdate.push(ctx);
 		}
-	}
+	});
 
 	return contextsToUpdate;
 }

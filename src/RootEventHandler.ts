@@ -47,10 +47,11 @@ export class RootEventHandler
 	}
 	hasHandlers()
 	{
-		for (let [,ehd] of this.eventHandlerDrivers)
+		this.eventHandlerDrivers.forEach(ehd =>
 		{
 			if (ehd.hasHandlers()) return true;
-		}
+		});
+		
 		return false;
 	}
 	getEventHandlerDriver(eventType: string)

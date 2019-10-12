@@ -72,30 +72,30 @@ export abstract class Ctx implements ICtx
 
 		if (propVals)
 		{
-			for (let pv of propVals)
+			propVals.forEach(pv =>
 			{
 				log(console.debug, logcolor("orange"), `CTX: remove pv: `, logPV(pv), ` from `, logCtx(this));
 
 				pv.ctxRemove(this);
-			}
+			});
 		}
 
 		if (this.childCtxs)
 		{
-			for (let ctx of this.childCtxs)
+			this.childCtxs.forEach(ctx =>
 			{
 				ctx.detachPropVals();
-			}
+			});
 		}
 	}
 	detachEventHandlers(): void
 	{
 		if (this.childCtxs)
 		{
-			for (let ctx of this.childCtxs)
+			this.childCtxs.forEach(ctx =>
 			{
 				ctx.detachEventHandlers();
-			}
+			});
 		}
 	}
 	protected hasChildren()
@@ -106,12 +106,12 @@ export abstract class Ctx implements ICtx
 	{
 		if (this.childCtxs)
 		{
-			for (let ctx of this.childCtxs)
+			this.childCtxs.forEach(ctx =>
 			{
 				log(console.debug, logcolor("orange"), `CTX: remove child `, logCtx(ctx), ` from `, logCtx(this));
 
 				ctx.ctxParent = null;
-			}
+			});
 
 			this.childCtxs.clear();
 		}
@@ -132,12 +132,12 @@ export abstract class Ctx implements ICtx
 	{
 		if (this.childCtxs)
 		{
-			for (let ctx of this.childCtxs)
+			this.childCtxs.forEach(ctx =>
 			{
 				action(ctx, true);
 				ctx.notifyChildren(action);
 				action(ctx, false);
-			}
+			});
 		}
 	}
 	domChange(beforeChildren: boolean, attach: boolean): void

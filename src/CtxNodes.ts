@@ -76,13 +76,13 @@ export class CtxNodes extends Ctx
 
 		if (this.elementsWithRootEvents)
 		{
-			for (let el of this.elementsWithRootEvents)
+			this.elementsWithRootEvents.forEach(el =>
 			{
 				if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
 
 				log(console.debug, logcolor('orange'), 'CTX: detach event hadlers ', logCtx(this), ' for ', el)
 				this.ctxRoot.detachElmEventHandlers(el);
-			}
+			});
 
 			this.elementsWithRootEvents.clear();
 		}
@@ -362,11 +362,11 @@ function createAttrs(elm: ElementGeneric, el: Element)
 	{
 		const attrs = createAttrMap(elm_attrs);
 
-		for (let [attrName, attrValue] of attrs)
+		attrs.forEach((attrValue, attrName) =>
 		{
 			const ctx = new CtxAttr(el, attrName, attrValue);
 			ctx.setup();
-		}
+		});
 	}
 }
 
