@@ -17,8 +17,9 @@ export class CtxValue extends Ctx
 	}
 	update(): void
 	{
-		this.detachPropVals();
+		if (this.ctxParent === null) return;
 
+		this.removeChildren();
 		this.setValue();
 	}
 	private setValue()

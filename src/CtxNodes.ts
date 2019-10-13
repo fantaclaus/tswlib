@@ -1,22 +1,28 @@
 import { Ctx, NodeKind } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind } from './types';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
 import { RawHtml, ElementWithValueBase } from './htmlElements';
 import { CtxAttr } from './CtxAttr';
 import { CtxValue } from './CtxValue';
-import { removeFromUpdateQueue } from './UpdateQueue';
+import { Ref } from 'tswlibDom/ref';
 
 export class CtxNodes extends Ctx
 {
+	private ctxRoot: ICtxRoot | undefined;
 	private firstChild: Node | null = null;
 	private lastChild: Node | null = null;
 	private elementsWithRootEvents: Set<Element> | undefined;
+	private refs: Set<Ref> | undefined | null;
 
 	constructor(private content: childValTypeFn | childValTypePropDefReadable | Renderer)
 	{
 		super();
+	}
+	getRootCtx(): ICtxRoot | undefined
+	{
+		return this.ctxRoot;
 	}
 	setup(parentNode: DocumentFragment | Element)
 	{
@@ -24,7 +30,6 @@ export class CtxNodes extends Ctx
 		if (!ctxParent) throw new Error("No scope parent");
 
 		this.ctxRoot = ctxParent.getRootCtx();
-		//console.log('this.ctxRoot=', this.ctxRoot);
 
 		this.addNodes(parentNode);
 
@@ -32,7 +37,9 @@ export class CtxNodes extends Ctx
 	}
 	update()
 	{
-		log(console.debug, 'CtxNodes update:', logCtx(this));
+		if (this.ctxParent === null) return;
+
+		// log(console.debug, 'CtxNodes update:', logCtx(this));
 
 		if (!this.lastChild) throw new Error("this.lastChild is null");
 
@@ -41,18 +48,14 @@ export class CtxNodes extends Ctx
 
 		const nodeBefore = this.lastChild.nextSibling;
 
-		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
-
-		removeFromUpdateQueue(this);
-
-		this.detachPropVals();
-		this.detachEventHandlers();
-
 		const firstChildOld = this.firstChild;
 		const lastChildOld = this.lastChild;
 
+		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
+
+		this.removeChildren();
+
 		this.removeNodes(parentNode);
-		this.removeChildren(); // only one level
 
 		const f = document.createDocumentFragment();
 
@@ -70,17 +73,45 @@ export class CtxNodes extends Ctx
 			this.ctxParent.replaceNode(NodeKind.last, lastChildOld, this.lastChild);
 		}
 	}
+	protected shouldBeAddedToParent()
+	{
+		return super.shouldBeAddedToParent() ||
+			(this.refs && this.refs.size > 0) ||
+			(this.elementsWithRootEvents && this.elementsWithRootEvents.size > 0);
+	}
+	public cleanup(): void
+	{
+		super.cleanup();
+
+		this.detachEventHandlers();
+		this.resetRefs();
+	}
+	addRef(ref: Ref<Element>)
+	{
+		if (this.refs == null) this.refs = new Set();
+		this.refs.add(ref);
+	}
+	private resetRefs()
+	{
+		if (this.refs)
+		{
+			this.refs.forEach(ref =>
+			{
+				log(console.debug, logcolor('orange'), 'CTX: reset ref ', logCtx(this), ' for ', ref.asHtmlElement());
+				ref.set(null);
+			});
+		}
+		this.refs = null;
+	}
 	detachEventHandlers()
 	{
-		super.detachEventHandlers();
-
 		if (this.elementsWithRootEvents)
 		{
 			this.elementsWithRootEvents.forEach(el =>
 			{
 				if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
 
-				log(console.debug, logcolor('orange'), 'CTX: detach event hadlers ', logCtx(this), ' for ', el)
+				log(console.debug, logcolor('orange'), 'CTX: detach event handlers ', logCtx(this), ' for ', el)
 				this.ctxRoot.detachElmEventHandlers(el);
 			});
 
@@ -256,9 +287,13 @@ function createElement(tagName: string, ns: string | undefined, item: ElementGen
 	const refs = item.z_getRefs();
 	if (refs)
 	{
+		const ctx = g_CurrentContext.getCurrentSafe();
+		if (!(ctx instanceof CtxNodes)) throw new Error("ctx is not CtxNodes");
+
 		for (let ref of refs)
 		{
 			ref.set(el);
+			ctx.addRef(ref);
 		}
 	}
 

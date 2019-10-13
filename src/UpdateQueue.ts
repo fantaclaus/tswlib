@@ -1,5 +1,5 @@
 import { ICtx } from "./types";
-import { log, logCtx } from "lib/dbgutils";
+import { log, logCtx, logcolor } from "lib/dbgutils";
 // import * as dbgutils from "lib/dbgutils";
 
 let _updateQueue: Set<ICtx> | null = null;
@@ -10,7 +10,7 @@ export function addToUpdateQueue(ctxs: Set<ICtx>)
 {
 	ctxs.forEach(ctx =>
 	{
-		log(console.debug, `add to queue`, logCtx(ctx));
+		log(console.debug, `add to queue `, logCtx(ctx));
 	});
 
 	if (_updateQueue == null)
@@ -34,7 +34,11 @@ export function addToUpdateQueue(ctxs: Set<ICtx>)
 
 export function removeFromUpdateQueue(ctx: ICtx)
 {
-	if (_updateQueue) _updateQueue.delete(ctx);
+	if (_updateQueue)
+	{
+		log(console.debug, logcolor("orange"), `CTX: removeFromUpdateQueue `, logCtx(ctx));
+		_updateQueue.delete(ctx);
+	}
 }
 
 function processQueue()
@@ -50,8 +54,11 @@ function processQueue()
 
 		if (updateQueue.size == 1)
 		{
+			// log(console.debug, logcolor('red'), `processQueue: contextsToUpdate.length=${updateQueue.size}; begin`);
+
 			updateQueue.forEach(ctx =>
 			{
+				// log(console.debug, logcolor('red'), `UpdateQueue: update ctx `, logCtx(ctx));
 				ctx.update();
 			});
 		}
@@ -63,7 +70,7 @@ function processQueue()
 			const contextsToUpdate = getContextsToUpdate(updateQueue);
 			//const contextsToUpdate = Array.from(updateQueue);
 
-			console.debug(`processQueue: contextsToUpdate.length=${contextsToUpdate.length}; begin`);
+			// log(console.debug, logcolor('red'), `processQueue: contextsToUpdate.length=${contextsToUpdate.length}; begin`);
 
 			// const t1 = performance.now();
 			// log(console.debug, `processQueue: getContextsToUpdate elapsed: ${t1 - t0}`);
@@ -75,7 +82,15 @@ function processQueue()
 			{
 				// while invoking ctx.update() some contexts could be removed,
 				// so don't update removed contexts to avoid re-attaching them to propVals
-				if (ctx.getParent() != null) ctx.update();
+				// if (ctx.getParent() == null)
+				// {
+				// 	log(console.debug, logcolor('red'), `UpdateQueue: skip update ctx `, logCtx(ctx));
+				// }
+				// else
+				// {
+					// log(console.debug, logcolor('red'), `UpdateQueue: update ctx `, logCtx(ctx));
+					ctx.update();
+				// }
 			}
 
 			// dbgutils.options.logEnabled = logEnabled;

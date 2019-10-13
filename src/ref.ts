@@ -1,11 +1,11 @@
 export class Ref<T extends Element = Element>
 {
-	private val: T | undefined;
+	private val: T | undefined | null;
 
 	constructor(private dbg_name?: string)
 	{
 	}
-	set(v: T)
+	set(v: T | null)
 	{
 		this.val = v;
 	}

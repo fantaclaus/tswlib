@@ -1,6 +1,7 @@
 import { IPropVal, ICtx, ICtxRoot } from "./types";
 import { g_CurrentContext } from "./Scope";
 import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
+import * as UpdateQueue from './UpdateQueue';
 
 export const enum NodeKind
 {
@@ -12,9 +13,8 @@ export abstract class Ctx implements ICtx
 {
 	id: number;
 	private propVals: Set<IPropVal> | undefined | null;
-	protected childCtxs: Set<Ctx> | undefined;
-	protected ctxParent: Ctx | null = null;
-	protected ctxRoot: ICtxRoot | undefined;
+	private childCtxs: Set<Ctx> | undefined;
+	protected ctxParent: Ctx | null | undefined; // undefined -- not assigned yet; null -- detached, ctx should not be used anymore
 
 	private static CtxLastId = 0;
 
@@ -24,11 +24,11 @@ export abstract class Ctx implements ICtx
 
 		log(console.debug, logcolor("orange"), `CTX: new `, logCtx(this));
 	}
-	getRootCtx()
+	getRootCtx(): ICtxRoot | undefined
 	{
-		return this.ctxRoot;
+		return undefined;
 	}
-	getParent(): ICtx | null
+	getParent(): ICtx | null | undefined
 	{
 		return this.ctxParent;
 	}
@@ -39,11 +39,8 @@ export abstract class Ctx implements ICtx
 		{
 			log(console.warn, logcolor("orange"), `CTX: not added: ctx `, logCtx(this), ` NO PARENT`);
 		}
-		else if (this.hasPropVals() || this.hasChildren())
+		else if (this.shouldBeAddedToParent())
 		{
-			// const ctxParent = g_CurrentContext.getCurrent();
-			// if (!ctxParent) throw new Error("No scope parent");
-
 			ctxParent.addChild(this);
 
 			log(console.debug, logcolor("orange"), `CTX: addChild: `, logCtx(this), ` to parent `, logCtx(ctxParent));
@@ -59,9 +56,41 @@ export abstract class Ctx implements ICtx
 
 		this.propVals.add(propVal);
 	}
+	protected shouldBeAddedToParent()
+	{
+		return this.hasPropVals() || this.hasChildren();
+	}
 	protected hasPropVals()
 	{
 		return this.propVals && this.propVals.size > 0;
+	}
+	protected hasChildren()
+	{
+		return this.childCtxs && this.childCtxs.size > 0;
+	}
+	protected forEachChild(action: (ctx: Ctx) => void)
+	{
+		if (this.childCtxs) this.childCtxs.forEach(action);
+	}
+	public removeChildren()
+	{
+		this.cleanup();
+
+		this.forEachChild(ctx =>
+		{
+			log(console.debug, logcolor("orange"), `CTX: remove child `, logCtx(ctx), ` from `, logCtx(this));
+
+			ctx.ctxParent = null; // null means ctx is removed
+
+			ctx.removeChildren();
+		});
+
+		if (this.childCtxs) this.childCtxs.clear();
+	}
+	protected cleanup()
+	{
+		UpdateQueue.removeFromUpdateQueue(this);
+		this.detachPropVals();
 	}
 	protected detachPropVals()
 	{
@@ -79,42 +108,6 @@ export abstract class Ctx implements ICtx
 				pv.ctxRemove(this);
 			});
 		}
-
-		if (this.childCtxs)
-		{
-			this.childCtxs.forEach(ctx =>
-			{
-				ctx.detachPropVals();
-			});
-		}
-	}
-	detachEventHandlers(): void
-	{
-		if (this.childCtxs)
-		{
-			this.childCtxs.forEach(ctx =>
-			{
-				ctx.detachEventHandlers();
-			});
-		}
-	}
-	protected hasChildren()
-	{
-		return this.childCtxs && this.childCtxs.size > 0;
-	}
-	protected removeChildren()
-	{
-		if (this.childCtxs)
-		{
-			this.childCtxs.forEach(ctx =>
-			{
-				log(console.debug, logcolor("orange"), `CTX: remove child `, logCtx(ctx), ` from `, logCtx(this));
-
-				ctx.ctxParent = null;
-			});
-
-			this.childCtxs.clear();
-		}
 	}
 
 	abstract update(): void;
@@ -130,15 +123,12 @@ export abstract class Ctx implements ICtx
 	}
 	protected notifyChildren(action: (ctx: Ctx, beforeChildren: boolean) => void)
 	{
-		if (this.childCtxs)
+		this.forEachChild(ctx =>
 		{
-			this.childCtxs.forEach(ctx =>
-			{
-				action(ctx, true);
-				ctx.notifyChildren(action);
-				action(ctx, false);
-			});
-		}
+			action(ctx, true);
+			ctx.notifyChildren(action);
+			action(ctx, false);
+		});
 	}
 	domChange(beforeChildren: boolean, attach: boolean): void
 	{
@@ -153,12 +143,3 @@ export abstract class Ctx implements ICtx
 		return this.propVals;
 	}
 }
-
-/*
-contexts:
-	attrs (detach propvals)
-	event handlers (unsubscribe)
-	refs (set null & detach)
-	before/after attach/detach (call)
-	child nodes
-*/

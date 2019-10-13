@@ -17,10 +17,12 @@
 + before/after attach/detach (call)
 + delayed context updates
 + jquery support
-- IE 9-11 support, maybe IE8
-- delegated/direct event handlers, with/without bubble
++ refs: clear reference to el on remove nodes
++ IE 9-11 support
++ delegated/direct event handlers, with/without bubble
 - sync propVals of 'select' elm: value and selectedIndex
 - hide private methods with help of Symbols
 - dom-style layout (non-functional)
 - CtxRoot.setContent: add cleanup code before add nodes
+
 */

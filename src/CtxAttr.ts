@@ -11,26 +11,26 @@ export class CtxAttr extends Ctx
 	}
 	setup()
 	{
-		this._setAttrVal();
+		this.setAttrVal();
 
 		this.addCtxToParent();
 	}
 	update()
 	{
-		this.detachPropVals();
+		if (this.ctxParent === null) return;
 
-		this._setAttrVal();
+		this.removeChildren();
 
-		// this.addCtxToParent();
+		this.setAttrVal();
 	}
-	private _setAttrVal()
+	private setAttrVal()
 	{
 		g_CurrentContext.use(this, () =>
 		{
-			this.setAttrVal();
+			this._setAttrVal();
 		});
 	}
-	private setAttrVal()
+	private _setAttrVal()
 	{
 		let result: string | null = null;
 
