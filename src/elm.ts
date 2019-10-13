@@ -1,4 +1,4 @@
-﻿import { Ref } from './Ref';
+﻿import { Ref } from './ref';
 import { attrValType, childValType, StyleRule, boolValType } from "./types";
 import { EventHandler, ElmEventMapItem } from './EventHandler';
 import { RootEventHandlerDom } from './RootEventHandler';

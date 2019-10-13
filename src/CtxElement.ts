@@ -1,4 +1,4 @@
-import { Ref } from './Ref';
+import { Ref } from './ref';
 import { Ctx } from './Ctx';
 import { ICtxHtmlElementOwner, implements_CtxHtmlElementOwner, ICtxRoot } from './interfaces';
 

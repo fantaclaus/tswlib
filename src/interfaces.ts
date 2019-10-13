@@ -1,5 +1,4 @@
 import { ElmEventMapItem } from './EventHandler';
-import { Ctx } from "./Ctx";
 
 /**
  * ICtxHtmlElementOwner

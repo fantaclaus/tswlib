@@ -1,6 +1,6 @@
-import { PropVal } from './PropVals';
+import { PropVal } from './propVals';
 import * as elements from './htmlElements';
-import { Ref } from './Ref';
+import { Ref } from './ref';
 
 export class RadioGroup<T>
 {
@@ -16,10 +16,10 @@ export class RadioGroup<T>
 	item(v: T)
 	{
 		const p =
-			{
-				get: () => this.propVal.get() == v,
-				set: () => this.propVal.set(v),
-			};
+		{
+			get: () => this.propVal.get() == v,
+			set: () => this.propVal.set(v),
+		};
 
 		const elm = new elements.ElementInputRadio();
 		elm.value(p).attr('name', this.groupName).addRef(this.getRefFor(v));

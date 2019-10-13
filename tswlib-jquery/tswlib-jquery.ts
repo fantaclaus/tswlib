@@ -1,6 +1,6 @@
 import { ElementGeneric } from "tswlib/elm"
 import { EventHandler } from "tswlib/EventHandler";
-import { Ref } from "tswlib/Ref";
+import { Ref } from "tswlib/ref";
 import { RootEventHandler } from "tswlib/RootEventHandler";
 
 // jQuery support

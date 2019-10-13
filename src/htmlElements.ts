@@ -1,5 +1,5 @@
 import { ElementGeneric } from './elm';
-import { Ref } from './Ref';
+import { Ref } from './ref';
 import { PropDef } from './PropDefs';
 import { stringValType, boolValType } from "./types";
 
