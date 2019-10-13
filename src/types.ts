@@ -90,10 +90,17 @@ export interface EventHandler<T>
 	(e: T): void;
 }
 
+export enum EventKind
+{
+	direct,
+	onRoot,
+}
+
 export interface ElmEventMapItem
 {
 	eventName: string;
 	eventType: string;
+	eventKind: EventKind;
 	handleEvent: EventHandler<any>;
 }
 

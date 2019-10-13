@@ -1,5 +1,5 @@
-﻿import { Ref } from './Ref';
-import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, privates } from "./types";
+﻿import { Ref } from './ref';
+import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, privates, EventKind } from "./types";
 
 export class StyleRule
 {
@@ -93,7 +93,16 @@ export class ElementGeneric
 	{
 		if (eventName && handler instanceof Function)
 		{
-			this[privates.ElementGeneric.addHandler]({ eventName, handleEvent: handler, eventType: 'dom' });
+			this[privates.ElementGeneric.addHandler]({ eventName, handleEvent: handler, eventType: 'dom', eventKind: EventKind.onRoot });
+		}
+
+		return this;
+	}
+	onEventDirect(eventName: string, handler: EventHandler<Event> | null | undefined)
+	{
+		if (eventName && handler instanceof Function)
+		{
+			this[privates.ElementGeneric.addHandler]({ eventName, handleEvent: handler, eventType: 'dom', eventKind: EventKind.direct });
 		}
 
 		return this;

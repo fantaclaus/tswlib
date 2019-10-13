@@ -1,6 +1,6 @@
 import { Ctx, NodeKind } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem } from './types';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
 import { RawHtml, ElementWithValueBase } from './htmlElements';
@@ -277,35 +277,47 @@ function createElement(tagName: string, ns: string | undefined, item: ElementGen
 	const events = item.z_events();
 	if (events)
 	{
-		//addEventListener(events, tagName, el);
-
-		const ctx = g_CurrentContext.getCurrentSafe();
-		if (!(ctx instanceof CtxNodes)) throw new Error("ctx is not CtxNodes");
-
-		for (let elmEventMapItem of events)
-		{
-			ctx.addEventHandlers(el, elmEventMapItem);
-		}
+		addEventListener(events, tagName, el);
 	}
 
 	return el;
 }
 function addEventListener(events: ElmEventMapItem[], tagName: string, el: Element)
 {
-	for (let eh of events)
+	for (let elmEventMapItem of events)
 	{
-		if (tagName.toUpperCase() == 'A' && eh.eventName.toLowerCase() == 'click')
+		switch (elmEventMapItem.eventKind)
 		{
-			const handler = eh.handleEvent;
-			el.addEventListener(eh.eventName, function (this: Element, e)
-			{
-				e.preventDefault();
-				handler.call(this, e);
-			});
-		}
-		else
-		{
-			el.addEventListener(eh.eventName, eh.handleEvent);
+			case EventKind.direct:
+				if (elmEventMapItem.eventType == 'dom')
+				{
+					if (tagName.toUpperCase() == 'A' && elmEventMapItem.eventName.toLowerCase() == 'click')
+					{
+						const handler = elmEventMapItem.handleEvent;
+						el.addEventListener(elmEventMapItem.eventName, function (this: Element, e)
+						{
+							e.preventDefault();
+							handler.call(this, e);
+						});
+					}
+					else
+					{
+						el.addEventListener(elmEventMapItem.eventName, elmEventMapItem.handleEvent);
+					}
+				}
+				break;
+
+			case EventKind.onRoot:
+				{
+					const ctx = g_CurrentContext.getCurrentSafe();
+					if (!(ctx instanceof CtxNodes)) throw new Error("ctx is not CtxNodes");
+
+					ctx.addEventHandlers(el, elmEventMapItem);
+				}
+				break;
+
+			default:
+				throw new Error(`Unsupported eventKind: ${elmEventMapItem.eventKind}`);
 		}
 	}
 }

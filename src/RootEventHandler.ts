@@ -10,9 +10,9 @@ interface IEvent
 export class RootEventHandler
 {
 	private eventHandlerDrivers = new Map<string, EventHandlerDriver>();
-	private eventHandlers = new Map<Element, ElmEventMapItem[]>();
+	private eventHandlers = new Map<Node, ElmEventMapItem[]>();
 
-	constructor(private htmlElement: Element)
+	constructor(public htmlElement: Element)
 	{
 	}
 	attachElmEventHandler(el: Element, elmEventMapItem: ElmEventMapItem)
@@ -47,12 +47,7 @@ export class RootEventHandler
 	}
 	hasHandlers()
 	{
-		this.eventHandlerDrivers.forEach(ehd =>
-		{
-			if (ehd.hasHandlers()) return true;
-		});
-		
-		return false;
+		return this.eventHandlers.size > 0;
 	}
 	getEventHandlerDriver(eventType: string)
 	{
@@ -62,11 +57,35 @@ export class RootEventHandler
 			const ehdType = EventHandlerDriver.DriverTypes.get(eventType);
 			if (ehdType == null) throw new Error(`EventHandlerDriver is not found for eventType='${eventType}'`);
 
-			ehd = new ehdType(this.htmlElement, this.eventHandlers);
+			ehd = new ehdType(this);
 			this.eventHandlerDrivers.set(eventType, ehd);
 		}
 
 		return ehd;
+	}
+	findEventHandlers(htmlElement: Node | null, eventName: string, eventType: string)
+	{
+		while (htmlElement && htmlElement != this.htmlElement)
+		{
+			const elmHandlersItems1 = this.eventHandlers.get(htmlElement);
+			if (elmHandlersItems1)
+			{
+				const elmHandlersItems2 = elmHandlersItems1.filter(i => i.eventName == eventName);
+				if (elmHandlersItems2.length > 0)
+				{
+					const elmHandlersItems3 = elmHandlersItems2.filter(i => i.eventType == eventType);
+
+					return { htmlElement, elmHandlersItems: elmHandlersItems3 };
+				}
+			}
+
+			// NOTE: in IE 11 parentElement of SVG element is undefined, so we use parentNode
+
+			const parentNode = htmlElement.parentNode;
+			htmlElement = parentNode;
+		}
+
+		return null;
 	}
 }
 
@@ -75,13 +94,10 @@ export class EventHandlerDriver
 	static DriverTypes = new Map<string, typeof EventHandlerDriver>();
 
 	protected attachedEventListeners = new Map<string, number>();
+	protected eventsListener = this.handleEvent.bind(this);
 
-	constructor(protected htmlElement: Element, private eventHandlers: Map<Element, ElmEventMapItem[]>)
+	constructor(protected owner: RootEventHandler)
 	{
-	}
-	hasHandlers()
-	{
-		return this.eventHandlers.size > 0;
 	}
 	attachEventListener(eventName: string)
 	{
@@ -122,54 +138,23 @@ export class EventHandlerDriver
 
 	protected handleEvent(e: IEvent)
 	{
-		// console.log('handleEvent: %o for: %o', e.type, e.target);
+		const target = e.target;
+		if (!(target instanceof Node)) return;
 
-		const htmlElm = e.target instanceof Element ? e.target : null;
-		const result = this.findEventHandlers(htmlElm, e.type);
-		if (result)
+		const result = this.owner.findEventHandlers(target, e.type, this.getEventType());
+		if (result == null) return;
+
+		if (e.type == 'click' && result.htmlElement instanceof HTMLAnchorElement)
 		{
-			// console.log('on event: %o for: %o id: %s; %s', e.type, e.target, htmlElm.id, htmlElm.tagName);
-
-			if (e.type == 'click' && result.htmlElement.tagName.toLowerCase() == 'a')
-			{
-				e.preventDefault();
-			}
-
-			for (let i of result.elmHandlersItems)
-			{
-				i.handleEvent.call(result.htmlElement, e);
-			}
-		}
-	}
-	private findEventHandlers(htmlElement: Element | null, eventName: string)
-	{
-		const eventType = this.getEventType();
-
-		while (htmlElement && htmlElement != this.htmlElement)
-		{
-			const elmHandlers = this.eventHandlers.get(htmlElement);
-			if (elmHandlers)
-			{
-				const elmHandlersItems = elmHandlers.filter(i => i.eventName == eventName);
-				if (elmHandlersItems.length > 0)
-				{
-					const elmHandlersItems2 = elmHandlers.filter(i => i.eventType == eventType);
-
-					return { htmlElement, elmHandlersItems: elmHandlersItems2 };
-				}
-			}
-
-			const parentNode = htmlElement.parentNode as Element;
-			htmlElement = parentNode;
-
-			// NOTE: in IE 11 parentElement of SVG element is undefined
-
-			// const parentNode = htmlElement.parentNode;
-			// htmlElement = parentNode instanceof Element ? parentNode : null;
+			e.preventDefault();
 		}
 
-		return null;
+		for (let i of result.elmHandlersItems)
+		{
+			i.handleEvent.call(result.htmlElement, e);
+		}
 	}
+
 	// private dumpAttachedEvents()
 	// {
 	// 	let s = '';
@@ -185,19 +170,17 @@ export class EventHandlerDriverDom extends EventHandlerDriver
 {
 	static EventType = 'dom';
 
-	protected eventsListener = this.handleEvent.bind(this);
-
 	getEventType(): string
 	{
 		return EventHandlerDriverDom.EventType;
 	}
 	protected addEventListener(eventName: string)
 	{
-		this.htmlElement.addEventListener(eventName, this.eventsListener);
+		this.owner.htmlElement.addEventListener(eventName, this.eventsListener);
 	}
 	protected removeEventListener(eventName: string)
 	{
-		this.htmlElement.removeEventListener(eventName, this.eventsListener);
+		this.owner.htmlElement.removeEventListener(eventName, this.eventsListener);
 	}
 }
 

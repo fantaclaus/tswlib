@@ -1,4 +1,4 @@
-import { PropVal } from './PropVals';
+import { PropVal } from './propVals';
 import * as html from "./html";
 
 export class RadioGroup<T>
@@ -15,10 +15,10 @@ export class RadioGroup<T>
 	radioButton(v: T, groupName?: string)
 	{
 		const p =
-			{
-				get: () => this.propVal.get() == v,
-				set: () => this.propVal.set(v),
-			};
+		{
+			get: () => this.propVal.get() == v,
+			set: () => this.propVal.set(v),
+		};
 
 		return html.inputRadio().value(p).attr('name', groupName || this.groupName).id(this.getId(v));
 	}

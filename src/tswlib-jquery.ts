@@ -1,6 +1,6 @@
-import { ElementGeneric } from "tswlibDom/elm"
-import { Ref } from "tswlibDom/Ref";
-import { EventHandler, privates } from "./types";
+import { ElementGeneric } from "./elm"
+import { Ref } from "./ref";
+import { EventHandler, privates, EventKind } from "./types";
 import { EventHandlerDriver } from "./RootEventHandler";
 
 // jQuery support
@@ -26,7 +26,12 @@ ElementGeneric.prototype.on = function (eventName: string, handler: EventHandler
 {
 	if (eventName && handler instanceof Function)
 	{
-		this[privates.ElementGeneric.addHandler]({ eventName, eventType: EventHandlerDriverJQ.EventType, handleEvent: handler });
+		this[privates.ElementGeneric.addHandler]({
+			eventName,
+			eventType: EventHandlerDriverJQ.EventType,
+			handleEvent: handler,
+			eventKind: EventKind.onRoot,
+		});
 	}
 
 	return this;
@@ -46,20 +51,19 @@ class EventHandlerDriverJQ extends EventHandlerDriver
 {
 	static EventType = 'jquery';
 
-	protected eventsListener = this.handleEvent.bind(this);
-
 	getEventType(): string
 	{
 		return EventHandlerDriverJQ.EventType;
 	}
 	protected addEventListener(eventName: string)
 	{
-		jQuery(this.htmlElement).on(eventName, this.eventsListener);
+		jQuery(this.owner.htmlElement).on(eventName, this.eventsListener);
 	}
 	protected removeEventListener(eventName: string)
 	{
-		jQuery(this.htmlElement).off(eventName, this.eventsListener);
+		jQuery(this.owner.htmlElement).off(eventName, this.eventsListener);
 	}
 }
 
 EventHandlerDriver.DriverTypes.set(EventHandlerDriverJQ.EventType, EventHandlerDriverJQ);
+
