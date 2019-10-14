@@ -1,9 +1,14 @@
 import { RawHtml } from "./htmlElements";
 import { ElementGeneric, StyleRule } from "./elm";
+import { Ref } from "./ref";
 
 export interface Renderer
 {
 	render: () => childValType;
+}
+
+export interface DomChangeEventListener
+{
 	afterAttachPre?: () => void;
 	afterAttachPost?: () => void;
 	beforeDetachPre?: () => void;
@@ -22,7 +27,7 @@ export interface childValTypeArray extends Array<childValType> { }
 export interface childValTypeFn extends Fn<childValType> { }
 export interface childValTypePropDefReadable extends PropDefReadable<childValType> { }
 
-export type childValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
+export type childValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | DomChangeEventListener | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
 
 type stringNullable = string | null;
 
@@ -47,6 +52,7 @@ export interface ICtx
 	addChild(ctx: ICtx): void;
 	update(): void;
 	getParent(): ICtx | null | undefined;
+	addRef(ref: Ref<Element>): void;
 }
 
 export interface ICtxRoot

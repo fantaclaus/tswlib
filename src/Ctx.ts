@@ -2,6 +2,7 @@ import { IPropVal, ICtx, ICtxRoot } from "./types";
 import { g_CurrentContext } from "./Scope";
 import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
 import * as UpdateQueue from './UpdateQueue';
+import { Ref } from "tswlibDom/ref";
 
 export const enum NodeKind
 {
@@ -58,7 +59,7 @@ export abstract class Ctx implements ICtx
 	}
 	protected shouldBeAddedToParent()
 	{
-		return this.hasPropVals() || this.hasChildren();
+		return this.hasChildren() || this.hasPropVals();
 	}
 	protected hasPropVals()
 	{
@@ -111,6 +112,10 @@ export abstract class Ctx implements ICtx
 	}
 
 	abstract update(): void;
+	addRef(ref: Ref<Element>): void
+	{
+		throw new Error("Not implemented");
+	}
 
 	addChild(ctx: Ctx)
 	{

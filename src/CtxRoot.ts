@@ -1,11 +1,11 @@
 import { childValType, ICtxRoot, ElmEventMapItem } from "./types";
 import { g_CurrentContext } from "./Scope";
 import { Ctx } from "./Ctx";
-import { addNodesTo } from "./CtxNodes";
+import { addNodesTo, CtxNodeBase } from "./CtxNodes";
 import { log } from "lib/dbgutils";
 import { RootEventHandler } from "./RootEventHandler";
 
-export class CtxRoot extends Ctx implements ICtxRoot
+export class CtxRoot extends CtxNodeBase implements ICtxRoot
 {
 	private htmlElement: Element;
 
@@ -21,19 +21,14 @@ export class CtxRoot extends Ctx implements ICtxRoot
 	}
 	setContent(content: childValType)
 	{
-		const f = document.createDocumentFragment();
+		this.content = content;
 
-		g_CurrentContext.use(this, () =>
-		{
-			addNodesTo(f, content);
-		});
+		const parentNode = this.htmlElement;
+		const nodeBefore = this.lastChild == null ? null : this.lastChild.nextSibling;
 
-		this.invokeBeforeAttach();
-
-		this.htmlElement.appendChild(f);
-
-		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, true));
+		this.newMethod(parentNode, nodeBefore);
 	}
+
 	update()
 	{
 		throw new Error("not implemented");
@@ -41,6 +36,10 @@ export class CtxRoot extends Ctx implements ICtxRoot
 	getRootCtx()
 	{
 		return this;
+	}
+	protected getContent()
+	{
+		return this.content;
 	}
 	invokeBeforeAttach()
 	{

@@ -1,6 +1,6 @@
 import { Ctx, NodeKind } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot } from './types';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { ElementGeneric } from './elm';
 import { RawHtml, ElementWithValueBase } from './htmlElements';
@@ -8,33 +8,16 @@ import { CtxAttr } from './CtxAttr';
 import { CtxValue } from './CtxValue';
 import { Ref } from 'tswlibDom/ref';
 
-export class CtxNodes extends Ctx
+export abstract class CtxNodeBase extends Ctx
 {
-	private ctxRoot: ICtxRoot | undefined;
-	private firstChild: Node | null = null;
-	private lastChild: Node | null = null;
+	protected content: childValType;
+	protected firstChild: Node | null = null;
+	protected lastChild: Node | null = null;
 	private elementsWithRootEvents: Set<Element> | undefined;
 	private refs: Set<Ref> | undefined | null;
 
-	constructor(private content: childValTypeFn | childValTypePropDefReadable | Renderer)
-	{
-		super();
-	}
-	getRootCtx(): ICtxRoot | undefined
-	{
-		return this.ctxRoot;
-	}
-	setup(parentNode: DocumentFragment | Element)
-	{
-		const ctxParent = g_CurrentContext.getCurrent();
-		if (!ctxParent) throw new Error("No scope parent");
+	abstract getRootCtx(): ICtxRoot;
 
-		this.ctxRoot = ctxParent.getRootCtx();
-
-		this.addNodes(parentNode);
-
-		this.addCtxToParent();
-	}
 	update()
 	{
 		if (this.ctxParent === null) return;
@@ -51,33 +34,40 @@ export class CtxNodes extends Ctx
 		const firstChildOld = this.firstChild;
 		const lastChildOld = this.lastChild;
 
-		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
+		this.newMethod(parentNode, nodeBefore);
 
-		this.removeChildren();
-
-		this.removeNodes(parentNode);
-
-		const f = document.createDocumentFragment();
-
-		this.addNodes(f);
-
-		if (this.ctxRoot) this.ctxRoot.invokeBeforeAttach();
-
-		parentNode.insertBefore(f, nodeBefore);
-
-		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, true));
-
-		if (this.ctxParent)
+		if (this.ctxParent != null)
 		{
 			this.ctxParent.replaceNode(NodeKind.first, firstChildOld, this.firstChild);
 			this.ctxParent.replaceNode(NodeKind.last, lastChildOld, this.lastChild);
 		}
 	}
+	protected newMethod(parentNode: Node, nodeBefore: Node | null)
+	{
+		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
+
+		this.removeChildren();
+
+		if (this.firstChild) this.removeNodes(parentNode);
+
+		const f = document.createDocumentFragment();
+
+		this.addNodes(f);
+
+		const ctxRoot = this.getRootCtx();
+		ctxRoot.invokeBeforeAttach();
+
+		parentNode.insertBefore(f, nodeBefore);
+
+		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, true));
+	}
+
 	protected shouldBeAddedToParent()
 	{
 		return super.shouldBeAddedToParent() ||
 			(this.refs && this.refs.size > 0) ||
-			(this.elementsWithRootEvents && this.elementsWithRootEvents.size > 0);
+			(this.elementsWithRootEvents && this.elementsWithRootEvents.size > 0) ||
+			(isDomChangeEventListener(this.content));
 	}
 	public cleanup(): void
 	{
@@ -109,10 +99,10 @@ export class CtxNodes extends Ctx
 		{
 			this.elementsWithRootEvents.forEach(el =>
 			{
-				if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
-
 				log(console.debug, logcolor('orange'), 'CTX: detach event handlers ', logCtx(this), ' for ', el)
-				this.ctxRoot.detachElmEventHandlers(el);
+
+				const ctxRoot = this.getRootCtx();
+				ctxRoot.detachElmEventHandlers(el);
 			});
 
 			this.elementsWithRootEvents.clear();
@@ -120,14 +110,16 @@ export class CtxNodes extends Ctx
 	}
 	domChange(beforeChildren: boolean, attach: boolean): void
 	{
-		if (isRenderer(this.content))
+		const content = this.content;
+
+		if (isDomChangeEventListener(content))
 		{
 			const f =
 				beforeChildren ?
-					(attach ? this.content.afterAttachPre : this.content.beforeDetachPre) :
-					(attach ? this.content.afterAttachPost : this.content.beforeDetachPost);
+					(attach ? content.afterAttachPre : content.beforeDetachPre) :
+					(attach ? content.afterAttachPost : content.beforeDetachPost);
 
-			if (f) f.call(this.content);
+			if (f) f.call(content);
 		}
 	}
 	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
@@ -155,7 +147,7 @@ export class CtxNodes extends Ctx
 
 		if (matched && this.ctxParent) this.ctxParent.replaceNode(nodeKind, oldNode, newNode);
 	}
-	private removeNodes(parentNode: Node)
+	protected removeNodes(parentNode: Node)
 	{
 		let node = this.firstChild;
 
@@ -170,7 +162,7 @@ export class CtxNodes extends Ctx
 			node = nextNode;
 		}
 	}
-	private addNodes(parentNode: DocumentFragment | Element)
+	protected addNodes(parentNode: DocumentFragment | Element)
 	{
 		const parentLastChild = parentNode.lastChild;
 
@@ -199,27 +191,57 @@ export class CtxNodes extends Ctx
 		this.firstChild = firstAddedNode;
 		this.lastChild = parentNode.lastChild;
 	}
-	private getContent()
+	protected getContent()
 	{
 		if (this.content instanceof Function) return this.content();
 		if (isPropDef(this.content)) return this.content.get();
 		if (isRenderer(this.content)) return this.content.render();
 
-		throw new Error("this.content is not valid");
+		//return this.content;
+		throw new Error("Not supported type of content");
 	}
 	addEventHandlers(el: Element, elmEventMapItem: ElmEventMapItem)
 	{
 		if (this.elementsWithRootEvents == null) this.elementsWithRootEvents = new Set();
 		this.elementsWithRootEvents.add(el);
 
-		if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
-		this.ctxRoot.attachElmEventHandler(el, elmEventMapItem);
+		const ctxRoot = this.getRootCtx();
+		ctxRoot.attachElmEventHandler(el, elmEventMapItem);
 	}
 
 	get dbg_firstChild() { return this.firstChild; }
 	get dbg_lastChild() { return this.lastChild; }
 	get dbg_content() { return this.content; }
 	get dbg_elementsWithRootEvents() { return this.elementsWithRootEvents; }
+}
+
+export class CtxNodes extends CtxNodeBase
+{
+	private ctxRoot: ICtxRoot | undefined;
+
+	constructor(content: childValTypeFn | childValTypePropDefReadable | Renderer)
+	{
+		super();
+
+		this.content = content;
+	}
+	getRootCtx(): ICtxRoot
+	{
+		if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
+
+		return this.ctxRoot;
+	}
+	setup(parentNode: DocumentFragment | Element)
+	{
+		const ctxParent = g_CurrentContext.getCurrent();
+		if (!ctxParent) throw new Error("No scope parent");
+
+		this.ctxRoot = ctxParent.getRootCtx();
+
+		this.addNodes(parentNode);
+
+		this.addCtxToParent();
+	}
 }
 
 export function addNodesTo(parentNode: DocumentFragment | Element, item: childValType)
@@ -273,11 +295,22 @@ export function addNodesTo(parentNode: DocumentFragment | Element, item: childVa
 
 function isPropDef(v: childValType): v is childValTypePropDefReadable
 {
-	return (<childValTypePropDefReadable>v).get instanceof Function;
+	return v != null && (<childValTypePropDefReadable>v).get instanceof Function;
 }
-function isRenderer(item: childValType): item is Renderer
+function isRenderer(v: childValType): v is Renderer
 {
-	return (<Renderer>item).render instanceof Function;
+	return v != null && (<Renderer>v).render instanceof Function;
+}
+function isDomChangeEventListener(v: childValType): v is DomChangeEventListener
+{
+	if (v == null) return false;
+
+	const l = <DomChangeEventListener>v;
+	return (
+		l.afterAttachPost instanceof Function ||
+		l.afterAttachPre instanceof Function ||
+		l.beforeDetachPost instanceof Function ||
+		l.beforeDetachPre instanceof Function);
 }
 
 function createElement(tagName: string, ns: string | undefined, item: ElementGeneric)
@@ -288,8 +321,6 @@ function createElement(tagName: string, ns: string | undefined, item: ElementGen
 	if (refs)
 	{
 		const ctx = g_CurrentContext.getCurrentSafe();
-		if (!(ctx instanceof CtxNodes)) throw new Error("ctx is not CtxNodes");
-
 		for (let ref of refs)
 		{
 			ref.set(el);
@@ -345,7 +376,7 @@ function addEventListener(events: ElmEventMapItem[], tagName: string, el: Elemen
 			case EventKind.onRoot:
 				{
 					const ctx = g_CurrentContext.getCurrentSafe();
-					if (!(ctx instanceof CtxNodes)) throw new Error("ctx is not CtxNodes");
+					if (!(ctx instanceof CtxNodeBase)) throw new Error("ctx is not CtxNodes");
 
 					ctx.addEventHandlers(el, elmEventMapItem);
 				}
