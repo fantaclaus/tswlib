@@ -9,11 +9,11 @@ export class CtxAttr extends Ctx
 	{
 		super();
 	}
-	setup()
+	setup(ctxParent: Ctx)
 	{
 		this.setAttrVal();
 
-		this.addCtxToParent();
+		this.addCtxToParent(ctxParent);
 	}
 	update()
 	{
@@ -25,10 +25,7 @@ export class CtxAttr extends Ctx
 	}
 	private setAttrVal()
 	{
-		g_CurrentContext.use(this, () =>
-		{
-			this._setAttrVal();
-		});
+		g_CurrentContext.use(this, () => this._setAttrVal());
 	}
 	private _setAttrVal()
 	{

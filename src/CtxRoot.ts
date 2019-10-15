@@ -1,7 +1,5 @@
 import { childValType, ICtxRoot, ElmEventMapItem } from "./types";
-import { g_CurrentContext } from "./Scope";
-import { Ctx } from "./Ctx";
-import { addNodesTo, CtxNodeBase } from "./CtxNodes";
+import { CtxNodeBase } from "./CtxNodes";
 import { log } from "lib/dbgutils";
 import { RootEventHandler } from "./RootEventHandler";
 
@@ -21,12 +19,11 @@ export class CtxRoot extends CtxNodeBase implements ICtxRoot
 	}
 	setContent(content: childValType)
 	{
-		this.content = content;
-
 		const parentNode = this.htmlElement;
 		const nodeBefore = this.lastChild == null ? null : this.lastChild.nextSibling;
 
-		this.newMethod(parentNode, nodeBefore);
+		this.removeOldContent(parentNode);
+		this.addNewContent(parentNode, nodeBefore, content);
 	}
 
 	update()
@@ -36,10 +33,6 @@ export class CtxRoot extends CtxNodeBase implements ICtxRoot
 	getRootCtx()
 	{
 		return this;
-	}
-	protected getContent()
-	{
-		return this.content;
 	}
 	invokeBeforeAttach()
 	{

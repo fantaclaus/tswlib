@@ -10,7 +10,6 @@ import { Ref } from 'tswlibDom/ref';
 
 export abstract class CtxNodeBase extends Ctx
 {
-	protected content: childValType;
 	protected firstChild: Node | null = null;
 	protected lastChild: Node | null = null;
 	private elementsWithRootEvents: Set<Element> | undefined;
@@ -18,41 +17,19 @@ export abstract class CtxNodeBase extends Ctx
 
 	abstract getRootCtx(): ICtxRoot;
 
-	update()
-	{
-		if (this.ctxParent === null) return;
-
-		// log(console.debug, 'CtxNodes update:', logCtx(this));
-
-		if (!this.lastChild) throw new Error("this.lastChild is null");
-
-		const parentNode = this.lastChild.parentNode;
-		if (!parentNode) throw new Error("parentNode is null");
-
-		const nodeBefore = this.lastChild.nextSibling;
-
-		const firstChildOld = this.firstChild;
-		const lastChildOld = this.lastChild;
-
-		this.newMethod(parentNode, nodeBefore);
-
-		if (this.ctxParent != null)
-		{
-			this.ctxParent.replaceNode(NodeKind.first, firstChildOld, this.firstChild);
-			this.ctxParent.replaceNode(NodeKind.last, lastChildOld, this.lastChild);
-		}
-	}
-	protected newMethod(parentNode: Node, nodeBefore: Node | null)
+	protected removeOldContent(parentNode: Node)
 	{
 		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
 
 		this.removeChildren();
 
 		if (this.firstChild) this.removeNodes(parentNode);
-
+	}
+	protected addNewContent(parentNode: Node, nodeBefore: Node | null, content: childValType)
+	{
 		const f = document.createDocumentFragment();
 
-		this.addNodes(f);
+		this.addNodes(f, content);
 
 		const ctxRoot = this.getRootCtx();
 		ctxRoot.invokeBeforeAttach();
@@ -162,42 +139,34 @@ export abstract class CtxNodeBase extends Ctx
 			node = nextNode;
 		}
 	}
-	protected addNodes(parentNode: DocumentFragment | Element)
+	protected createContent()
+	{
+		return g_CurrentContext.use(this, () => this.getContent());
+	}
+	protected addNodes(parentNode: DocumentFragment | Element, content: childValType)
 	{
 		const parentLastChild = parentNode.lastChild;
-
 		// f.appendChild(document.createComment(`${this.id} start`));
-
-		g_CurrentContext.use(this, () =>
-		{
-			const r = this.getContent();
-
-			addNodesTo(parentNode, r);
-		});
-
+		this.insertContent(parentNode, content);
 		// f.appendChild(document.createComment(`${this.id} end`));
-
 		let firstAddedNode = parentLastChild == null ? parentNode.firstChild : parentLastChild.nextSibling;
-
 		// if nothing was added, add placeholder
 		if (firstAddedNode == null)
 		{
 			const placeholderNode = document.createComment('placeholder');
 			parentNode.appendChild(placeholderNode);
-
 			firstAddedNode = placeholderNode;
 		}
-
 		this.firstChild = firstAddedNode;
 		this.lastChild = parentNode.lastChild;
 	}
+
 	protected getContent()
 	{
 		if (this.content instanceof Function) return this.content();
 		if (isPropDef(this.content)) return this.content.get();
 		if (isRenderer(this.content)) return this.content.render();
 
-		//return this.content;
 		throw new Error("Not supported type of content");
 	}
 	addEventHandlers(el: Element, elmEventMapItem: ElmEventMapItem)
@@ -213,83 +182,214 @@ export abstract class CtxNodeBase extends Ctx
 	get dbg_lastChild() { return this.lastChild; }
 	get dbg_content() { return this.content; }
 	get dbg_elementsWithRootEvents() { return this.elementsWithRootEvents; }
-}
 
-export class CtxNodes extends CtxNodeBase
-{
-	private ctxRoot: ICtxRoot | undefined;
-
-	constructor(content: childValTypeFn | childValTypePropDefReadable | Renderer)
+	private insertContent(parentNode: DocumentFragment | Element, item: childValType)
 	{
-		super();
+		if (item == null || item === true || item === false || item === '') return;
 
-		this.content = content;
-	}
-	getRootCtx(): ICtxRoot
-	{
-		if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
-
-		return this.ctxRoot;
-	}
-	setup(parentNode: DocumentFragment | Element)
-	{
-		const ctxParent = g_CurrentContext.getCurrent();
-		if (!ctxParent) throw new Error("No scope parent");
-
-		this.ctxRoot = ctxParent.getRootCtx();
-
-		this.addNodes(parentNode);
-
-		this.addCtxToParent();
-	}
-}
-
-export function addNodesTo(parentNode: DocumentFragment | Element, item: childValType)
-{
-	if (item == null || item === true || item === false || item === '') return;
-
-	if (item instanceof Array)
-	{
-		for (let i of item)
+		if (item instanceof Array)
 		{
-			addNodesTo(parentNode, i);
+			for (let i of item)
+			{
+				this.insertContent(parentNode, i);
+			}
 		}
-	}
-	else if (item instanceof Function || isPropDef(item) || isRenderer(item))
-	{
-		const ctx = new CtxNodes(item);
-		ctx.setup(parentNode);
-	}
-	else if (item instanceof RawHtml)
-	{
-		const el = document.createElement('div');
-		el.innerHTML = item.value;
-
-		while (el.firstChild) parentNode.appendChild(el.firstChild);
-	}
-	else if (item instanceof ElementGeneric)
-	{
-		const children = item.z_children();
-		const tagName = item[privates.ElementGeneric.tagName]();
-		if (tagName)
+		else if (item instanceof Function || isPropDef(item) || isRenderer(item))
 		{
-			const ns = item[privates.ElementGeneric.ns]();
-			const el = createElement(tagName, ns, item);
+			const ctx = new CtxNodes(item);
+			ctx.setup(this, parentNode);
+		}
+		else if (item instanceof RawHtml)
+		{
+			const el = document.createElement('div');
+			el.innerHTML = item.value;
 
-			addNodesTo(el, children);
+			while (el.firstChild) parentNode.appendChild(el.firstChild);
+		}
+		else if (item instanceof ElementGeneric)
+		{
+			const children = item.z_children();
+			const tagName = item[privates.ElementGeneric.tagName]();
+			if (tagName)
+			{
+				const ns = item[privates.ElementGeneric.ns]();
+				const el = this.createElement(tagName, ns, item);
 
-			parentNode.appendChild(el);
+				this.insertContent(el, children);
+
+				parentNode.appendChild(el);
+			}
+			else
+			{
+				this.insertContent(parentNode, children);
+			}
 		}
 		else
 		{
-			addNodesTo(parentNode, children);
+			const s = item.toString();
+			const n = document.createTextNode(s);
+			parentNode.appendChild(n);
 		}
 	}
-	else
+	private createElement(tagName: string, ns: string | undefined, item: ElementGeneric)
 	{
-		const s = item.toString();
-		const n = document.createTextNode(s);
-		parentNode.appendChild(n);
+		const el = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);
+
+		const refs = item.z_getRefs();
+		if (refs)
+		{
+			for (let ref of refs)
+			{
+				ref.set(el);
+				this.addRef(ref);
+			}
+		}
+
+		this.createAttrs(item, el);
+
+		if (item instanceof ElementWithValueBase)
+		{
+			const valInfos = item.z_getValueInfos();
+			if (valInfos)
+			{
+				this.addValueContext(el, valInfos);
+				this.addValueEventHandlers(el, valInfos);
+			}
+		}
+
+		const events = item.z_events();
+		if (events)
+		{
+			this.addEventListeners(events, tagName, el);
+		}
+
+		return el;
+	}
+	private addEventListeners(events: ElmEventMapItem[], tagName: string, el: Element)
+	{
+		for (let elmEventMapItem of events)
+		{
+			switch (elmEventMapItem.eventKind)
+			{
+				case EventKind.direct:
+					if (elmEventMapItem.eventType == 'dom')
+					{
+						if (tagName.toUpperCase() == 'A' && elmEventMapItem.eventName.toLowerCase() == 'click')
+						{
+							const handler = elmEventMapItem.handleEvent;
+							el.addEventListener(elmEventMapItem.eventName, function (this: Element, e)
+							{
+								e.preventDefault();
+								handler.call(this, e);
+							});
+						}
+						else
+						{
+							el.addEventListener(elmEventMapItem.eventName, elmEventMapItem.handleEvent);
+						}
+					}
+					break;
+
+				case EventKind.onRoot:
+					{
+						this.addEventHandlers(el, elmEventMapItem);
+					}
+					break;
+
+				default:
+					throw new Error(`Unsupported eventKind: ${elmEventMapItem.eventKind}`);
+			}
+		}
+	}
+	private addValueContext(el: Element, valInfos: ElementValueInfo | ElementValueInfo[])
+	{
+		if (valInfos instanceof Array)
+		{
+			for (let valInfo of valInfos)
+			{
+				this.addValueContext(el, valInfo);
+			}
+		}
+		else
+		{
+			const ctx = new CtxValue(el, valInfos.propName, valInfos.propVal);
+			ctx.setup(this);
+		}
+	}
+	private addValueEventHandlers(el: Element, valInfos: ElementValueInfo | ElementValueInfo[])
+	{
+		el.addEventListener('input', inputHandler);
+		el.addEventListener('change', inputHandler);
+
+		function inputHandler(this: Element, e: Event)
+		{
+			handleValueEvent(valInfos);
+
+			function handleValueEvent(valInfos: ElementValueInfo | ElementValueInfo[])
+			{
+				if (valInfos instanceof Array)
+				{
+					for (let valInfo of valInfos)
+					{
+						handleValueEvent(valInfo);
+					}
+				}
+				else
+				{
+					const value = (el as unknown as { [name: string]: any })[valInfos.propName];
+
+					log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
+
+					valInfos.propVal.set(value);
+				}
+			}
+		}
+	}
+	private createAttrs(elm: ElementGeneric, el: Element)
+	{
+		const elm_attrs = elm.z_attrs();
+
+		if (elm_attrs)
+		{
+			const attrs = this.createAttrMap(elm_attrs);
+
+			attrs.forEach((attrValue, attrName) =>
+			{
+				const ctx = new CtxAttr(el, attrName, attrValue);
+				ctx.setup(this);
+			});
+		}
+	}
+	private createAttrMap(elm_attrs: AttrNameValue[])
+	{
+		const attrs = new Map<string, attrValTypeInternal2>();
+
+		for (let a of elm_attrs)
+		{
+			if (a.attrName)
+			{
+				const attrName = a.attrName.toLowerCase();
+				const v = attrs.get(attrName);
+				if (v == null)
+				{
+					attrs.set(attrName, a.attrValue);
+				}
+				else if (v instanceof Array)
+				{
+					const vals: attrValTypeInternal[] = v;
+					vals.push(a.attrValue);
+				}
+				else
+				{
+					const vals: attrValTypeInternal[] = [];
+					vals.push(v);
+					vals.push(a.attrValue);
+					attrs.set(attrName, vals);
+				}
+			}
+		}
+
+		return attrs;
 	}
 }
 
@@ -313,170 +413,63 @@ function isDomChangeEventListener(v: childValType): v is DomChangeEventListener
 		l.beforeDetachPre instanceof Function);
 }
 
-function createElement(tagName: string, ns: string | undefined, item: ElementGeneric)
+export class CtxNodes extends CtxNodeBase
 {
-	const el = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);
+	private ctxRoot: ICtxRoot | undefined;
+	private content: childValType;
 
-	const refs = item.z_getRefs();
-	if (refs)
+	constructor(content: childValTypeFn | childValTypePropDefReadable | Renderer)
 	{
-		const ctx = g_CurrentContext.getCurrentSafe();
-		for (let ref of refs)
+		super();
+
+		this.content = content;
+	}
+	getRootCtx(): ICtxRoot
+	{
+		if (this.ctxRoot == null) throw new Error("this.ctxRoot == null");
+
+		return this.ctxRoot;
+	}
+	setup(ctxParent: Ctx, parentNode: DocumentFragment | Element)
+	{
+		// const ctxParent = g_CurrentContext.getCurrent();
+		// if (!ctxParent) throw new Error("No scope parent");
+
+		this.ctxRoot = ctxParent.getRootCtx();
+
+		const content = this.createContent();
+
+		this.addNodes(parentNode, content);
+
+		this.addCtxToParent(ctxParent);
+	}
+	update()
+	{
+		if (this.ctxParent === null) return;
+
+		// log(console.debug, 'CtxNodes update:', logCtx(this));
+
+		if (!this.lastChild) throw new Error("this.lastChild is null");
+
+		const parentNode = this.lastChild.parentNode;
+		if (!parentNode) throw new Error("parentNode is null");
+
+		const nodeBefore = this.lastChild.nextSibling;
+
+		const firstChildOld = this.firstChild;
+		const lastChildOld = this.lastChild;
+
+		this.removeOldContent(parentNode);
+
+		const content = this.createContent();
+
+		this.addNewContent(parentNode, nodeBefore, content);
+
+		if (this.ctxParent != null)
 		{
-			ref.set(el);
-			ctx.addRef(ref);
+			this.ctxParent.replaceNode(NodeKind.first, firstChildOld, this.firstChild);
+			this.ctxParent.replaceNode(NodeKind.last, lastChildOld, this.lastChild);
 		}
 	}
-
-	createAttrs(item, el);
-
-	if (item instanceof ElementWithValueBase)
-	{
-		const valInfos = item.z_getValueInfos();
-		if (valInfos)
-		{
-			addValueContext(el, valInfos);
-			addValueEventHandlers(el, valInfos);
-		}
-	}
-
-	const events = item.z_events();
-	if (events)
-	{
-		addEventListener(events, tagName, el);
-	}
-
-	return el;
-}
-function addEventListener(events: ElmEventMapItem[], tagName: string, el: Element)
-{
-	for (let elmEventMapItem of events)
-	{
-		switch (elmEventMapItem.eventKind)
-		{
-			case EventKind.direct:
-				if (elmEventMapItem.eventType == 'dom')
-				{
-					if (tagName.toUpperCase() == 'A' && elmEventMapItem.eventName.toLowerCase() == 'click')
-					{
-						const handler = elmEventMapItem.handleEvent;
-						el.addEventListener(elmEventMapItem.eventName, function (this: Element, e)
-						{
-							e.preventDefault();
-							handler.call(this, e);
-						});
-					}
-					else
-					{
-						el.addEventListener(elmEventMapItem.eventName, elmEventMapItem.handleEvent);
-					}
-				}
-				break;
-
-			case EventKind.onRoot:
-				{
-					const ctx = g_CurrentContext.getCurrentSafe();
-					if (!(ctx instanceof CtxNodeBase)) throw new Error("ctx is not CtxNodes");
-
-					ctx.addEventHandlers(el, elmEventMapItem);
-				}
-				break;
-
-			default:
-				throw new Error(`Unsupported eventKind: ${elmEventMapItem.eventKind}`);
-		}
-	}
-}
-
-function addValueContext(el: Element, valInfos: ElementValueInfo | ElementValueInfo[])
-{
-	if (valInfos instanceof Array)
-	{
-		for (let valInfo of valInfos)
-		{
-			addValueContext(el, valInfo);
-		}
-	}
-	else
-	{
-		const ctx = new CtxValue(el, valInfos.propName, valInfos.propVal);
-		ctx.setup();
-	}
-}
-function addValueEventHandlers(el: Element, valInfos: ElementValueInfo | ElementValueInfo[])
-{
-	el.addEventListener('input', inputHandler);
-	el.addEventListener('change', inputHandler);
-
-	function inputHandler(this: Element, e: Event)
-	{
-		handleValueEvent(valInfos);
-
-		function handleValueEvent(valInfos: ElementValueInfo | ElementValueInfo[])
-		{
-			if (valInfos instanceof Array)
-			{
-				for (let valInfo of valInfos)
-				{
-					handleValueEvent(valInfo);
-				}
-			}
-			else
-			{
-				const value = (el as unknown as { [name: string]: any })[valInfos.propName];
-
-				log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
-
-				valInfos.propVal.set(value);
-			}
-		}
-	}
-}
-function createAttrs(elm: ElementGeneric, el: Element)
-{
-	const elm_attrs = elm.z_attrs();
-
-	if (elm_attrs)
-	{
-		const attrs = createAttrMap(elm_attrs);
-
-		attrs.forEach((attrValue, attrName) =>
-		{
-			const ctx = new CtxAttr(el, attrName, attrValue);
-			ctx.setup();
-		});
-	}
-}
-
-function createAttrMap(elm_attrs: AttrNameValue[])
-{
-	const attrs = new Map<string, attrValTypeInternal2>();
-
-	for (let a of elm_attrs)
-	{
-		if (a.attrName)
-		{
-			const attrName = a.attrName.toLowerCase();
-			const v = attrs.get(attrName);
-			if (v == null)
-			{
-				attrs.set(attrName, a.attrValue);
-			}
-			else if (v instanceof Array)
-			{
-				const vals: attrValTypeInternal[] = v;
-				vals.push(a.attrValue);
-			}
-			else
-			{
-				const vals: attrValTypeInternal[] = [];
-				vals.push(v);
-				vals.push(a.attrValue);
-				attrs.set(attrName, vals);
-			}
-		}
-	}
-
-	return attrs;
 }
 

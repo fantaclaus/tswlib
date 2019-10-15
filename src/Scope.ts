@@ -15,14 +15,14 @@ class Scope<T>
 	{
 		return this.current;
 	}
-	use(ctx: T, action: () => void)
+	use<R>(ctx: T, action: () => R)
 	{
 		const prevCtx = this.current;
 		this.current = ctx;
 
 		try
 		{
-			action();
+			return action();
 		}
 		finally
 		{

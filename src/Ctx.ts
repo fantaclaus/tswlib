@@ -1,5 +1,4 @@
 import { IPropVal, ICtx, ICtxRoot } from "./types";
-import { g_CurrentContext } from "./Scope";
 import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
 import * as UpdateQueue from './UpdateQueue';
 import { Ref } from "tswlibDom/ref";
@@ -33,9 +32,8 @@ export abstract class Ctx implements ICtx
 	{
 		return this.ctxParent;
 	}
-	addCtxToParent()
+	addCtxToParent(ctxParent: Ctx)
 	{
-		const ctxParent = g_CurrentContext.getCurrent();
 		if (ctxParent == null)
 		{
 			log(console.warn, logcolor("orange"), `CTX: not added: ctx `, logCtx(this), ` NO PARENT`);
