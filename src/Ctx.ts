@@ -61,11 +61,11 @@ export abstract class Ctx implements ICtx
 	}
 	protected hasPropVals()
 	{
-		return this.propVals && this.propVals.size > 0;
+		return isNotEmptySet(this.propVals);
 	}
 	protected hasChildren()
 	{
-		return this.childCtxs && this.childCtxs.size > 0;
+		return isNotEmptySet(this.childCtxs);
 	}
 	protected forEachChild(action: (ctx: Ctx) => void)
 	{
@@ -124,14 +124,16 @@ export abstract class Ctx implements ICtx
 	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
 	{
 	}
-	protected notifyChildren(action: (ctx: Ctx, beforeChildren: boolean) => void)
+	protected notifySelfAndChildren(action: (ctx: Ctx, beforeChildren: boolean) => void)
 	{
+		action(this, true);
+
 		this.forEachChild(ctx =>
 		{
-			action(ctx, true);
-			ctx.notifyChildren(action);
-			action(ctx, false);
+			ctx.notifySelfAndChildren(action);
 		});
+
+		action(this, false);
 	}
 	domChange(beforeChildren: boolean, attach: boolean): void
 	{
@@ -145,4 +147,9 @@ export abstract class Ctx implements ICtx
 	{
 		return this.propVals;
 	}
+}
+
+export function isNotEmptySet<T>(s: Set<T> | null | undefined)
+{
+	return s && s.size > 0;
 }

@@ -1,4 +1,4 @@
-import { Ctx, NodeKind } from './Ctx';
+import { Ctx, NodeKind, isNotEmptySet } from './Ctx';
 import { g_CurrentContext } from './Scope';
 import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
@@ -13,13 +13,19 @@ export abstract class CtxNodeBase extends Ctx
 	protected firstChild: Node | null = null;
 	protected lastChild: Node | null = null;
 	private elementsWithRootEvents: Set<Element> | undefined;
-	private refs: Set<Ref> | undefined | null;
+	private refs: Set<Ref> | undefined;
+	private domChangeListeners: Set<DomChangeEventListener> | undefined;
+
+	get dbg_firstChild() { return this.firstChild; }
+	get dbg_lastChild() { return this.lastChild; }
+	get dbg_elementsWithRootEvents() { return this.elementsWithRootEvents; }
+	get dbg_domChangeListeners() { return this.domChangeListeners; }
 
 	abstract getRootCtx(): ICtxRoot;
 
 	protected removeOldContent(parentNode: Node)
 	{
-		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
+		this.notifySelfAndChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, false));
 
 		this.removeChildren();
 
@@ -36,15 +42,14 @@ export abstract class CtxNodeBase extends Ctx
 
 		parentNode.insertBefore(f, nodeBefore);
 
-		this.notifyChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, true));
+		this.notifySelfAndChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, true));
 	}
-
 	protected shouldBeAddedToParent()
 	{
 		return super.shouldBeAddedToParent() ||
-			(this.refs && this.refs.size > 0) ||
-			(this.elementsWithRootEvents && this.elementsWithRootEvents.size > 0) ||
-			(isDomChangeEventListener(this.content));
+			isNotEmptySet(this.refs) ||
+			isNotEmptySet(this.elementsWithRootEvents) ||
+			isNotEmptySet(this.domChangeListeners);
 	}
 	public cleanup(): void
 	{
@@ -52,6 +57,7 @@ export abstract class CtxNodeBase extends Ctx
 
 		this.detachEventHandlers();
 		this.resetRefs();
+		this.domChangeListeners = undefined;
 	}
 	addRef(ref: Ref<Element>)
 	{
@@ -67,8 +73,8 @@ export abstract class CtxNodeBase extends Ctx
 				log(console.debug, logcolor('orange'), 'CTX: reset ref ', logCtx(this), ' for ', ref.asHtmlElement());
 				ref.set(null);
 			});
+			this.refs = undefined;
 		}
-		this.refs = null;
 	}
 	detachEventHandlers()
 	{
@@ -87,16 +93,18 @@ export abstract class CtxNodeBase extends Ctx
 	}
 	domChange(beforeChildren: boolean, attach: boolean): void
 	{
-		const content = this.content;
-
-		if (isDomChangeEventListener(content))
+		const domChangeListeners = this.domChangeListeners;
+		if (domChangeListeners)
 		{
-			const f =
-				beforeChildren ?
-					(attach ? content.afterAttachPre : content.beforeDetachPre) :
-					(attach ? content.afterAttachPost : content.beforeDetachPost);
+			domChangeListeners.forEach(l =>
+			{
+				const f =
+					beforeChildren ?
+						(attach ? l.afterAttachPre : l.beforeDetachPre) :
+						(attach ? l.afterAttachPost : l.beforeDetachPost);
 
-			if (f) f.call(content);
+				if (f) f.call(l);
+			});
 		}
 	}
 	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
@@ -139,10 +147,6 @@ export abstract class CtxNodeBase extends Ctx
 			node = nextNode;
 		}
 	}
-	protected createContent()
-	{
-		return g_CurrentContext.use(this, () => this.getContent());
-	}
 	protected addNodes(parentNode: DocumentFragment | Element, content: childValType)
 	{
 		const parentLastChild = parentNode.lastChild;
@@ -160,15 +164,6 @@ export abstract class CtxNodeBase extends Ctx
 		this.firstChild = firstAddedNode;
 		this.lastChild = parentNode.lastChild;
 	}
-
-	protected getContent()
-	{
-		if (this.content instanceof Function) return this.content();
-		if (isPropDef(this.content)) return this.content.get();
-		if (isRenderer(this.content)) return this.content.render();
-
-		throw new Error("Not supported type of content");
-	}
 	addEventHandlers(el: Element, elmEventMapItem: ElmEventMapItem)
 	{
 		if (this.elementsWithRootEvents == null) this.elementsWithRootEvents = new Set();
@@ -178,14 +173,15 @@ export abstract class CtxNodeBase extends Ctx
 		ctxRoot.attachElmEventHandler(el, elmEventMapItem);
 	}
 
-	get dbg_firstChild() { return this.firstChild; }
-	get dbg_lastChild() { return this.lastChild; }
-	get dbg_content() { return this.content; }
-	get dbg_elementsWithRootEvents() { return this.elementsWithRootEvents; }
-
 	private insertContent(parentNode: DocumentFragment | Element, item: childValType)
 	{
 		if (item == null || item === true || item === false || item === '') return;
+
+		if (isDomChangeEventListener(item))
+		{
+			if (this.domChangeListeners == null) this.domChangeListeners = new Set();
+			this.domChangeListeners.add(item);
+		}
 
 		if (item instanceof Array)
 		{
@@ -416,13 +412,10 @@ function isDomChangeEventListener(v: childValType): v is DomChangeEventListener
 export class CtxNodes extends CtxNodeBase
 {
 	private ctxRoot: ICtxRoot | undefined;
-	private content: childValType;
 
-	constructor(content: childValTypeFn | childValTypePropDefReadable | Renderer)
+	constructor(private content: childValTypeFn | childValTypePropDefReadable | Renderer)
 	{
 		super();
-
-		this.content = content;
 	}
 	getRootCtx(): ICtxRoot
 	{
@@ -471,5 +464,18 @@ export class CtxNodes extends CtxNodeBase
 			this.ctxParent.replaceNode(NodeKind.last, lastChildOld, this.lastChild);
 		}
 	}
+	private createContent()
+	{
+		return g_CurrentContext.use(this, () => this.getContent());
+	}
+	private getContent()
+	{
+		if (this.content instanceof Function) return this.content();
+		if (isPropDef(this.content)) return this.content.get();
+		if (isRenderer(this.content)) return this.content.render();
+
+		throw new Error("Not supported type of content");
+	}
+	get dbg_content() { return this.content; }
 }
 

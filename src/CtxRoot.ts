@@ -25,7 +25,6 @@ export class CtxRoot extends CtxNodeBase implements ICtxRoot
 		this.removeOldContent(parentNode);
 		this.addNewContent(parentNode, nodeBefore, content);
 	}
-
 	update()
 	{
 		throw new Error("not implemented");
@@ -55,4 +54,5 @@ export class CtxRoot extends CtxNodeBase implements ICtxRoot
 		}
 	}
 	get dbg_rootEventHandler() { return this.rootEventHandler; }
+	get dbg_getElement() { return this.htmlElement; }
 }
