@@ -1,15 +1,15 @@
-import { Ctx } from "./Ctx";
+import { tswCtx } from "./Ctx";
 import { g_CurrentContext } from "./Scope";
 import { log, logcolor, logCtx } from "lib/dbgutils";
 import { PropDef } from "./types";
 
-export class CtxValue extends Ctx
+export class tswCtxValue extends tswCtx
 {
 	constructor(private el: Element, private valuePropName: string, private pv: PropDef<any>)
 	{
 		super();
 	}
-	setup(ctxParent: Ctx)
+	setup(ctxParent: tswCtx)
 	{
 		this.setValue();
 

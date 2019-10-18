@@ -1,7 +1,7 @@
 import { IPropVal, ICtx, ICtxRoot } from "./types";
 import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
 import * as UpdateQueue from './UpdateQueue';
-import { Ref } from "tswlibDom/ref";
+import { tswRef } from "tswlibDom/ref";
 
 export const enum NodeKind
 {
@@ -9,18 +9,18 @@ export const enum NodeKind
 	last,
 }
 
-export abstract class Ctx implements ICtx
+export abstract class tswCtx implements ICtx
 {
 	id: number;
 	private propVals: Set<IPropVal> | undefined | null;
-	private childCtxs: Set<Ctx> | undefined;
-	protected ctxParent: Ctx | null | undefined; // undefined -- not assigned yet; null -- detached, ctx should not be used anymore
+	private childCtxs: Set<tswCtx> | undefined;
+	protected ctxParent: tswCtx | null | undefined; // undefined -- not assigned yet; null -- detached, ctx should not be used anymore
 
 	private static CtxLastId = 0;
 
 	constructor()
 	{
-		this.id = ++Ctx.CtxLastId;
+		this.id = ++tswCtx.CtxLastId;
 
 		log(console.debug, logcolor("orange"), `CTX: new `, logCtx(this));
 	}
@@ -32,7 +32,7 @@ export abstract class Ctx implements ICtx
 	{
 		return this.ctxParent;
 	}
-	addCtxToParent(ctxParent: Ctx)
+	addCtxToParent(ctxParent: tswCtx)
 	{
 		if (ctxParent == null)
 		{
@@ -67,7 +67,7 @@ export abstract class Ctx implements ICtx
 	{
 		return isNotEmptySet(this.childCtxs);
 	}
-	protected forEachChild(action: (ctx: Ctx) => void)
+	protected forEachChild(action: (ctx: tswCtx) => void)
 	{
 		if (this.childCtxs) this.childCtxs.forEach(action);
 	}
@@ -110,21 +110,21 @@ export abstract class Ctx implements ICtx
 	}
 
 	abstract update(): void;
-	addRef(ref: Ref<Element>): void
+	addRef(ref: tswRef<Element>): void
 	{
 		throw new Error("Not implemented");
 	}
 
-	addChild(ctx: Ctx)
+	addChild(ctx: tswCtx)
 	{
-		if (this.childCtxs == null) this.childCtxs = new Set<Ctx>();
+		if (this.childCtxs == null) this.childCtxs = new Set<tswCtx>();
 		this.childCtxs.add(ctx);
 		ctx.ctxParent = this;
 	}
 	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
 	{
 	}
-	protected notifySelfAndChildren(action: (ctx: Ctx, beforeChildren: boolean) => void)
+	protected notifySelfAndChildren(action: (ctx: tswCtx, beforeChildren: boolean) => void)
 	{
 		action(this, true);
 

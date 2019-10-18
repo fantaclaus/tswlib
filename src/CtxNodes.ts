@@ -1,19 +1,19 @@
-import { Ctx, NodeKind, isNotEmptySet } from './Ctx';
+import { tswCtx, NodeKind, isNotEmptySet } from './Ctx';
 import { g_CurrentContext } from './Scope';
 import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
-import { ElementGeneric } from './elm';
-import { RawHtml, ElementWithValueBase } from './htmlElements';
-import { CtxAttr } from './CtxAttr';
-import { CtxValue } from './CtxValue';
-import { Ref } from 'tswlibDom/ref';
+import { tswElement } from './elm';
+import { tswRawHtml, tswElementWithValueBase } from './htmlElements';
+import { tswCtxAttr } from './CtxAttr';
+import { tswCtxValue } from './CtxValue';
+import { tswRef } from 'tswlibDom/ref';
 
-export abstract class CtxNodeBase extends Ctx
+export abstract class tswCtxNodeBase extends tswCtx
 {
 	protected firstChild: Node | null = null;
 	protected lastChild: Node | null = null;
 	private elementsWithRootEvents: Set<Element> | undefined;
-	private refs: Set<Ref> | undefined;
+	private refs: Set<tswRef> | undefined;
 	private domChangeListeners: Set<DomChangeEventListener> | undefined;
 
 	get dbg_firstChild() { return this.firstChild; }
@@ -59,7 +59,7 @@ export abstract class CtxNodeBase extends Ctx
 		this.resetRefs();
 		this.domChangeListeners = undefined;
 	}
-	addRef(ref: Ref<Element>)
+	addRef(ref: tswRef<Element>)
 	{
 		if (this.refs == null) this.refs = new Set();
 		this.refs.add(ref);
@@ -192,17 +192,17 @@ export abstract class CtxNodeBase extends Ctx
 		}
 		else if (item instanceof Function || isPropDef(item) || isRenderer(item))
 		{
-			const ctx = new CtxNodes(item);
+			const ctx = new tswCtxNodes(item);
 			ctx.setup(this, parentNode);
 		}
-		else if (item instanceof RawHtml)
+		else if (item instanceof tswRawHtml)
 		{
 			const el = document.createElement('div');
 			el.innerHTML = item.value;
 
 			while (el.firstChild) parentNode.appendChild(el.firstChild);
 		}
-		else if (item instanceof ElementGeneric)
+		else if (item instanceof tswElement)
 		{
 			const children = item[privates.ElementGeneric.children]();
 			const tagName = item[privates.ElementGeneric.tagName]();
@@ -227,7 +227,7 @@ export abstract class CtxNodeBase extends Ctx
 			parentNode.appendChild(n);
 		}
 	}
-	private createElement(tagName: string, ns: string | undefined, item: ElementGeneric)
+	private createElement(tagName: string, ns: string | undefined, item: tswElement)
 	{
 		const el = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);
 
@@ -243,7 +243,7 @@ export abstract class CtxNodeBase extends Ctx
 
 		this.createAttrs(item, el);
 
-		if (item instanceof ElementWithValueBase)
+		if (item instanceof tswElementWithValueBase)
 		{
 			const valInfos = item[privates.ElementWithValueBase.getValueInfos]();
 			if (valInfos)
@@ -308,7 +308,7 @@ export abstract class CtxNodeBase extends Ctx
 		}
 		else
 		{
-			const ctx = new CtxValue(el, valInfos.propName, valInfos.propVal);
+			const ctx = new tswCtxValue(el, valInfos.propName, valInfos.propVal);
 			ctx.setup(this);
 		}
 	}
@@ -341,7 +341,7 @@ export abstract class CtxNodeBase extends Ctx
 			}
 		}
 	}
-	private createAttrs(elm: ElementGeneric, el: Element)
+	private createAttrs(elm: tswElement, el: Element)
 	{
 		const elm_attrs = elm[privates.ElementGeneric.attrs]();
 
@@ -351,7 +351,7 @@ export abstract class CtxNodeBase extends Ctx
 
 			attrs.forEach((attrValue, attrName) =>
 			{
-				const ctx = new CtxAttr(el, attrName, attrValue);
+				const ctx = new tswCtxAttr(el, attrName, attrValue);
 				ctx.setup(this);
 			});
 		}
@@ -409,7 +409,7 @@ function isDomChangeEventListener(v: childValType): v is DomChangeEventListener
 		l.beforeDetachPre instanceof Function);
 }
 
-export class CtxNodes extends CtxNodeBase
+export class tswCtxNodes extends tswCtxNodeBase
 {
 	private ctxRoot: ICtxRoot | undefined;
 
@@ -423,7 +423,7 @@ export class CtxNodes extends CtxNodeBase
 
 		return this.ctxRoot;
 	}
-	setup(ctxParent: Ctx, parentNode: DocumentFragment | Element)
+	setup(ctxParent: tswCtx, parentNode: DocumentFragment | Element)
 	{
 		// const ctxParent = g_CurrentContext.getCurrent();
 		// if (!ctxParent) throw new Error("No scope parent");

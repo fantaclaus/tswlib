@@ -1,13 +1,13 @@
-import { ElementGeneric } from "tswlibDom/elm";
+import { tswElement } from "tswlibDom/elm";
 
-export function el(tagName: string) { return new ElementSVG(tagName); }
-export function svg() { return new ElementSVG_SVG(); }
-export function circle() { return new ElementSVG_Circle(); }
-export function rect() { return new ElementSVG_Rect(); }
+export function el(tagName: string) { return new tswElementSVG(tagName); }
+export function svg() { return new tswElementSVG_SVG(); }
+export function circle() { return new tswElementSVG_Circle(); }
+export function rect() { return new tswElementSVG_Rect(); }
 
 const svgNS = "http://www.w3.org/2000/svg";
 
-export class ElementSVG extends ElementGeneric
+export class tswElementSVG extends tswElement
 {
 	constructor(tagName: string)
 	{
@@ -18,7 +18,7 @@ export class ElementSVG extends ElementGeneric
 	fill(v: string) { this.attr('fill', v); return this; }
 }
 
-export class ElementSVG_SVG extends ElementSVG
+export class tswElementSVG_SVG extends tswElementSVG
 {
 	constructor()
 	{
@@ -28,7 +28,7 @@ export class ElementSVG_SVG extends ElementSVG
 	height(v: number) { this.attr('height', v); return this; }
 }
 
-export class ElementSVG_Circle extends ElementSVG
+export class tswElementSVG_Circle extends tswElementSVG
 {
 	constructor()
 	{
@@ -39,7 +39,7 @@ export class ElementSVG_Circle extends ElementSVG
 	r(v: number) { this.attr('r', v); return this; }
 }
 
-export class ElementSVG_Rect extends ElementSVG
+export class tswElementSVG_Rect extends tswElementSVG
 {
 	constructor()
 	{

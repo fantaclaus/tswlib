@@ -1,4 +1,4 @@
-export class Ref<T extends Element = Element>
+export class tswRef<T extends Element = Element>
 {
 	private val: T | undefined | null;
 

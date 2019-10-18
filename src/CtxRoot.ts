@@ -1,15 +1,15 @@
 import { childValType, ICtxRoot, ElmEventMapItem } from "./types";
-import { CtxNodeBase } from "./CtxNodes";
+import { tswCtxNodeBase } from "./CtxNodes";
 import { log } from "lib/dbgutils";
-import { RootEventHandler } from "./RootEventHandler";
+import { tswRootEventHandler } from "./RootEventHandler";
 
-export class CtxRoot extends CtxNodeBase implements ICtxRoot
+export class tswCtxRoot extends tswCtxNodeBase implements ICtxRoot
 {
 	private htmlElement: Element;
 
 	// give a chance to insert generated style rules into stylesheet (css-in-js) to avoid twitching before inserting nodes into DOM
 	onBeforeAttach: (() => void) | undefined;
-	private rootEventHandler: RootEventHandler | undefined;
+	private rootEventHandler: tswRootEventHandler | undefined;
 
 	constructor(htmlElement: Element)
 	{
@@ -41,7 +41,7 @@ export class CtxRoot extends CtxNodeBase implements ICtxRoot
 	}
 	attachElmEventHandler(el: Element, elmEventMapItem: ElmEventMapItem)
 	{
-		if (this.rootEventHandler == null) this.rootEventHandler = new RootEventHandler(this.htmlElement);
+		if (this.rootEventHandler == null) this.rootEventHandler = new tswRootEventHandler(this.htmlElement);
 
 		this.rootEventHandler.attachElmEventHandler(el, elmEventMapItem);
 	}

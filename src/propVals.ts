@@ -3,7 +3,7 @@ import { IPropVal, ICtx, PropDef, PropDefReadable } from './types';
 import { log, logPV, logCtx, logcolor } from 'lib/dbgutils';
 import { addToUpdateQueue } from './UpdateQueue';
 
-export class PropVal<T> implements PropDef<T>, IPropVal
+export class tswPropVal<T> implements PropDef<T>, IPropVal
 {
 	private ctxs: Set<ICtx> | undefined | null;
 	private insideSet = false; // to prevent infinite loops
@@ -105,7 +105,7 @@ export class PropVal<T> implements PropDef<T>, IPropVal
 	}
 }
 
-export class PropValArray<T> extends PropVal<T[]>
+export class tswPropValArray<T> extends tswPropVal<T[]>
 {
 	constructor(items: T[])
 	{

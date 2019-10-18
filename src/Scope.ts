@@ -1,6 +1,6 @@
 import { ICtx } from "./types";
 
-class Scope<T>
+class tswScope<T>
 {
 	private current: T | null = null;
 
@@ -31,4 +31,4 @@ class Scope<T>
 	}
 }
 
-export const g_CurrentContext = new Scope<ICtx>();
+export const g_CurrentContext = new tswScope<ICtx>();

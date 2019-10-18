@@ -1,15 +1,15 @@
-import { Ctx } from "./Ctx";
+import { tswCtx } from "./Ctx";
 import { attrValTypeInternal2, singleStringValType, PropDefReadable } from "./types";
 import { g_CurrentContext } from "./Scope";
-import { StyleRule } from "./elm";
+import { tswStyleRule } from "./elm";
 
-export class CtxAttr extends Ctx
+export class tswCtxAttr extends tswCtx
 {
 	constructor(private el: Element, private attrName: string, private attrVals: attrValTypeInternal2)
 	{
 		super();
 	}
-	setup(ctxParent: Ctx)
+	setup(ctxParent: tswCtx)
 	{
 		this.setAttrVal();
 
@@ -77,7 +77,7 @@ export class CtxAttr extends Ctx
 					result = attrValue;
 				}
 			}
-			else if (attrValue instanceof StyleRule)
+			else if (attrValue instanceof tswStyleRule)
 			{
 				if (attrValue.propName)
 				{

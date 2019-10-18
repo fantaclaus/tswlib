@@ -7,9 +7,9 @@ interface IEvent
 	preventDefault(): void;
 }
 
-export class RootEventHandler
+export class tswRootEventHandler
 {
-	private eventHandlerDrivers = new Map<string, EventHandlerDriver>();
+	private eventHandlerDrivers = new Map<string, tswEventHandlerDriver>();
 	private eventHandlers = new Map<Node, ElmEventMapItem[]>();
 
 	constructor(public htmlElement: Element)
@@ -54,7 +54,7 @@ export class RootEventHandler
 		let ehd = this.eventHandlerDrivers.get(eventType);
 		if (ehd == null)
 		{
-			const ehdType = EventHandlerDriver.DriverTypes.get(eventType);
+			const ehdType = tswEventHandlerDriver.DriverTypes.get(eventType);
 			if (ehdType == null) throw new Error(`EventHandlerDriver is not found for eventType='${eventType}'`);
 
 			ehd = new ehdType(this);
@@ -89,14 +89,14 @@ export class RootEventHandler
 	}
 }
 
-export class EventHandlerDriver
+export class tswEventHandlerDriver
 {
-	static DriverTypes = new Map<string, typeof EventHandlerDriver>();
+	static DriverTypes = new Map<string, typeof tswEventHandlerDriver>();
 
 	protected attachedEventListeners = new Map<string, number>();
 	protected eventsListener = this.handleEvent.bind(this);
 
-	constructor(protected owner: RootEventHandler)
+	constructor(protected owner: tswRootEventHandler)
 	{
 	}
 	attachEventListener(eventName: string)
@@ -166,13 +166,13 @@ export class EventHandlerDriver
 	// }
 }
 
-export class EventHandlerDriverDom extends EventHandlerDriver
+export class tswEventHandlerDriverDom extends tswEventHandlerDriver
 {
 	static EventType = 'dom';
 
 	getEventType(): string
 	{
-		return EventHandlerDriverDom.EventType;
+		return tswEventHandlerDriverDom.EventType;
 	}
 	protected addEventListener(eventName: string)
 	{
@@ -184,4 +184,4 @@ export class EventHandlerDriverDom extends EventHandlerDriver
 	}
 }
 
-EventHandlerDriver.DriverTypes.set(EventHandlerDriverDom.EventType, EventHandlerDriverDom);
+tswEventHandlerDriver.DriverTypes.set(tswEventHandlerDriverDom.EventType, tswEventHandlerDriverDom);

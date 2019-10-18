@@ -1,21 +1,21 @@
-﻿import { Ref } from './ref';
+﻿import { tswRef } from './ref';
 import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, privates, EventKind } from "./types";
 
-export class StyleRule
+export class tswStyleRule
 {
 	constructor(public propName: string, public propValue: singleStringValType)
 	{
 	}
 }
 
-export class ElementGeneric
+export class tswElement
 {
 	private _tagName: string;
 	private _ns: string | undefined;
 	private _attrs: AttrNameValue[] | undefined;
 	private _children: childValType[] | undefined;
 	private _eventHandlers: ElmEventMapItem[] | undefined;
-	protected _refs: Ref[] | undefined;
+	protected _refs: tswRef[] | undefined;
 
 	constructor(tagName: string, ns?: string)
 	{
@@ -52,7 +52,7 @@ export class ElementGeneric
 	{
 		if (name != null)
 		{
-			const sr = new StyleRule(name, val);
+			const sr = new tswStyleRule(name, val);
 			this.addAttr('style', sr);
 		}
 
@@ -114,7 +114,7 @@ export class ElementGeneric
 		this._eventHandlers.push(item);
 	}
 
-	addRef(ref: Ref<Element> | null)
+	addRef(ref: tswRef<Element> | null)
 	{
 		if (ref != null)
 		{
@@ -124,7 +124,7 @@ export class ElementGeneric
 		return this;
 	}
 
-	private addAttr(name: string, val: attrValType | multiStringValType | StyleRule): void
+	private addAttr(name: string, val: attrValType | multiStringValType | tswStyleRule): void
 	{
 		if (!this._tagName) throw new Error("Can not set attributes on document fragment");
 

@@ -1,13 +1,13 @@
-import { PropVal } from './propVals';
+import { tswPropVal } from './propVals';
 import * as html from "./html";
 
-export class RadioGroup<T>
+export class tswRadioGroup<T>
 {
-	private propVal: PropVal<T>;
+	private propVal: tswPropVal<T>;
 	private groupName?: string;
 	private ids = new Map<T, string>();
 
-	constructor(propVal: PropVal<T>, groupName?: string)
+	constructor(propVal: tswPropVal<T>, groupName?: string)
 	{
 		this.propVal = propVal;
 		this.groupName = groupName;

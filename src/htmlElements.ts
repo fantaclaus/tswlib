@@ -1,14 +1,14 @@
-import { ElementGeneric } from './elm';
+import { tswElement } from './elm';
 import { boolValType, singleStringValType, PropDef, ElementValueInfo, privates } from "./types";
 
-export class RawHtml
+export class tswRawHtml
 {
 	constructor(public value: string)
 	{
 	}
 }
 
-export class ElementButton extends ElementGeneric
+export class tswElementButton extends tswElement
 {
 	constructor()
 	{
@@ -21,7 +21,7 @@ export class ElementButton extends ElementGeneric
 		return this;
 	}
 }
-export class ElementA extends ElementGeneric
+export class tswElementA extends tswElement
 {
 	constructor()
 	{
@@ -35,7 +35,7 @@ export class ElementA extends ElementGeneric
 		return this;
 	}
 }
-export class ElementImg extends ElementGeneric
+export class tswElementImg extends tswElement
 {
 	constructor()
 	{
@@ -51,12 +51,12 @@ export class ElementImg extends ElementGeneric
 
 export type elmValue = string | number | boolean | null;
 
-export abstract class ElementWithValueBase extends ElementGeneric
+export abstract class tswElementWithValueBase extends tswElement
 {
 	abstract [privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | null | undefined;
 }
 
-export abstract class ElementWithValue<T extends elmValue> extends ElementWithValueBase
+export abstract class tswElementWithValue<T extends elmValue> extends tswElementWithValueBase
 {
 	protected propDef: PropDef<T> | undefined;
 
@@ -75,7 +75,7 @@ export abstract class ElementWithValue<T extends elmValue> extends ElementWithVa
 		return this.propDef == null ? null : { propName: this.propName, propVal: this.propDef };
 	}
 }
-export class ElementInput<T extends elmValue> extends ElementWithValue<T>
+export class tswElementInput<T extends elmValue> extends tswElementWithValue<T>
 {
 	constructor(type: string, propName: string)
 	{
@@ -84,7 +84,7 @@ export class ElementInput<T extends elmValue> extends ElementWithValue<T>
 		this.attr('type', type);
 	}
 }
-export class ElementInputText extends ElementInput<string>
+export class tswElementInputText extends tswElementInput<string>
 {
 	constructor()
 	{
@@ -105,28 +105,28 @@ export class ElementInputText extends ElementInput<string>
 		return this;
 	}
 }
-export class ElementInputCheckboxBase extends ElementInput<boolean>
+export class tswElementInputCheckboxBase extends tswElementInput<boolean>
 {
 	constructor(type: string)
 	{
 		super(type, 'checked');
 	}
 }
-export class ElementInputCheckbox extends ElementInputCheckboxBase
+export class tswElementInputCheckbox extends tswElementInputCheckboxBase
 {
 	constructor()
 	{
 		super('checkbox');
 	}
 }
-export class ElementInputRadio extends ElementInputCheckboxBase
+export class tswElementInputRadio extends tswElementInputCheckboxBase
 {
 	constructor()
 	{
 		super('radio');
 	}
 }
-export class ElementTextArea extends ElementWithValue<string>
+export class tswElementTextArea extends tswElementWithValue<string>
 {
 	constructor()
 	{
@@ -139,7 +139,7 @@ export class ElementTextArea extends ElementWithValue<string>
 		return this;
 	}
 }
-export class ElementSelect extends ElementWithValueBase
+export class tswElementSelect extends tswElementWithValueBase
 {
 	private propInfos: ElementValueInfo[] | undefined;
 
@@ -169,7 +169,7 @@ export class ElementSelect extends ElementWithValueBase
 		return this.propInfos;
 	}
 }
-export class ElementOption extends ElementGeneric
+export class tswElementOption extends tswElement
 {
 	constructor()
 	{
@@ -188,7 +188,7 @@ export class ElementOption extends ElementGeneric
 		return this;
 	}
 }
-export class ElementLabel extends ElementGeneric
+export class tswElementLabel extends tswElement
 {
 	constructor()
 	{
@@ -203,7 +203,7 @@ export class ElementLabel extends ElementGeneric
 		return this;
 	}
 }
-export class ElementTD extends ElementGeneric
+export class tswElementTD extends tswElement
 {
 	colSpan(val: number)
 	{

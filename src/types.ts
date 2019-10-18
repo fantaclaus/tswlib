@@ -1,6 +1,6 @@
-import { RawHtml } from "./htmlElements";
-import { ElementGeneric, StyleRule } from "./elm";
-import { Ref } from "./ref";
+import { tswRawHtml } from "./htmlElements";
+import { tswElement, tswStyleRule } from "./elm";
+import { tswRef } from "./ref";
 
 export interface Renderer
 {
@@ -27,7 +27,7 @@ export interface childValTypeArray extends Array<childValType> { }
 export interface childValTypeFn extends Fn<childValType> { }
 export interface childValTypePropDefReadable extends PropDefReadable<childValType> { }
 
-export type childValType = string | number | boolean | ElementGeneric | RawHtml | Renderer | DomChangeEventListener | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
+export type childValType = string | number | boolean | tswElement | tswRawHtml | Renderer | DomChangeEventListener | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
 
 type stringNullable = string | null;
 
@@ -41,7 +41,7 @@ export type singleStringValType = stringNullable | Fn<stringNullable> | PropDefR
 
 export type boolValType = boolean | Fn<boolean> | PropDefReadable<boolean>;
 
-export type attrValTypeInternal = attrValType | singleStringValType | multiStringValType | StyleRule;
+export type attrValTypeInternal = attrValType | singleStringValType | multiStringValType | tswStyleRule;
 export type attrValTypeInternal2 = attrValTypeInternal | attrValTypeInternal[];
 
 export interface ICtx
@@ -52,7 +52,7 @@ export interface ICtx
 	addChild(ctx: ICtx): void;
 	update(): void;
 	getParent(): ICtx | null | undefined;
-	addRef(ref: Ref<Element>): void;
+	addRef(ref: tswRef<Element>): void;
 }
 
 export interface ICtxRoot

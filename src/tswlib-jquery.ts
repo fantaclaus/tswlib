@@ -1,13 +1,13 @@
-import { ElementGeneric } from "./elm"
-import { Ref } from "./ref";
+import { tswElement } from "./elm"
+import { tswRef } from "./ref";
 import { EventHandler, privates, EventKind } from "./types";
-import { EventHandlerDriver } from "./RootEventHandler";
+import { tswEventHandlerDriver } from "./RootEventHandler";
 
 // jQuery support
 
 declare module "tswlibDom/elm"
 {
-	interface ElementGeneric
+	interface tswElement
 	{
 		onclick(handler: EventHandler<JQuery.Event> | null | undefined): this;
 		on(eventName: string, handler: EventHandler<JQuery.Event> | null | undefined): this;
@@ -16,19 +16,19 @@ declare module "tswlibDom/elm"
 
 declare module "tswlibDom/ref"
 {
-	interface Ref
+	interface tswRef
 	{
 		asJQuery(): JQuery;
 	}
 }
 
-ElementGeneric.prototype.on = function (eventName: string, handler: EventHandler<JQuery.Event> | null | undefined)
+tswElement.prototype.on = function (eventName: string, handler: EventHandler<JQuery.Event> | null | undefined)
 {
 	if (eventName && handler instanceof Function)
 	{
 		this[privates.ElementGeneric.addHandler]({
 			eventName,
-			eventType: EventHandlerDriverJQ.EventType,
+			eventType: tswEventHandlerDriverJQ.EventType,
 			handleEvent: handler,
 			eventKind: EventKind.onRoot,
 		});
@@ -37,23 +37,23 @@ ElementGeneric.prototype.on = function (eventName: string, handler: EventHandler
 	return this;
 };
 
-ElementGeneric.prototype.onclick = function (handler: EventHandler<JQuery.Event> | null | undefined)
+tswElement.prototype.onclick = function (handler: EventHandler<JQuery.Event> | null | undefined)
 {
 	return this.on('click', handler);
 };
 
-Ref.prototype.asJQuery = function ()
+tswRef.prototype.asJQuery = function ()
 {
 	return jQuery(this.asHtmlElement());
 };
 
-class EventHandlerDriverJQ extends EventHandlerDriver
+class tswEventHandlerDriverJQ extends tswEventHandlerDriver
 {
 	static EventType = 'jquery';
 
 	getEventType(): string
 	{
-		return EventHandlerDriverJQ.EventType;
+		return tswEventHandlerDriverJQ.EventType;
 	}
 	protected addEventListener(eventName: string)
 	{
@@ -65,5 +65,5 @@ class EventHandlerDriverJQ extends EventHandlerDriver
 	}
 }
 
-EventHandlerDriver.DriverTypes.set(EventHandlerDriverJQ.EventType, EventHandlerDriverJQ);
+tswEventHandlerDriver.DriverTypes.set(tswEventHandlerDriverJQ.EventType, tswEventHandlerDriverJQ);
 
