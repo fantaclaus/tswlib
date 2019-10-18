@@ -21,9 +21,9 @@
 + IE 9-11 support
 + delegated/direct event handlers, with/without bubble
 - sync propVals of 'select' elm: value and selectedIndex
-- hide private methods with help of Symbols
++ hide private methods with help of Symbols
 - dom-style layout (non-functional)
-- CtxRoot.setContent: add cleanup code before add nodes
++ CtxRoot.setContent: add cleanup code before add nodes
 - id-generator for label for
 
 */

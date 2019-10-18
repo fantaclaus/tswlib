@@ -1,5 +1,5 @@
 import { ElementGeneric } from './elm';
-import { boolValType, singleStringValType, PropDef, ElementValueInfo } from "./types";
+import { boolValType, singleStringValType, PropDef, ElementValueInfo, privates } from "./types";
 
 export class RawHtml
 {
@@ -53,7 +53,7 @@ export type elmValue = string | number | boolean | null;
 
 export abstract class ElementWithValueBase extends ElementGeneric
 {
-	abstract z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined;
+	abstract [privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | null | undefined;
 }
 
 export abstract class ElementWithValue<T extends elmValue> extends ElementWithValueBase
@@ -70,7 +70,7 @@ export abstract class ElementWithValue<T extends elmValue> extends ElementWithVa
 
 		return this;
 	}
-	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined
+	[privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | null | undefined
 	{
 		return this.propDef == null ? null : { propName: this.propName, propVal: this.propDef };
 	}
@@ -164,7 +164,7 @@ export class ElementSelect extends ElementWithValueBase
 
 		return this;
 	}
-	z_getValueInfos(): ElementValueInfo | ElementValueInfo[] | null | undefined
+	[privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | null | undefined
 	{
 		return this.propInfos;
 	}

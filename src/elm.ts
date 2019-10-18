@@ -137,8 +137,8 @@ export class ElementGeneric
 
 	[privates.ElementGeneric.tagName]() { return this._tagName; }
 	[privates.ElementGeneric.ns]() { return this._ns; }
-	z_children() { return this._children; }
-	z_attrs() { return this._attrs; }
-	z_events() { return this._eventHandlers; }
-	z_getRefs() { return this._refs; }
+	[privates.ElementGeneric.children]() { return this._children; }
+	[privates.ElementGeneric.attrs]() { return this._attrs; }
+	[privates.ElementGeneric.events]() { return this._eventHandlers; }
+	[privates.ElementGeneric.getRefs]() { return this._refs; }
 }

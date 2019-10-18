@@ -204,7 +204,7 @@ export abstract class CtxNodeBase extends Ctx
 		}
 		else if (item instanceof ElementGeneric)
 		{
-			const children = item.z_children();
+			const children = item[privates.ElementGeneric.children]();
 			const tagName = item[privates.ElementGeneric.tagName]();
 			if (tagName)
 			{
@@ -231,7 +231,7 @@ export abstract class CtxNodeBase extends Ctx
 	{
 		const el = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);
 
-		const refs = item.z_getRefs();
+		const refs = item[privates.ElementGeneric.getRefs]();
 		if (refs)
 		{
 			for (let ref of refs)
@@ -245,7 +245,7 @@ export abstract class CtxNodeBase extends Ctx
 
 		if (item instanceof ElementWithValueBase)
 		{
-			const valInfos = item.z_getValueInfos();
+			const valInfos = item[privates.ElementWithValueBase.getValueInfos]();
 			if (valInfos)
 			{
 				this.addValueContext(el, valInfos);
@@ -253,7 +253,7 @@ export abstract class CtxNodeBase extends Ctx
 			}
 		}
 
-		const events = item.z_events();
+		const events = item[privates.ElementGeneric.events]();
 		if (events)
 		{
 			this.addEventListeners(events, tagName, el);
@@ -343,7 +343,7 @@ export abstract class CtxNodeBase extends Ctx
 	}
 	private createAttrs(elm: ElementGeneric, el: Element)
 	{
-		const elm_attrs = elm.z_attrs();
+		const elm_attrs = elm[privates.ElementGeneric.attrs]();
 
 		if (elm_attrs)
 		{
