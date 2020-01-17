@@ -1,11 +1,9 @@
 ﻿import { CtxScope } from "./CtxScope";
 import { ICtxUpdatable, IPropVal } from './interfaces';
 
-type CtxEventHandler = () => void;
-
 let _ctxUpdateQueue: Set<ICtxUpdatable> | null = null;
 let _timerId: number | undefined;
-let _updatedCbs: CtxEventHandler[] = [];
+let _updatedCbs: (() => void)[] = [];
 
 export function attach(pv: IPropVal)
 {
@@ -64,28 +62,32 @@ function processQueue()
 	if (contexts)
 	{
 		// collect into contextsToUpdate before ctx.update(), since parents will be set to null
-		const contextsToUpdate: ICtxUpdatable[] = [];
+		const contextsToUpdate = getContextsToUpdate(contexts);
+		// const contextsToUpdate = Array.from(contexts); // this will work correct, if ctx.update is called when ctx.parentCtx != null
 
-		contexts.forEach(ctx =>
+		for (let ctx of contextsToUpdate)
 		{
-			if (!ctx.isAnyParentInList(contexts))
-			{
-				contextsToUpdate.push(ctx);
-			}
-		});
-
-		contextsToUpdate.forEach(ctx =>
-		{
-			//console.group('update:', ctx, ctx.id);
-
 			ctx.update();
-
-			//console.groupEnd();
-		});
+		}
 	}
 
 	_updatedCbs.forEach(cb => cb());
 	_updatedCbs.length = 0;
+}
+
+function getContextsToUpdate(contexts: Set<ICtxUpdatable>)
+{
+	const contextsToUpdate: ICtxUpdatable[] = [];
+
+	contexts.forEach(ctx =>
+	{
+		if (!ctx.isAnyParentInList(contexts))
+		{
+			contextsToUpdate.push(ctx);
+		}
+	});
+
+	return contextsToUpdate;
 }
 
 export function afterDOMUpdated(cb: () => void)
@@ -101,7 +103,7 @@ export function afterDOMUpdated(cb: () => void)
 }
 export function applyChanges()
 {
-	console.log('applyChanges', '_timerId', _timerId, _ctxUpdateQueue, _updatedCbs.length);
+	// console.log('applyChanges', '_timerId', _timerId, _ctxUpdateQueue, _updatedCbs.length);
 
 	clearTimeout(_timerId);
 	_timerId = undefined;
