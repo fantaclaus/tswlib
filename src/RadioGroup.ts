@@ -1,4 +1,4 @@
-import { PropVal } from './propVals';
+import { PropVal } from './PropVals';
 import * as elements from './htmlElements';
 import { Ref } from './ref';
 

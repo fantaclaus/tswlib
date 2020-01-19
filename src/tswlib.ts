@@ -5,7 +5,7 @@ import { childValType, Renderer } from "./types";
 export { html, childValType, Renderer, CtxRoot };
 
 export { Ref } from './ref';
-export { PropVal, PropValArray } from './propVals';
+export { PropVal, PropValArray } from './PropVals';
 
 export function setContent(htmlElement: HTMLElement, content: childValType)
 {
