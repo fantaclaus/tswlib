@@ -98,6 +98,7 @@ export class tswElement
 
 		return this;
 	}
+	onEventDirect<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | null | undefined): this;
 	onEventDirect(eventName: string, handler: EventHandler<Event> | null | undefined)
 	{
 		if (eventName && handler instanceof Function)
