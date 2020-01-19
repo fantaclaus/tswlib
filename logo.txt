@@ -1,5 +1,5 @@
-/*!
- * tswlib v0.15 modular beta
+﻿/*!
+ * tswlib v0.17 DOM-based
  * https://github.com/fantaclaus/tswlib
  * Copyright {year} fantaclaus
  */
