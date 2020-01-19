@@ -15,6 +15,12 @@ export interface DomChangeEventListener
 	beforeDetachPost?: () => void;
 }
 
+export interface DomChangeEventListenerOld
+{
+	afterAttach?: () => void;
+	beforeDetach?: () => void;
+}
+
 interface Fn<T>
 {
 	(): T;

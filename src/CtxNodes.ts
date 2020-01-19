@@ -1,6 +1,6 @@
 import { tswCtx, NodeKind, isNotEmptySet } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener } from './types';
+import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { tswElement } from './elm';
 import { tswRawHtml, tswElementWithValueBase } from './htmlElements';
@@ -103,7 +103,26 @@ export abstract class tswCtxNodeBase extends tswCtx
 						(attach ? l.afterAttachPre : l.beforeDetachPre) :
 						(attach ? l.afterAttachPost : l.beforeDetachPost);
 
-				if (f) f.call(l);
+				if (f)
+				{
+					f.call(l);
+				}
+				else
+				{
+					const lold = <DomChangeEventListenerOld>l;
+
+					const f2 =
+						beforeChildren && attach ? lold.afterAttach :
+							!beforeChildren && !attach ? lold.beforeDetach :
+								null;
+					if (f2)
+					{
+						const oldName = attach ? 'afterAttach' : 'beforeDetach';
+						const newName = attach ? 'afterAttachPre' : 'beforeDetachPost';
+						console.warn(`Event handler '${oldName}' is obsolete. Please, use '${newName}' instead`);
+						f2.call(lold);
+					}
+				}
 			});
 		}
 	}
@@ -402,11 +421,15 @@ function isDomChangeEventListener(v: childValType): v is DomChangeEventListener
 	if (v == null) return false;
 
 	const l = <DomChangeEventListener>v;
+	const lOld = <DomChangeEventListenerOld>v;
 	return (
 		l.afterAttachPost instanceof Function ||
 		l.afterAttachPre instanceof Function ||
 		l.beforeDetachPost instanceof Function ||
-		l.beforeDetachPre instanceof Function);
+		l.beforeDetachPre instanceof Function ||
+		lOld.afterAttach instanceof Function ||
+		lOld.beforeDetach instanceof Function
+	);
 }
 
 export class tswCtxNodes extends tswCtxNodeBase
