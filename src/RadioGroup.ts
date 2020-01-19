@@ -1,4 +1,4 @@
-import { tswPropVal } from './propVals';
+import { tswPropVal } from './PropVals';
 import * as html from "./html";
 
 export class tswRadioGroup<T>
