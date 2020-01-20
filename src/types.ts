@@ -2,7 +2,7 @@ import { tswRawHtml } from "./htmlElements";
 import { tswElement, tswStyleRule } from "./elm";
 import { tswRef } from "./ref";
 
-export interface Renderer
+export interface tswRenderer
 {
 	render: () => childValType;
 }
@@ -33,7 +33,7 @@ export interface childValTypeArray extends Array<childValType> { }
 export interface childValTypeFn extends Fn<childValType> { }
 export interface childValTypePropDefReadable extends PropDefReadable<childValType> { }
 
-export type childValType = string | number | boolean | tswElement | tswRawHtml | Renderer | DomChangeEventListener | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
+export type childValType = string | number | boolean | tswElement | tswRawHtml | tswRenderer | DomChangeEventListener | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
 
 type stringNullable = string | null;
 

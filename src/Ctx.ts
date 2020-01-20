@@ -1,7 +1,7 @@
 import { IPropVal, ICtx, ICtxRoot } from "./types";
 import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
 import * as UpdateQueue from './UpdateQueue';
-import { tswRef } from "tswlibDom/ref";
+import { tswRef } from "./ref";
 
 export const enum NodeKind
 {

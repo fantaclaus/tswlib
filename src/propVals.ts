@@ -9,6 +9,7 @@ export class tswPropVal<T> implements PropDef<T>, IPropVal
 	private insideSet = false; // to prevent infinite loops
 	dbg_name: string | undefined;
 	val: T;
+	onChanged: (() => void) | undefined;
 
 	constructor(initialValue: T, name?: string)
 	{
@@ -55,6 +56,8 @@ export class tswPropVal<T> implements PropDef<T>, IPropVal
 				this.val = v;
 
 				this.updateContexts();
+
+				if (this.onChanged) this.onChanged();
 			}
 		}
 		finally

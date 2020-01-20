@@ -1,4 +1,4 @@
-import { tswElement } from "tswlibDom/elm";
+import { tswElement } from "./elm";
 
 export function el(tagName: string) { return new tswElementSVG(tagName); }
 export function svg() { return new tswElementSVG_SVG(); }

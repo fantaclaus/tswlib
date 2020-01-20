@@ -1,5 +1,6 @@
 import { tswElement } from './elm';
 import { boolValType, singleStringValType, PropDef, ElementValueInfo, privates } from "./types";
+import { tswRef } from './ref';
 
 export class tswRawHtml
 {
@@ -200,6 +201,11 @@ export class tswElementLabel extends tswElement
 	{
 		this.attr('for', id);
 
+		return this;
+	}
+	forRef(ref: tswRef<Element>)
+	{
+		console.warn('obsolete method: tswElementLabel forRef(). replace it with forId()');
 		return this;
 	}
 }

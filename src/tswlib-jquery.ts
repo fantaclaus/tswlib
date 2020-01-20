@@ -5,7 +5,7 @@ import { tswEventHandlerDriver } from "./RootEventHandler";
 
 // jQuery support
 
-declare module "tswlibDom/elm"
+declare module "./elm"
 {
 	interface tswElement
 	{
@@ -14,7 +14,7 @@ declare module "tswlibDom/elm"
 	}
 }
 
-declare module "tswlibDom/ref"
+declare module "./ref"
 {
 	interface tswRef
 	{

@@ -1,12 +1,12 @@
 import { tswCtx, NodeKind, isNotEmptySet } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, Renderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld } from './types';
+import { childValType, childValTypePropDefReadable, tswRenderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld } from './types';
 import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { tswElement } from './elm';
 import { tswRawHtml, tswElementWithValueBase } from './htmlElements';
 import { tswCtxAttr } from './CtxAttr';
 import { tswCtxValue } from './CtxValue';
-import { tswRef } from 'tswlibDom/ref';
+import { tswRef } from './ref';
 
 export abstract class tswCtxNodeBase extends tswCtx
 {
@@ -412,9 +412,9 @@ function isPropDef(v: childValType): v is childValTypePropDefReadable
 {
 	return v != null && (<childValTypePropDefReadable>v).get instanceof Function;
 }
-function isRenderer(v: childValType): v is Renderer
+function isRenderer(v: childValType): v is tswRenderer
 {
-	return v != null && (<Renderer>v).render instanceof Function;
+	return v != null && (<tswRenderer>v).render instanceof Function;
 }
 function isDomChangeEventListener(v: childValType): v is DomChangeEventListener
 {
@@ -436,7 +436,7 @@ export class tswCtxNodes extends tswCtxNodeBase
 {
 	private ctxRoot: ICtxRoot | undefined;
 
-	constructor(private content: childValTypeFn | childValTypePropDefReadable | Renderer)
+	constructor(private content: childValTypeFn | childValTypePropDefReadable | tswRenderer)
 	{
 		super();
 	}
