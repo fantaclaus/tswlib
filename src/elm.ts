@@ -24,7 +24,7 @@ export class tswElement
 		this._ns = ns;
 	}
 
-	attr(name: string, val: attrValType = '')
+	attr(name: string, val: attrValType)
 	{
 		this.addAttr(name, val);
 

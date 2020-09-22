@@ -17,8 +17,8 @@ export interface DomChangeEventListener
 
 export interface DomChangeEventListenerOld
 {
-	afterAttach?: () => void;
-	beforeDetach?: () => void;
+	afterAttach?: () => void; // same as afterAttachPre
+	beforeDetach?: () => void; // same as beforeDetachPost
 }
 
 interface Fn<T>
@@ -26,7 +26,7 @@ interface Fn<T>
 	(): T;
 }
 
-export type attrValTypeSimple = string | number | boolean | null; // NOTE: undefined is treated as '' by attr(), so it is excluded from this type
+export type attrValTypeSimple = string | number | boolean | null | undefined;
 export type attrValType = attrValTypeSimple | Fn<attrValTypeSimple> | PropDefReadable<attrValTypeSimple>;
 
 export interface childValTypeArray extends Array<childValType> { }
@@ -35,7 +35,7 @@ export interface childValTypePropDefReadable extends PropDefReadable<childValTyp
 
 export type childValType = string | number | boolean | tswElement | tswRawHtml | tswRenderer | DomChangeEventListener | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
 
-type stringNullable = string | null;
+type stringNullable = string | null | undefined | false;
 
 export interface multiStringValTypeFn extends Fn<multiStringValType> { }
 export interface multiStringValTypePropDefReadable extends PropDefReadable<multiStringValType> { }
@@ -45,7 +45,7 @@ export type multiStringValType = stringNullable | multiStringValTypeFn | multiSt
 
 export type singleStringValType = stringNullable | Fn<stringNullable> | PropDefReadable<stringNullable>;
 
-export type boolValType = boolean | Fn<boolean> | PropDefReadable<boolean>;
+export type boolValType = boolean | undefined | Fn<boolean> | PropDefReadable<boolean>;
 
 export type attrValTypeInternal = attrValType | singleStringValType | multiStringValType | tswStyleRule;
 export type attrValTypeInternal2 = attrValTypeInternal | attrValTypeInternal[];
