@@ -1,6 +1,6 @@
-import { tswElement } from "./elm"
+import { tswElement, privates } from "./elm"
 import { tswRef } from "./ref";
-import { EventHandler, privates, EventKind } from "./types";
+import { EventHandler, EventKind } from "./types";
 import { tswEventHandlerDriver } from "./RootEventHandler";
 
 // jQuery support

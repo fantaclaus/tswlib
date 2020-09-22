@@ -121,21 +121,3 @@ export interface ElementValueInfo
 	propName: string;
 	propVal: PropDef<any>;
 }
-
-export namespace privates
-{
-	export namespace ElementGeneric
-	{
-		export const tagName = Symbol('ElementGeneric_tagName');
-		export const ns = Symbol('ElementGeneric_ns');
-		export const children = Symbol('ElementGeneric_children');
-		export const addHandler = Symbol('ElementGeneric_addHandler');
-		export const attrs = Symbol('ElementGeneric_attrs');
-		export const events = Symbol('ElementGeneric_events');
-		export const getRefs = Symbol('ElementGeneric_getRefs');
-	}
-	export namespace ElementWithValueBase
-	{
-		export const getValueInfos = Symbol('ElementGeneric_getValueInfos');
-	}
-}

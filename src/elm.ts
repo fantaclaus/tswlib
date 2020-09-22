@@ -1,5 +1,23 @@
 ﻿import { tswRef } from './ref';
-import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, privates, EventKind } from "./types";
+import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, EventKind } from "./types";
+
+export namespace privates
+{
+	export namespace ElementGeneric
+	{
+		export const tagName = Symbol('ElementGeneric_tagName');
+		export const ns = Symbol('ElementGeneric_ns');
+		export const children = Symbol('ElementGeneric_children');
+		export const addHandler = Symbol('ElementGeneric_addHandler');
+		export const attrs = Symbol('ElementGeneric_attrs');
+		export const events = Symbol('ElementGeneric_events');
+		export const getRefs = Symbol('ElementGeneric_getRefs');
+	}
+	export namespace ElementWithValueBase
+	{
+		export const getValueInfos = Symbol('ElementGeneric_getValueInfos');
+	}
+}
 
 export class tswStyleRule
 {

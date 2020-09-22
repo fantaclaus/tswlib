@@ -1,5 +1,5 @@
-import { tswElement } from './elm';
-import { boolValType, singleStringValType, PropDef, ElementValueInfo, privates } from "./types";
+import { privates, tswElement } from './elm';
+import { boolValType, singleStringValType, PropDef, ElementValueInfo } from "./types";
 import { tswRef } from './ref';
 
 export class tswRawHtml

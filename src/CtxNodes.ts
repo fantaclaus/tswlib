@@ -1,8 +1,8 @@
 import { tswCtx, NodeKind, isNotEmptySet } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, tswRenderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld } from './types';
+import { childValType, childValTypePropDefReadable, tswRenderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld } from './types';
 // import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
-import { tswElement } from './elm';
+import { privates, tswElement } from './elm';
 import { tswRawHtml, tswElementWithValueBase } from './htmlElements';
 import { tswCtxAttr } from './CtxAttr';
 import { tswCtxValue } from './CtxValue';
