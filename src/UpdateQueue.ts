@@ -1,6 +1,5 @@
 import { ICtx } from "./types";
-import { log, logCtx, logcolor } from "lib/dbgutils";
-// import * as dbgutils from "lib/dbgutils";
+// import { log, logCtx, logcolor } from "lib/dbgutils";
 
 let _updateQueue: Set<ICtx> | null = null;
 let _timerId: number | undefined;
@@ -8,10 +7,10 @@ let _updatedCbs: (() => void)[] = [];
 
 export function addToUpdateQueue(ctxs: Set<ICtx>)
 {
-	ctxs.forEach(ctx =>
-	{
-		log(console.debug, `add to queue `, logCtx(ctx));
-	});
+	// ctxs.forEach(ctx =>
+	// {
+	// 	log(console.debug, `add to queue `, logCtx(ctx));
+	// });
 
 	if (_updateQueue == null)
 	{
@@ -36,7 +35,7 @@ export function removeFromUpdateQueue(ctx: ICtx)
 {
 	if (_updateQueue)
 	{
-		log(console.debug, logcolor("orange"), `CTX: removeFromUpdateQueue `, logCtx(ctx));
+		// log(console.debug, logcolor("orange"), `CTX: removeFromUpdateQueue `, logCtx(ctx));
 		_updateQueue.delete(ctx);
 	}
 }

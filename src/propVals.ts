@@ -1,6 +1,6 @@
 import { g_CurrentContext } from './Scope';
 import { IPropVal, ICtx, PropDef, PropDefReadable } from './types';
-import { log, logPV, logCtx, logcolor } from 'lib/dbgutils';
+// import { log, logPV, logCtx, logcolor } from 'lib/dbgutils';
 import { addToUpdateQueue } from './UpdateQueue';
 
 export class tswPropVal<T> implements PropDef<T>, IPropVal
@@ -35,7 +35,7 @@ export class tswPropVal<T> implements PropDef<T>, IPropVal
 			if (!this.ctxs) this.ctxs = new Set<ICtx>();
 			this.ctxs.add(ctx);
 
-			log(console.debug, logcolor("magenta"), `PV: ctxAttach: `, logPV(this), ` <--o--> `, logCtx(ctx));
+			// log(console.debug, logcolor("magenta"), `PV: ctxAttach: `, logPV(this), ` <--o--> `, logCtx(ctx));
 		}
 	}
 	get()

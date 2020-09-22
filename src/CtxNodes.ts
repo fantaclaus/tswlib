@@ -1,7 +1,7 @@
 import { tswCtx, NodeKind, isNotEmptySet } from './Ctx';
 import { g_CurrentContext } from './Scope';
 import { childValType, childValTypePropDefReadable, tswRenderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, privates, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld } from './types';
-import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
+// import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
 import { tswElement } from './elm';
 import { tswRawHtml, tswElementWithValueBase } from './htmlElements';
 import { tswCtxAttr } from './CtxAttr';
@@ -70,7 +70,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 		{
 			this.refs.forEach(ref =>
 			{
-				log(console.debug, logcolor('orange'), 'CTX: reset ref ', logCtx(this), ' for ', ref.asHtmlElement());
+				// log(console.debug, logcolor('orange'), 'CTX: reset ref ', logCtx(this), ' for ', ref.asHtmlElement());
 				ref.set(null);
 			});
 			this.refs = undefined;
@@ -82,7 +82,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 		{
 			this.elementsWithRootEvents.forEach(el =>
 			{
-				log(console.debug, logcolor('orange'), 'CTX: detach event handlers ', logCtx(this), ' for ', el)
+				// log(console.debug, logcolor('orange'), 'CTX: detach event handlers ', logCtx(this), ' for ', el)
 
 				const ctxRoot = this.getRootCtx();
 				ctxRoot.detachElmEventHandlers(el);
@@ -353,7 +353,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 				{
 					const value = (el as unknown as { [name: string]: any })[valInfos.propName];
 
-					log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
+					// log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
 
 					valInfos.propVal.set(value);
 				}

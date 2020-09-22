@@ -1,6 +1,6 @@
 import { childValType, ICtxRoot, ElmEventMapItem } from "./types";
 import { tswCtxNodeBase } from "./CtxNodes";
-import { log } from "lib/dbgutils";
+// import { log } from "lib/dbgutils";
 import { tswRootEventHandler } from "./RootEventHandler";
 
 export class tswCtxRoot extends tswCtxNodeBase implements ICtxRoot
@@ -35,7 +35,7 @@ export class tswCtxRoot extends tswCtxNodeBase implements ICtxRoot
 	}
 	invokeBeforeAttach()
 	{
-		log(console.debug, 'invokeBeforeAttach');
+		// log(console.debug, 'invokeBeforeAttach');
 
 		if (this.onBeforeAttach) this.onBeforeAttach();
 	}

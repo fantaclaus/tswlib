@@ -1,6 +1,6 @@
 import { tswCtx } from "./Ctx";
 import { g_CurrentContext } from "./Scope";
-import { log, logcolor, logCtx } from "lib/dbgutils";
+// import { log, logcolor, logCtx } from "lib/dbgutils";
 import { PropDef } from "./types";
 
 export class tswCtxValue extends tswCtx
@@ -34,7 +34,7 @@ export class tswCtxValue extends tswCtx
 		const currentValue = el[this.valuePropName];
 		if (v !== currentValue)
 		{
-			log(console.debug, logcolor("brown"), `CTX: setValue `, logCtx(this), ` [${this.valuePropName}] of `, ['%o', this.el], ` to '${v}'`);
+			// log(console.debug, logcolor("brown"), `CTX: setValue `, logCtx(this), ` [${this.valuePropName}] of `, ['%o', this.el], ` to '${v}'`);
 
 			el[this.valuePropName] = v;
 		}

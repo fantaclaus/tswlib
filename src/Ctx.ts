@@ -1,5 +1,5 @@
 import { IPropVal, ICtx, ICtxRoot } from "./types";
-import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
+// import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
 import * as UpdateQueue from './UpdateQueue';
 import { tswRef } from "./ref";
 
@@ -22,7 +22,7 @@ export abstract class tswCtx implements ICtx
 	{
 		this.id = ++tswCtx.CtxLastId;
 
-		log(console.debug, logcolor("orange"), `CTX: new `, logCtx(this));
+		// log(console.debug, logcolor("orange"), `CTX: new `, logCtx(this));
 	}
 	getRootCtx(): ICtxRoot | undefined
 	{
@@ -36,17 +36,17 @@ export abstract class tswCtx implements ICtx
 	{
 		if (ctxParent == null)
 		{
-			log(console.warn, logcolor("orange"), `CTX: not added: ctx `, logCtx(this), ` NO PARENT`);
+			// log(console.warn, logcolor("orange"), `CTX: not added: ctx `, logCtx(this), ` NO PARENT`);
 		}
 		else if (this.shouldBeAddedToParent())
 		{
 			ctxParent.addChild(this);
 
-			log(console.debug, logcolor("orange"), `CTX: addChild: `, logCtx(this), ` to parent `, logCtx(ctxParent));
+			// log(console.debug, logcolor("orange"), `CTX: addChild: `, logCtx(this), ` to parent `, logCtx(ctxParent));
 		}
 		else
 		{
-			log(console.warn, logcolor("orange"), `CTX: not added: `, logCtx(this), ` to parent `, logCtx(ctxParent));
+			// log(console.warn, logcolor("orange"), `CTX: not added: `, logCtx(this), ` to parent `, logCtx(ctxParent));
 		}
 	}
 	addPropVal(propVal: IPropVal)
@@ -77,7 +77,7 @@ export abstract class tswCtx implements ICtx
 
 		this.forEachChild(ctx =>
 		{
-			log(console.debug, logcolor("orange"), `CTX: remove child `, logCtx(ctx), ` from `, logCtx(this));
+			// log(console.debug, logcolor("orange"), `CTX: remove child `, logCtx(ctx), ` from `, logCtx(this));
 
 			ctx.ctxParent = null; // null means ctx is removed
 
@@ -102,7 +102,7 @@ export abstract class tswCtx implements ICtx
 		{
 			propVals.forEach(pv =>
 			{
-				log(console.debug, logcolor("orange"), `CTX: remove pv: `, logPV(pv), ` from `, logCtx(this));
+				// log(console.debug, logcolor("orange"), `CTX: remove pv: `, logPV(pv), ` from `, logCtx(this));
 
 				pv.ctxRemove(this);
 			});
