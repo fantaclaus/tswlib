@@ -93,7 +93,7 @@ export class tswElementInputText extends tswElementInput<string>
 		this.autocomplete('off');
 	}
 
-	placeholder(v: string)
+	placeholder(v: singleStringValType)
 	{
 		this.attr('placeholder', v);
 
@@ -133,7 +133,7 @@ export class tswElementTextArea extends tswElementWithValue<string>
 	{
 		super('textarea', 'value')
 	}
-	placeholder(v: string)
+	placeholder(v: singleStringValType)
 	{
 		this.attr('placeholder', v);
 
@@ -203,7 +203,10 @@ export class tswElementLabel extends tswElement
 
 		return this;
 	}
-	forRef(ref: tswRef<Element>)
+	/**
+	 * @deprecated replace it with forId()
+	 */
+	forRef(ref: tswRef<Element> | undefined)
 	{
 		console.warn('obsolete method: tswElementLabel forRef(). replace it with forId()');
 		return this;

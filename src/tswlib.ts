@@ -6,10 +6,8 @@ export { tswRef as Ref } from "./ref";
 
 export type Renderer = tswRenderer;
 export { tswPropVal as PropVal, tswPropValArray as PropValArray } from './PropVals';
-import * as _html from "./html";
+export * as html from "./html";
 import { tswCtxRoot } from "./CtxRoot";
-
-export const html = _html;
 
 export const elements = {
 	ElementButton: tswElementButton,
