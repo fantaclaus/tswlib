@@ -28,7 +28,7 @@ export function addToUpdateQueue(ctxs: Set<ICtx>)
 
 	if (_updateQueue.size > 0 && _timerId == null)
 	{
-		_timerId = setTimeout(processQueue, 0);
+		_timerId = requestAnimationFrame(processQueue);
 	}
 }
 
@@ -88,8 +88,8 @@ function processQueue()
 				// }
 				// else
 				// {
-					// log(console.debug, logcolor('red'), `UpdateQueue: update ctx `, logCtx(ctx));
-					ctx.update();
+				// log(console.debug, logcolor('red'), `UpdateQueue: update ctx `, logCtx(ctx));
+				ctx.update();
 				// }
 			}
 
@@ -148,10 +148,11 @@ export function afterDOMUpdated(cb: () => void)
 }
 export function applyChanges()
 {
-	// log(console.debug, 'applyChanges', '_timerId', _timerId, _updateQueue, _updatedCbs.length);
-
-	clearTimeout(_timerId);
-	_timerId = undefined;
+	if (_timerId != undefined)
+	{
+		cancelAnimationFrame(_timerId);
+		_timerId = undefined;
+	}
 
 	processQueue();
 }
