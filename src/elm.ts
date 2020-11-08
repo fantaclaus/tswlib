@@ -107,6 +107,7 @@ export class tswElement
 		return this.onEvent('click', handler);
 	}
 	onEvent<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | null | undefined): this;
+	onEvent(eventName: string, handler: EventHandler<Event> | null | undefined): this; // without this overload only the first one is recognized
 	onEvent(eventName: string, handler: EventHandler<Event> | null | undefined)
 	{
 		if (eventName && handler instanceof Function)
