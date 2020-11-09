@@ -1,0 +1,24 @@
+{
+	"name": "@fantaclaus/tswlib",
+	"version": "0.17.0",
+	"description": "tsw library",
+	"author": "fantaclaus",
+	"license": "MIT",
+	"homepage": "https://github.com/fantaclaus/tswlib#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/fantaclaus/tswlib.git"
+	},
+	"bugs": {
+		"url": "https://github.com/fantaclaus/tswlib/issues"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"type": "module",
+	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
+	"files": [
+		"lib"
+	]
+}

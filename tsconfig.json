@@ -2,12 +2,10 @@
 	"compilerOptions": {
 		"target": "esnext",
 		"module": "esnext",
+		"moduleResolution": "Node",
 		"strict": true,
 		"removeComments": true,
-		"outDir": "out"
-	},
-	"exclude": [
-		"out",
-		"tmp"
-	]
+		"declaration": true,
+		"outDir": "lib",
+	}
 }
