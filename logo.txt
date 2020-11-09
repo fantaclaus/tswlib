@@ -1,5 +1,0 @@
-﻿/*!
- * tswlib v0.17 DOM-based
- * https://github.com/fantaclaus/tswlib
- * Copyright {year} fantaclaus
- */

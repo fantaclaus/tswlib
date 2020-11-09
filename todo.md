@@ -1,0 +1,2 @@
+- sync propVals of 'select' elm: value and selectedIndex
+- id-generator for label's 'for'
