@@ -1,9 +1,3 @@
-/*!
- * tswlib v0.17
- * https://github.com/fantaclaus/tswlib
- * Copyright 2020 fantaclaus
- */
-
 import { childValType, tswRenderer } from "./types";
 import { tswElementButton } from "./htmlElements";
 
