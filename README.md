@@ -3,7 +3,7 @@ Overview
 
 This library can be used to create client-side web applications.
 All rendering of HTML is done entirely in the Typescript code.
-The library has no dependecies.
+The library has no dependencies.
 
 Example
 ========
