@@ -1,7 +1,7 @@
 {
 	"name": "@fantaclaus/tswlib",
-	"version": "0.17.0",
-	"description": "tsw library",
+	"version": "0.18.0",
+	"description": "tsw: html rendering library",
 	"author": "fantaclaus",
 	"license": "MIT",
 	"homepage": "https://github.com/fantaclaus/tswlib#readme",
@@ -12,13 +12,7 @@
 	"bugs": {
 		"url": "https://github.com/fantaclaus/tswlib/issues"
 	},
-	"publishConfig": {
-		"registry": "https://npm.pkg.github.com"
-	},
 	"type": "module",
-	"main": "lib/index.js",
-	"types": "lib/index.d.ts",
-	"files": [
-		"lib"
-	]
+	"main": "index.js",
+	"types": "index.d.ts"
 }
