@@ -1,7 +1,7 @@
 {
-	"name": "@fantaclaus/tswlib",
-	"version": "0.18.0",
-	"description": "tsw: html rendering library",
+	"name": "tswlib",
+	"version": "1.0.0",
+	"description": "html rendering library",
 	"author": "fantaclaus",
 	"license": "MIT",
 	"homepage": "https://github.com/fantaclaus/tswlib#readme",
