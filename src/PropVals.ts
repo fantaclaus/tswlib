@@ -121,7 +121,7 @@ export class tswPropValArray<T> extends tswPropVal<T[]>
 	}
 	addItem(item: T, index?: number)
 	{
-		const a = this.get();
+		const a = this.val;
 
 		if (index == null)
 		{
@@ -134,11 +134,22 @@ export class tswPropValArray<T> extends tswPropVal<T[]>
 
 		this.updateContexts();
 	}
+	/**
+	 * @deprecated Use `removeItem()` instead
+	 */
 	delItem(item: T)
 	{
-		const a = this.get();
-		const index = a.indexOf(item);
-		if (index >= 0)
+		this.removeItem(item);
+	}
+	removeItem(item: T)
+	{
+		const index = this.val.indexOf(item);
+		this.removeItemAt(index);
+	}
+	removeItemAt(index: number)
+	{
+		const a = this.val;
+		if (index >= 0 && index < a.length)
 		{
 			a.splice(index, 1);
 			this.updateContexts();
@@ -146,7 +157,7 @@ export class tswPropValArray<T> extends tswPropVal<T[]>
 	}
 	setLength(length: number)
 	{
-		const a = this.get();
+		const a = this.val;
 
 		if (a.length != length)
 		{
@@ -157,9 +168,13 @@ export class tswPropValArray<T> extends tswPropVal<T[]>
 	}
 	sort(comparer?: (a: T, b: T) => number)
 	{
-		const a = this.get();
+		this.val.sort(comparer);
 
-		a.sort(comparer);
+		this.updateContexts();
+	}
+	modifyItems(action: (v: T[]) => void)
+	{
+		action(this.val);
 
 		this.updateContexts();
 	}
