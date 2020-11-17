@@ -366,7 +366,8 @@ export abstract class tswCtxNodeBase extends tswCtx
 
 		if (elm_attrs)
 		{
-			const attrs = this.createAttrMap(elm_attrs);
+			const isAttrCaseSensitive = elm[privates.ElementGeneric.attrsCaseSensitive]();
+			const attrs = this.createAttrMap(elm_attrs, isAttrCaseSensitive);
 
 			attrs.forEach((attrValue, attrName) =>
 			{
@@ -375,15 +376,15 @@ export abstract class tswCtxNodeBase extends tswCtx
 			});
 		}
 	}
-	private createAttrMap(elm_attrs: AttrNameValue[])
+	private createAttrMap(elm_attrs: AttrNameValue[], isAttrCaseSensitive: boolean)
 	{
 		const attrs = new Map<string, attrValTypeInternal2>();
 
-		for (let a of elm_attrs)
+		for (const a of elm_attrs)
 		{
 			if (a.attrName)
 			{
-				const attrName = a.attrName.toLowerCase();
+				const attrName = isAttrCaseSensitive ? a.attrName : a.attrName.toLowerCase();
 				const v = attrs.get(attrName);
 				if (v == null)
 				{

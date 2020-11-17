@@ -10,6 +10,7 @@ export namespace privates
 		export const children = Symbol('ElementGeneric_children');
 		export const addHandler = Symbol('ElementGeneric_addHandler');
 		export const attrs = Symbol('ElementGeneric_attrs');
+		export const attrsCaseSensitive = Symbol('ElementGeneric_attrsCaseSensitive');
 		export const events = Symbol('ElementGeneric_events');
 		export const getRefs = Symbol('ElementGeneric_getRefs');
 	}
@@ -31,15 +32,17 @@ export class tswElement
 	private _tagName: string;
 	private _ns: string | undefined;
 	private _attrs: AttrNameValue[] | undefined;
+	private _attrsCaseSensitive: boolean;
 	private _children: childValType[] | undefined;
 	private _eventHandlers: ElmEventMapItem[] | undefined;
 	protected _refs: tswRef[] | undefined;
 
-	constructor(tagName: string, ns?: string)
+	constructor(tagName: string, ns?: string, _attrsCaseSensitive = false)
 	{
 		// empty tagName means this is a document fragment
 		this._tagName = tagName;
 		this._ns = ns;
+		this._attrsCaseSensitive = _attrsCaseSensitive;
 	}
 
 	attr(name: string, val: attrValType)
@@ -159,6 +162,7 @@ export class tswElement
 	[privates.ElementGeneric.ns]() { return this._ns; }
 	[privates.ElementGeneric.children]() { return this._children; }
 	[privates.ElementGeneric.attrs]() { return this._attrs; }
+	[privates.ElementGeneric.attrsCaseSensitive]() { return this._attrsCaseSensitive; }
 	[privates.ElementGeneric.events]() { return this._eventHandlers; }
 	[privates.ElementGeneric.getRefs]() { return this._refs; }
 }

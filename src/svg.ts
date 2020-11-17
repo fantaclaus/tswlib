@@ -11,7 +11,7 @@ export class tswElementSVG extends tswElement
 {
 	constructor(tagName: string)
 	{
-		super(tagName.toLowerCase(), svgNS); // NOTE: svg tagnames must be lowercase!
+		super(tagName.toLowerCase(), svgNS, true); // NOTE: svg tagnames must be lowercase! attribute names are case-sensitive!
 	}
 	stroke(v: string) { this.attr('stroke', v); return this; }
 	strokeWidth(v: number) { this.attr('stroke-width', v); return this; }
