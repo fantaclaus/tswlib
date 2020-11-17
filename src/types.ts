@@ -21,7 +21,7 @@ export interface DomChangeEventListenerOld
 	beforeDetach?: () => void; // same as beforeDetachPost
 }
 
-interface Fn<T>
+export interface Fn<T>
 {
 	(): T;
 }
