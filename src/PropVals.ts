@@ -9,7 +9,9 @@ export class tswPropVal<T> implements PropDef<T>, IPropVal
 	private insideSet = false; // to prevent infinite loops
 	dbg_name: string | undefined;
 	val: T;
-	onChanged: (() => void) | undefined;
+
+	/** @deprecated Use 'onChange' callback in value() of element */
+	onChanged?: () => void;
 
 	constructor(initialValue: T, name?: string)
 	{

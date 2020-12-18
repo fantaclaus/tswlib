@@ -1,5 +1,5 @@
 import { privates, tswElement } from './elm';
-import { boolValType, singleStringValType, PropDef, ElementValueInfo } from "./types";
+import { boolValType, singleStringValType, PropDef, ElementValueInfo, ValueChangeHandler } from "./types";
 import { tswRef } from './ref';
 
 export class tswRawHtml
@@ -60,20 +60,26 @@ export abstract class tswElementWithValueBase extends tswElement
 export abstract class tswElementWithValue<T extends elmValue> extends tswElementWithValueBase
 {
 	protected propDef: PropDef<T> | undefined;
+	protected onChange?: ValueChangeHandler<T>;
 
 	constructor(tagName: string, private propName: string)
 	{
 		super(tagName);
 	}
-	value(propDef: PropDef<T>)
+	value(propDef: PropDef<T>, onChange?: ValueChangeHandler<T>)
 	{
 		this.propDef = propDef;
+		this.onChange = onChange;
 
 		return this;
 	}
 	[privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | null | undefined
 	{
-		return this.propDef == null ? null : { propName: this.propName, propVal: this.propDef };
+		return this.propDef == null ? null : cast<ElementValueInfo>({
+			propName: this.propName,
+			propVal: this.propDef,
+			onChange: this.onChange,
+		});
 	}
 }
 export class tswElementInput<T extends elmValue> extends tswElementWithValue<T>
@@ -149,19 +155,27 @@ export class tswElementSelect extends tswElementWithValueBase
 		super('select')
 	}
 
-	value(propDef: PropDef<string | null>)
+	value(propDef: PropDef<string | null>, onChange?: ValueChangeHandler<string>)
 	{
 		if (this.propInfos == null) this.propInfos = [];
 
-		this.propInfos.push({ propVal: propDef, propName: 'value' });
+		this.propInfos.push(cast<ElementValueInfo>({
+			propVal: propDef,
+			propName: 'value',
+			onChange: onChange,
+		}));
 
 		return this;
 	}
-	selectedIndex(propDef: PropDef<number | null>)
+	selectedIndex(propDef: PropDef<number | null>, onChange?: ValueChangeHandler<number>)
 	{
 		if (this.propInfos == null) this.propInfos = [];
 
-		this.propInfos.push({ propVal: propDef, propName: 'selectedIndex' });
+		this.propInfos.push(cast<ElementValueInfo>({
+			propVal: propDef,
+			propName: 'selectedIndex',
+			onChange: onChange,
+		}));
 
 		return this;
 	}
@@ -226,4 +240,9 @@ export class tswElementTD extends tswElement
 
 		return this;
 	}
+}
+
+export function cast<T>(v: T)
+{
+	return v;
 }
