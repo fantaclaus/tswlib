@@ -110,7 +110,7 @@ export abstract class tswCtx implements ICtx
 	}
 
 	abstract update(): void;
-	addRef(ref: tswRef<Element>): void
+	addRef(ref: tswRef): void
 	{
 		throw new Error("Not implemented");
 	}

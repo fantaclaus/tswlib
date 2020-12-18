@@ -1,21 +1,36 @@
-export class tswRef<T extends Element = Element>
+export class tswRef
 {
-	private val: T | undefined | null;
+	private val: Element | undefined | null;
 
 	constructor(private dbg_name?: string)
 	{
 	}
-	set(v: T | null)
+	set(v: Element | null)
 	{
 		this.val = v;
+	}
+	get()
+	{
+		return this.val;
 	}
 	isValid()
 	{
 		return this.val != null;
 	}
-	asHtmlElement<T2 extends T = T>()
+	asElement<T extends Element = Element>()
 	{
-		if (this.val == null) throw new Error("ref is invalid");
-		return this.val as T2;
+		if (this.val == null) throw new Error("ref is null");
+
+		if (!(this.val instanceof Element)) throw new Error("ref points not to an Element");
+
+		return this.val as T;
+	}
+	asHtmlElement<T extends HTMLElement = HTMLElement>(baseClass: typeof HTMLElement = HTMLElement)
+	{
+		if (this.val == null) throw new Error("ref is null");
+
+		if (!(this.val instanceof baseClass)) throw new Error(`ref points to an element that is not ${baseClass.name}`);
+
+		return this.val as T;
 	}
 }

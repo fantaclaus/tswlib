@@ -137,10 +137,13 @@ export class tswElement
 		this._eventHandlers.push(item);
 	}
 
-	addRef(ref: tswRef<Element> | null)
+	addRef(ref: tswRef | null)
 	{
 		if (ref != null)
 		{
+			const el = ref.get();
+			if (el != null) throw new Error('ref is already attached');
+
 			this._refs = this._refs || [];
 			this._refs.push(ref);
 		}

@@ -58,7 +58,7 @@ export interface ICtx
 	addChild(ctx: ICtx): void;
 	update(): void;
 	getParent(): ICtx | null | undefined;
-	addRef(ref: tswRef<Element>): void;
+	addRef(ref: tswRef): void;
 }
 
 export interface ICtxRoot

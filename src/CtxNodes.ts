@@ -59,7 +59,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 		this.resetRefs();
 		this.domChangeListeners = undefined;
 	}
-	addRef(ref: tswRef<Element>)
+	addRef(ref: tswRef)
 	{
 		if (this.refs == null) this.refs = new Set();
 		this.refs.add(ref);
