@@ -217,9 +217,7 @@ export class tswElementLabel extends tswElement
 
 		return this;
 	}
-	/**
-	 * @deprecated replace it with forId()
-	 */
+	/** @deprecated Use forId() instead */
 	forRef(ref: tswRef | nothing)
 	{
 		console.warn('obsolete method: tswElementLabel forRef(). replace it with forId()');

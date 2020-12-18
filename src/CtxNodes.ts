@@ -351,7 +351,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 				}
 				else
 				{
-					const value = (el as unknown as { [name: string]: any })[valInfos.propName];
+					const value = (<any>el)[valInfos.propName];
 
 					// log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
 
