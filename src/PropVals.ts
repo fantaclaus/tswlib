@@ -5,9 +5,9 @@ import { addToUpdateQueue } from './UpdateQueue';
 
 export class tswPropVal<T> implements PropDef<T>, IPropVal
 {
-	private ctxs: Set<ICtx> | undefined | null;
+	private ctxs?: Set<ICtx> | null;
 	private insideSet = false; // to prevent infinite loops
-	dbg_name: string | undefined;
+	dbg_name?: string;
 	val: T;
 
 	/** @deprecated Use 'onChange' callback in value() of element */

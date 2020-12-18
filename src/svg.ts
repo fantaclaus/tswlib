@@ -1,7 +1,7 @@
 import { tswElement } from "./elm";
-import { Fn, PropDefReadable, singleStringValType } from "./types";
+import { Fn, nothing, PropDefReadable, singleStringValType } from "./types";
 
-type numberNullable = number | null | undefined | false;
+type numberNullable = number | nothing | false;
 type numberValType = numberNullable | Fn<numberNullable> | PropDefReadable<numberNullable>;
 
 export function el(tagName: string) { return new tswElementSVG(tagName); }

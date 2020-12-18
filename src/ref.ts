@@ -1,6 +1,6 @@
 export class tswRef
 {
-	private val: Element | undefined | null;
+	private val?: Element | null;
 
 	constructor(private dbg_name?: string)
 	{

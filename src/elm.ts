@@ -1,5 +1,5 @@
 ﻿import { tswRef } from './ref';
-import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, EventKind } from "./types";
+import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, EventKind, nothing } from "./types";
 
 export namespace privates
 {
@@ -30,12 +30,12 @@ export class tswStyleRule
 export class tswElement
 {
 	private _tagName: string;
-	private _ns: string | undefined;
-	private _attrs: AttrNameValue[] | undefined;
+	private _ns?: string;
+	private _attrs?: AttrNameValue[];
 	private _attrsCaseSensitive: boolean;
-	private _children: childValType[] | undefined;
-	private _eventHandlers: ElmEventMapItem[] | undefined;
-	protected _refs: tswRef[] | undefined;
+	private _children?: childValType[];
+	private _eventHandlers?: ElmEventMapItem[];
+	protected _refs?: tswRef[];
 
 	constructor(tagName: string, ns?: string, _attrsCaseSensitive = false)
 	{
@@ -105,13 +105,13 @@ export class tswElement
 		return this;
 	}
 
-	onClick(handler: EventHandler<MouseEvent> | null | undefined)
+	onClick(handler: EventHandler<MouseEvent> | nothing)
 	{
 		return this.onEvent('click', handler);
 	}
-	onEvent<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | null | undefined): this;
-	onEvent(eventName: string, handler: EventHandler<Event> | null | undefined): this; // without this overload only the first one is recognized
-	onEvent(eventName: string, handler: EventHandler<Event> | null | undefined)
+	onEvent<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | nothing): this;
+	onEvent(eventName: string, handler: EventHandler<Event> | nothing): this; // without this overload only the first one is recognized
+	onEvent(eventName: string, handler: EventHandler<Event> | nothing)
 	{
 		if (eventName && handler instanceof Function)
 		{
@@ -120,8 +120,8 @@ export class tswElement
 
 		return this;
 	}
-	onEventDirect<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | null | undefined): this;
-	onEventDirect(eventName: string, handler: EventHandler<Event> | null | undefined)
+	onEventDirect<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | nothing): this;
+	onEventDirect(eventName: string, handler: EventHandler<Event> | nothing)
 	{
 		if (eventName && handler instanceof Function)
 		{

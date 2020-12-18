@@ -1,5 +1,5 @@
 import { privates, tswElement } from './elm';
-import { boolValType, singleStringValType, PropDef, ElementValueInfo, ValueChangeHandler } from "./types";
+import { boolValType, singleStringValType, PropDef, ElementValueInfo, ValueChangeHandler, nothing } from "./types";
 import { tswRef } from './ref';
 
 export class tswRawHtml
@@ -54,12 +54,12 @@ export type elmValue = string | number | boolean | null;
 
 export abstract class tswElementWithValueBase extends tswElement
 {
-	abstract [privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | null | undefined;
+	abstract [privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | nothing;
 }
 
 export abstract class tswElementWithValue<T extends elmValue> extends tswElementWithValueBase
 {
-	protected propDef: PropDef<T> | undefined;
+	protected propDef?: PropDef<T>;
 	protected onChange?: ValueChangeHandler<T>;
 
 	constructor(tagName: string, private propName: string)
@@ -73,7 +73,7 @@ export abstract class tswElementWithValue<T extends elmValue> extends tswElement
 
 		return this;
 	}
-	[privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | null | undefined
+	[privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | nothing
 	{
 		return this.propDef == null ? null : cast<ElementValueInfo>({
 			propName: this.propName,
@@ -148,7 +148,7 @@ export class tswElementTextArea extends tswElementWithValue<string>
 }
 export class tswElementSelect extends tswElementWithValueBase
 {
-	private propInfos: ElementValueInfo[] | undefined;
+	private propInfos?: ElementValueInfo[];
 
 	constructor()
 	{
@@ -179,7 +179,7 @@ export class tswElementSelect extends tswElementWithValueBase
 
 		return this;
 	}
-	[privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | null | undefined
+	[privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | nothing
 	{
 		return this.propInfos;
 	}
@@ -220,7 +220,7 @@ export class tswElementLabel extends tswElement
 	/**
 	 * @deprecated replace it with forId()
 	 */
-	forRef(ref: tswRef | undefined)
+	forRef(ref: tswRef | nothing)
 	{
 		console.warn('obsolete method: tswElementLabel forRef(). replace it with forId()');
 		return this;

@@ -12,9 +12,9 @@ export abstract class tswCtxNodeBase extends tswCtx
 {
 	protected firstChild: Node | null = null;
 	protected lastChild: Node | null = null;
-	private elementsWithRootEvents: Set<Element> | undefined;
-	private refs: Set<tswRef> | undefined;
-	private domChangeListeners: Set<DomChangeEventListener> | undefined;
+	private elementsWithRootEvents?: Set<Element>;
+	private refs?: Set<tswRef>;
+	private domChangeListeners?: Set<DomChangeEventListener>;
 
 	get dbg_firstChild() { return this.firstChild; }
 	get dbg_lastChild() { return this.lastChild; }
@@ -442,7 +442,7 @@ function isDomChangeEventListener(v: childValType): v is DomChangeEventListener
 
 export class tswCtxNodes extends tswCtxNodeBase
 {
-	private ctxRoot: ICtxRoot | undefined;
+	private ctxRoot?: ICtxRoot;
 
 	constructor(private content: childValTypeFn | childValTypePropDefReadable | tswRenderer)
 	{

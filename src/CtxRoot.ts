@@ -9,7 +9,7 @@ export class tswCtxRoot extends tswCtxNodeBase implements ICtxRoot
 
 	// give a chance to insert generated style rules into stylesheet (css-in-js) to avoid twitching before inserting nodes into DOM
 	onBeforeAttach: (() => void) | undefined;
-	private rootEventHandler: tswRootEventHandler | undefined;
+	private rootEventHandler?: tswRootEventHandler;
 
 	constructor(htmlElement: Element)
 	{

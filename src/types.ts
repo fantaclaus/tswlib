@@ -26,16 +26,18 @@ export interface Fn<T>
 	(): T;
 }
 
-export type attrValTypeSimple = string | number | boolean | null | undefined;
+export type nothing = null | undefined;
+
+export type attrValTypeSimple = string | number | boolean | nothing;
 export type attrValType = attrValTypeSimple | Fn<attrValTypeSimple> | PropDefReadable<attrValTypeSimple>;
 
 export interface childValTypeArray extends Array<childValType> { }
 export interface childValTypeFn extends Fn<childValType> { }
 export interface childValTypePropDefReadable extends PropDefReadable<childValType> { }
 
-export type childValType = string | number | boolean | tswElement | tswRawHtml | tswRenderer | DomChangeEventListener | null | undefined | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
+export type childValType = string | number | boolean | tswElement | tswRawHtml | tswRenderer | DomChangeEventListener | nothing | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
 
-type stringNullable = string | null | undefined | false;
+type stringNullable = string | nothing | false;
 
 export interface multiStringValTypeFn extends Fn<multiStringValType> { }
 export interface multiStringValTypePropDefReadable extends PropDefReadable<multiStringValType> { }
@@ -45,7 +47,7 @@ export type multiStringValType = stringNullable | multiStringValTypeFn | multiSt
 
 export type singleStringValType = stringNullable | Fn<stringNullable> | PropDefReadable<stringNullable>;
 
-export type boolValType = boolean | undefined | Fn<boolean> | PropDefReadable<boolean>;
+export type boolValType = boolean | nothing | Fn<boolean> | PropDefReadable<boolean>;
 
 export type attrValTypeInternal = attrValType | singleStringValType | multiStringValType | tswStyleRule;
 export type attrValTypeInternal2 = attrValTypeInternal | attrValTypeInternal[];
@@ -53,11 +55,11 @@ export type attrValTypeInternal2 = attrValTypeInternal | attrValTypeInternal[];
 export interface ICtx
 {
 	id: number;
-	getRootCtx(): ICtxRoot | undefined;
+	getRootCtx(): ICtxRoot | nothing;
 	addPropVal(propVal: IPropVal): void;
 	addChild(ctx: ICtx): void;
 	update(): void;
-	getParent(): ICtx | null | undefined;
+	getParent(): ICtx | nothing;
 	addRef(ref: tswRef): void;
 }
 
@@ -70,8 +72,8 @@ export interface ICtxRoot
 
 export interface IPropVal
 {
-	dbg_name: string | undefined;
-	dbg_ctxs(): Set<ICtx> | undefined | null;
+	dbg_name?: string;
+	dbg_ctxs(): Set<ICtx> | nothing;
 	val: any;
 
 	ctxRemove(ctx: ICtx): void;

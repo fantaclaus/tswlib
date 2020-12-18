@@ -1,4 +1,4 @@
-import { IPropVal, ICtx, ICtxRoot } from "./types";
+import { IPropVal, ICtx, ICtxRoot, nothing } from "./types";
 // import { log, logcolor, logCtx, logPV } from "lib/dbgutils";
 import * as UpdateQueue from './UpdateQueue';
 import { tswRef } from "./ref";
@@ -12,9 +12,9 @@ export const enum NodeKind
 export abstract class tswCtx implements ICtx
 {
 	id: number;
-	private propVals: Set<IPropVal> | undefined | null;
-	private childCtxs: Set<tswCtx> | undefined;
-	protected ctxParent: tswCtx | null | undefined; // undefined -- not assigned yet; null -- detached, ctx should not be used anymore
+	private propVals?: Set<IPropVal> | null;
+	private childCtxs?: Set<tswCtx>;
+	protected ctxParent?: tswCtx | null; // undefined -- not assigned yet; null -- detached, ctx should not be used anymore
 
 	private static CtxLastId = 0;
 
@@ -28,7 +28,7 @@ export abstract class tswCtx implements ICtx
 	{
 		return undefined;
 	}
-	getParent(): ICtx | null | undefined
+	getParent(): ICtx | nothing
 	{
 		return this.ctxParent;
 	}
@@ -149,7 +149,7 @@ export abstract class tswCtx implements ICtx
 	}
 }
 
-export function isNotEmptySet<T>(s: Set<T> | null | undefined)
+export function isNotEmptySet<T>(s: Set<T> | nothing)
 {
 	return s && s.size > 0;
 }
