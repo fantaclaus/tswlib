@@ -99,7 +99,7 @@ export class tswElement
 	{
 		if (items != null)
 		{
-			this._children = this._children || [];
+			this._children = this._children ?? [];
 			this._children.push(items);
 		}
 		return this;
@@ -144,7 +144,7 @@ export class tswElement
 			const el = ref.get();
 			if (el != null) throw new Error('ref is already attached');
 
-			this._refs = this._refs || [];
+			this._refs = this._refs ?? [];
 			this._refs.push(ref);
 		}
 		return this;
@@ -154,7 +154,7 @@ export class tswElement
 	{
 		if (!this._tagName) throw new Error("Can not set attributes on document fragment");
 
-		this._attrs = this._attrs || [];
+		this._attrs = this._attrs ?? [];
 
 		this._attrs.push({ attrName: name, attrValue: val });
 	}

@@ -101,14 +101,14 @@ export class tswEventHandlerDriver
 	}
 	attachEventListener(eventName: string)
 	{
-		const count = this.attachedEventListeners.get(eventName) || 0;
+		const count = this.attachedEventListeners.get(eventName) ?? 0;
 		this.attachedEventListeners.set(eventName, count + 1);
 
 		if (count == 0) this.addEventListener(eventName);
 	}
 	detachEventListener(eventName: string)
 	{
-		const count = this.attachedEventListeners.get(eventName) || 0;
+		const count = this.attachedEventListeners.get(eventName) ?? 0;
 		const countNew = count - 1;
 
 		if (countNew > 0)
