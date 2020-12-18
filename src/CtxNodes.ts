@@ -204,7 +204,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 
 		if (item instanceof Array)
 		{
-			for (let i of item)
+			for (const i of item)
 			{
 				this.insertContent(parentNode, i);
 			}
@@ -253,7 +253,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 		const refs = item[privates.ElementGeneric.getRefs]();
 		if (refs)
 		{
-			for (let ref of refs)
+			for (const ref of refs)
 			{
 				ref.set(el);
 				this.addRef(ref);
@@ -282,7 +282,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 	}
 	private addEventListeners(events: ElmEventMapItem[], tagName: string, el: Element)
 	{
-		for (let elmEventMapItem of events)
+		for (const elmEventMapItem of events)
 		{
 			switch (elmEventMapItem.eventKind)
 			{
@@ -320,7 +320,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 	{
 		if (valInfos instanceof Array)
 		{
-			for (let valInfo of valInfos)
+			for (const valInfo of valInfos)
 			{
 				this.addValueContext(el, valInfo);
 			}
@@ -344,7 +344,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 			{
 				if (valInfos instanceof Array)
 				{
-					for (let valInfo of valInfos)
+					for (const valInfo of valInfos)
 					{
 						handleValueEvent(valInfo);
 					}

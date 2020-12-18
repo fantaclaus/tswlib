@@ -77,7 +77,7 @@ function processQueue()
 			// const logEnabled = dbgutils.options.logEnabled
 			// dbgutils.options.logEnabled = false;
 
-			for (let ctx of contextsToUpdate)
+			for (const ctx of contextsToUpdate)
 			{
 				// while invoking ctx.update() some contexts could be removed,
 				// so don't update removed contexts to avoid re-attaching them to propVals
@@ -101,7 +101,7 @@ function processQueue()
 	const updatedCbs = _updatedCbs;
 	_updatedCbs = [];
 
-	for (let cb of updatedCbs)
+	for (const cb of updatedCbs)
 	{
 		cb();
 	}

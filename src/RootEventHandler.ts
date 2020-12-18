@@ -149,7 +149,7 @@ export class tswEventHandlerDriver
 			e.preventDefault();
 		}
 
-		for (let i of result.elmHandlersItems)
+		for (const i of result.elmHandlersItems)
 		{
 			i.handleEvent.call(result.htmlElement, e);
 		}
