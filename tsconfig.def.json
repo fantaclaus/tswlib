@@ -4,7 +4,8 @@
 		"module": "esnext",
 		"moduleResolution": "Node",
 		"strict": true,
-		"removeComments": true,
+		"declaration": true,
+		"emitDeclarationOnly": true,
 		"outDir": "out",
 	}
 }

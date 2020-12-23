@@ -228,9 +228,11 @@ export abstract class tswCtxNodeBase extends tswCtx
 			if (tagName)
 			{
 				const ns = item[privates.ElementGeneric.ns]();
-				const el = this.createElement(tagName, ns, item);
+				const el = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);
 
 				this.insertContent(el, children);
+
+				this.setupElement(el, item); // set initial value after inserting children (important for 'select' element)
 
 				parentNode.appendChild(el);
 			}
@@ -246,10 +248,8 @@ export abstract class tswCtxNodeBase extends tswCtx
 			parentNode.appendChild(n);
 		}
 	}
-	private createElement(tagName: string, ns: string | undefined, item: tswElement)
+	private setupElement(el: Element, item: tswElement)
 	{
-		const el = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);
-
 		const refs = item[privates.ElementGeneric.getRefs]();
 		if (refs)
 		{
@@ -275,12 +275,10 @@ export abstract class tswCtxNodeBase extends tswCtx
 		const events = item[privates.ElementGeneric.events]();
 		if (events)
 		{
-			this.addEventListeners(events, tagName, el);
+			this.addEventListeners(events, el);
 		}
-
-		return el;
 	}
-	private addEventListeners(events: ElmEventMapItem[], tagName: string, el: Element)
+	private addEventListeners(events: ElmEventMapItem[], el: Element)
 	{
 		for (const elmEventMapItem of events)
 		{
@@ -289,7 +287,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 				case EventKind.direct:
 					if (elmEventMapItem.eventType == 'dom')
 					{
-						if (tagName.toUpperCase() == 'A' && elmEventMapItem.eventName.toLowerCase() == 'click')
+						if (elmEventMapItem.eventName.toLowerCase() == 'click' && el instanceof HTMLAnchorElement)
 						{
 							const handler = elmEventMapItem.handleEvent;
 							el.addEventListener(elmEventMapItem.eventName, function (this: Element, e)

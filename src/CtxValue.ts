@@ -30,13 +30,12 @@ export class tswCtxValue extends tswCtx
 	{
 		const v = this.pv.get();
 
-		const el = this.el as unknown as { [name: string]: any };
-		const currentValue = el[this.valuePropName];
+		const currentValue = (<any>this.el)[this.valuePropName];
 		if (v !== currentValue)
 		{
 			// log(console.debug, logcolor("brown"), `CTX: setValue `, logCtx(this), ` [${this.valuePropName}] of `, ['%o', this.el], ` to '${v}'`);
 
-			el[this.valuePropName] = v;
+			(<any>this.el)[this.valuePropName] = v;
 		}
 	}
 	get dbg_el() { return this.el; }

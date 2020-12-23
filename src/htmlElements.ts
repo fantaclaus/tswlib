@@ -155,7 +155,7 @@ export class tswElementSelect extends tswElementWithValueBase
 		super('select')
 	}
 
-	value(propDef: PropDef<string | null>, onChange?: ValueChangeHandler<string>)
+	value(propDef: PropDef<string>, onChange?: ValueChangeHandler<string>)
 	{
 		if (this.propInfos == null) this.propInfos = [];
 
@@ -167,7 +167,7 @@ export class tswElementSelect extends tswElementWithValueBase
 
 		return this;
 	}
-	selectedIndex(propDef: PropDef<number | null>, onChange?: ValueChangeHandler<number>)
+	selectedIndex(propDef: PropDef<number>, onChange?: ValueChangeHandler<number>)
 	{
 		if (this.propInfos == null) this.propInfos = [];
 

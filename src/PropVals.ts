@@ -136,9 +136,7 @@ export class tswPropValArray<T> extends tswPropVal<T[]>
 
 		this.updateContexts();
 	}
-	/**
-	 * @deprecated Use `removeItem()` instead
-	 */
+	/** @deprecated Use `removeItem()` instead */
 	delItem(item: T)
 	{
 		this.removeItem(item);
