@@ -75,15 +75,15 @@ export class tswPropVal<T> implements PropDef<T>, IPropVal
 
 		if (ctxs) addToUpdateQueue(ctxs); // UpdateQueue may take ownership of ctxs
 	}
-	isTrue(contentTrue: any, contentFalse?: any): () => any
+	isTrue<V1, V2>(contentTrue: V1, contentFalse?: V2)
 	{
 		return () => this.get() ? contentTrue : contentFalse;
 	}
-	isFalse(content: any): () => any
+	isFalse<V>(content: V)
 	{
 		return () => !this.get() && content;
 	}
-	isEqual(val: T, content: any): () => any
+	isEqual<V>(val: T, content: V)
 	{
 		return () => this.get() == val && content;
 	}
