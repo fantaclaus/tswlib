@@ -118,11 +118,11 @@ export interface ElmEventMapItem
 	handleEvent: EventHandler<any>;
 }
 
-export type ValueChangeHandler<T> = (newValue: T, pv: PropDef<T>) => void;
+export type ValueChangeHandler = () => void;
 
 export interface ElementValueInfo
 {
 	propName: string;
 	propVal: PropDef<any>;
-	onChange?: ValueChangeHandler<any>;
+	onChange?: ValueChangeHandler;
 }
