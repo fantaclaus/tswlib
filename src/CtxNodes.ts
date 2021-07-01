@@ -21,7 +21,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 	get dbg_elementsWithRootEvents() { return this.elementsWithRootEvents; }
 	get dbg_domChangeListeners() { return this.domChangeListeners; }
 
-	abstract getRootCtx(): ICtxRoot;
+	abstract override getRootCtx(): ICtxRoot;
 
 	protected removeOldContent(parentNode: Node)
 	{
@@ -44,14 +44,14 @@ export abstract class tswCtxNodeBase extends tswCtx
 
 		this.notifySelfAndChildren((ctx, beforeChildren) => ctx.domChange(beforeChildren, true));
 	}
-	protected shouldBeAddedToParent()
+	protected override shouldBeAddedToParent()
 	{
 		return super.shouldBeAddedToParent() ||
 			isNotEmptySet(this.refs) ||
 			isNotEmptySet(this.elementsWithRootEvents) ||
 			isNotEmptySet(this.domChangeListeners);
 	}
-	public cleanup(): void
+	public override cleanup(): void
 	{
 		super.cleanup();
 
@@ -59,7 +59,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 		this.resetRefs();
 		this.domChangeListeners = undefined;
 	}
-	addRef(ref: tswRef)
+	override addRef(ref: tswRef)
 	{
 		if (this.refs == null) this.refs = new Set();
 		this.refs.add(ref);
@@ -91,7 +91,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 			this.elementsWithRootEvents.clear();
 		}
 	}
-	domChange(beforeChildren: boolean, attach: boolean): void
+	override domChange(beforeChildren: boolean, attach: boolean): void
 	{
 		const domChangeListeners = this.domChangeListeners;
 		if (domChangeListeners)
@@ -126,7 +126,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 			});
 		}
 	}
-	replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
+	override replaceNode(nodeKind: NodeKind, oldNode: Node | null, newNode: Node | null): void
 	{
 		let matched = false;
 

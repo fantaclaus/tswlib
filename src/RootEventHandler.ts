@@ -170,15 +170,15 @@ export class tswEventHandlerDriverDom extends tswEventHandlerDriver
 {
 	static EventType = 'dom';
 
-	getEventType(): string
+	override getEventType(): string
 	{
 		return tswEventHandlerDriverDom.EventType;
 	}
-	protected addEventListener(eventName: string)
+	protected override addEventListener(eventName: string)
 	{
 		this.owner.htmlElement.addEventListener(eventName, this.eventsListener);
 	}
-	protected removeEventListener(eventName: string)
+	protected override removeEventListener(eventName: string)
 	{
 		this.owner.htmlElement.removeEventListener(eventName, this.eventsListener);
 	}
