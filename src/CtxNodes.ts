@@ -230,6 +230,8 @@ export abstract class tswCtxNodeBase extends tswCtx
 				const ns = item[privates.ElementGeneric.ns]();
 				const el = ns ? document.createElementNS(ns, tagName) : document.createElement(tagName);
 
+				this.createAttrs(el, item);
+
 				this.insertContent(el, children);
 
 				this.setupElement(el, item); // set initial value after inserting children (important for 'select' element)
@@ -259,8 +261,6 @@ export abstract class tswCtxNodeBase extends tswCtx
 				this.addRef(ref);
 			}
 		}
-
-		this.createAttrs(item, el);
 
 		if (item instanceof tswElementWithValueBase)
 		{
@@ -365,7 +365,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 			}
 		}
 	}
-	private createAttrs(elm: tswElement, el: Element)
+	private createAttrs(el: Element, elm: tswElement)
 	{
 		const elm_attrs = elm[privates.ElementGeneric.attrs]();
 
