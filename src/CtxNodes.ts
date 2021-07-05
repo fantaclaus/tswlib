@@ -353,11 +353,12 @@ export abstract class tswCtxNodeBase extends tswCtx
 
 					// log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
 
-					valInfos.propVal.set(value);
-
-					if (valInfos.onChange)
+					if (valInfos.propVal.set(value))
 					{
-						valInfos.onChange();
+						if (valInfos.onChange)
+						{
+							valInfos.onChange();
+						}
 					}
 				}
 			}

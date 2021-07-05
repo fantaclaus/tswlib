@@ -85,7 +85,7 @@ export interface PropDefReadable<T>
 }
 export interface PropDef<T> extends PropDefReadable<T>
 {
-	set: (v: T) => void;
+	set: (v: T) => boolean;
 }
 
 export interface AttrNameValue

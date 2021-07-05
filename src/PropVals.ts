@@ -46,9 +46,9 @@ export class tswPropVal<T> implements PropDef<T>, IPropVal
 
 		return this.val;
 	}
-	set(v: T): void
+	set(v: T)
 	{
-		if (this.insideSet) return;
+		if (this.insideSet) return false;
 		this.insideSet = true;
 
 		try
@@ -60,6 +60,12 @@ export class tswPropVal<T> implements PropDef<T>, IPropVal
 				this.updateContexts();
 
 				if (this.onChanged) this.onChanged();
+
+				return true;
+			}
+			else
+			{
+				return false;
 			}
 		}
 		finally
