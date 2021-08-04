@@ -287,20 +287,14 @@ export abstract class tswCtxNodeBase extends tswCtx
 				case EventKind.direct:
 					if (elmEventMapItem.eventType == 'dom')
 					{
-						if (elmEventMapItem.eventName.toLowerCase() == 'click' && el instanceof HTMLAnchorElement)
+						const preventDefault = elmEventMapItem.eventName.toLowerCase() == 'click' && el instanceof HTMLAnchorElement;
+						const handler = elmEventMapItem.handleEvent;
+						el.addEventListener(elmEventMapItem.eventName, function (this: Element, e)
 						{
-							const handler = elmEventMapItem.handleEvent;
-							el.addEventListener(elmEventMapItem.eventName, function (this: Element, e)
-							{
-								e.preventDefault();
-								handler.call(this, e);
-							});
-						}
-						else
-						{
-							el.addEventListener(elmEventMapItem.eventName, elmEventMapItem.handleEvent);
-						}
-					}
+							if (preventDefault) e.preventDefault();
+							handler.call(this, e, this);
+						});
+				}
 					break;
 
 				case EventKind.onRoot:

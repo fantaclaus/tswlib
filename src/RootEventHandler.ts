@@ -63,7 +63,7 @@ export class tswRootEventHandler
 
 		return ehd;
 	}
-	findEventHandlers(htmlElement: Node | null, eventName: string, eventType: string)
+	findEventHandlers(htmlElement: Element | null, eventName: string, eventType: string)
 	{
 		while (htmlElement && htmlElement != this.htmlElement)
 		{
@@ -81,8 +81,7 @@ export class tswRootEventHandler
 
 			// NOTE: in IE 11 parentElement of SVG element is undefined, so we use parentNode
 
-			const parentNode = htmlElement.parentNode;
-			htmlElement = parentNode;
+			htmlElement = <Element>htmlElement.parentNode;
 		}
 
 		return null;
@@ -139,7 +138,7 @@ export class tswEventHandlerDriver
 	protected handleEvent(e: IEvent)
 	{
 		const target = e.target;
-		if (!(target instanceof Node)) return;
+		if (!(target instanceof Element)) return;
 
 		const result = this.owner.findEventHandlers(target, e.type, this.getEventType());
 		if (result == null) return;
@@ -151,7 +150,7 @@ export class tswEventHandlerDriver
 
 		for (const i of result.elmHandlersItems)
 		{
-			i.handleEvent.call(result.htmlElement, e);
+			i.handleEvent.call(result.htmlElement, e, result.htmlElement);
 		}
 	}
 

@@ -101,7 +101,7 @@ export interface WindowEventMap2 extends WindowEventMap
 
 export interface EventHandler<T>
 {
-	(e: T): void;
+	(e: T, el: Element): void;
 }
 
 export enum EventKind
