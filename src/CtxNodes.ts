@@ -357,7 +357,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 					{
 						if (valInfos.onChange)
 						{
-							valInfos.onChange();
+							valInfos.onChange(value);
 						}
 					}
 				}

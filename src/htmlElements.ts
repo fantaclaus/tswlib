@@ -66,7 +66,7 @@ export abstract class tswElementWithValue<T extends elmValue> extends tswElement
 	{
 		super(tagName);
 	}
-	value(propDef: PropDef<T>, onChange?: ValueChangeHandler)
+	value(propDef: PropDef<T>, onChange?: ValueChangeHandler<T>)
 	{
 		this.propDef = propDef;
 		this.onChange = onChange;
@@ -155,7 +155,7 @@ export class tswElementSelect extends tswElementWithValueBase
 		super('select')
 	}
 
-	value(propDef: PropDef<string>, onChange?: ValueChangeHandler)
+	value(propDef: PropDef<string>, onChange?: ValueChangeHandler<string>)
 	{
 		if (this.propInfos == null) this.propInfos = [];
 
@@ -167,7 +167,7 @@ export class tswElementSelect extends tswElementWithValueBase
 
 		return this;
 	}
-	selectedIndex(propDef: PropDef<number>, onChange?: ValueChangeHandler)
+	selectedIndex(propDef: PropDef<number>, onChange?: ValueChangeHandler<number>)
 	{
 		if (this.propInfos == null) this.propInfos = [];
 

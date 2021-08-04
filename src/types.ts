@@ -118,7 +118,7 @@ export interface ElmEventMapItem
 	handleEvent: EventHandler<any>;
 }
 
-export type ValueChangeHandler = () => void;
+export type ValueChangeHandler<T = any> = (newValue: T) => void;
 
 export interface ElementValueInfo
 {
