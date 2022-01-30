@@ -1,5 +1,5 @@
 ﻿import { tswRawHtml } from "./htmlElements";
-import { tswElement, tswStyleRule } from "./elm";
+import { tswElement } from "./elm";
 import { tswRef } from "./ref";
 
 export interface tswRenderer
@@ -26,31 +26,29 @@ export interface Fn<T>
 	(): T;
 }
 
+export type TypeX<T> = T | Fn<TypeX<T>> | PropDefReadable<TypeX<T>>;
+export type TypeXA<T> = T | Fn<TypeXA<T>> | PropDefReadable<TypeXA<T>> | Array<TypeXA<T>>;
+
 export type nothing = null | undefined;
 
-export type attrValTypeSimple = string | number | boolean | nothing;
-export type attrValType = attrValTypeSimple | Fn<attrValTypeSimple> | PropDefReadable<attrValTypeSimple>;
-
-export interface childValTypeArray extends Array<childValType> { }
-export interface childValTypeFn extends Fn<childValType> { }
-export interface childValTypePropDefReadable extends PropDefReadable<childValType> { }
-
-export type childValType = string | number | boolean | tswElement | tswRawHtml | tswRenderer | DomChangeEventListener | nothing | childValTypeArray | childValTypeFn | childValTypePropDefReadable;
+export type attrValType = TypeX<string | number | boolean | nothing>;
+export type attrValTypeEx = TypeX<string | number | boolean | nothing | object>;
 
 type stringNullable = string | nothing | false;
 
-export interface multiStringValTypeFn extends Fn<multiStringValType> { }
-export interface multiStringValTypePropDefReadable extends PropDefReadable<multiStringValType> { }
-export interface multiStringValTypeArray extends Array<multiStringValType> { }
+export type singleStringValType = TypeX<stringNullable>;
+export type multiStringValType = TypeXA<stringNullable>;
 
-export type multiStringValType = stringNullable | multiStringValTypeFn | multiStringValTypePropDefReadable | multiStringValTypeArray;
+export type boolValType = TypeX<boolean | nothing>;
 
-export type singleStringValType = stringNullable | Fn<stringNullable> | PropDefReadable<stringNullable>;
+export type attrValTypeInternal = TypeXA<string | number | boolean | nothing | object>;
 
-export type boolValType = boolean | nothing | Fn<boolean> | PropDefReadable<boolean>;
+// child val types
 
-export type attrValTypeInternal = attrValType | singleStringValType | multiStringValType | tswStyleRule;
-export type attrValTypeInternal2 = attrValTypeInternal | attrValTypeInternal[];
+export type childValTypeFn = Fn<childValType>;
+export type childValTypePropDefReadable = PropDefReadable<childValType>;
+
+export type childValType = TypeXA<string | number | boolean | tswElement | tswRawHtml | tswRenderer | DomChangeEventListener | nothing>;
 
 export interface ICtx
 {
@@ -92,6 +90,7 @@ export interface AttrNameValue
 {
 	attrName: string;
 	attrValue: attrValTypeInternal;
+	conv?: (v: string | object) => string;
 }
 
 export interface WindowEventMap2 extends WindowEventMap

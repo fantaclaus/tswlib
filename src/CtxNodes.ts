@@ -1,6 +1,6 @@
 ﻿import { tswCtx, NodeKind, isNotEmptySet } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, tswRenderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld, ValueChangeHandler, nothing } from './types';
+import { childValType, childValTypePropDefReadable, tswRenderer, AttrNameValue, ElementValueInfo, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld, ValueChangeHandler, nothing } from './types';
 import { privates, tswElement } from './elm';
 import { tswRawHtml, tswElementWithValueBase } from './htmlElements';
 import { tswCtxAttr } from './CtxAttr';
@@ -362,7 +362,6 @@ export abstract class tswCtxNodeBase extends tswCtx
 	private createAttrs(el: Element, elm: tswElement)
 	{
 		const elm_attrs = elm[privates.ElementGeneric.attrs]();
-
 		if (elm_attrs)
 		{
 			const isAttrCaseSensitive = elm[privates.ElementGeneric.attrsCaseSensitive]();
@@ -377,7 +376,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 	}
 	private createAttrMap(elm_attrs: AttrNameValue[], isAttrCaseSensitive: boolean)
 	{
-		const attrs = new Map<string, attrValTypeInternal2>();
+		const attrs = new Map<string, AttrNameValue | AttrNameValue[]>();
 
 		for (const a of elm_attrs)
 		{
@@ -387,18 +386,18 @@ export abstract class tswCtxNodeBase extends tswCtx
 				const v = attrs.get(attrName);
 				if (v == null)
 				{
-					attrs.set(attrName, a.attrValue);
+					attrs.set(attrName, a);
 				}
 				else if (v instanceof Array)
 				{
-					const vals: attrValTypeInternal[] = v;
-					vals.push(a.attrValue);
+					const vals: AttrNameValue[] = v;
+					vals.push(a);
 				}
 				else
 				{
-					const vals: attrValTypeInternal[] = [];
+					const vals: AttrNameValue[] = [];
 					vals.push(v);
-					vals.push(a.attrValue);
+					vals.push(a);
 					attrs.set(attrName, vals);
 				}
 			}

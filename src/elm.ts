@@ -1,5 +1,5 @@
 ﻿import { tswRef } from './ref';
-import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, EventKind, nothing } from "./types";
+import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, EventKind, nothing, attrValTypeInternal, attrValTypeEx } from "./types";
 
 export namespace privates
 {
@@ -52,6 +52,12 @@ export class tswElement
 
 		return this;
 	}
+	attrEx(name: string, conv: (v: any) => string, val: attrValTypeEx)
+	{
+		this.addAttr(name, val, conv);
+
+		return this;
+	}
 	id(val: singleStringValType)
 	{
 		this.addAttr('id', val);
@@ -74,26 +80,25 @@ export class tswElement
 	{
 		if (name != null)
 		{
-			const sr = new tswStyleRule(name, val);
-			this.addAttr('style', sr);
+			this.addAttr('style', val, v => name + ':' + v);
 		}
 
 		return this;
 	}
 	data(name: string, val: singleStringValType)
 	{
-		this.attr('data-' + name.toLowerCase(), val);
+		this.addAttr('data-' + name.toLowerCase(), val);
 
 		return this;
 	}
 	disabled(val: boolValType)
 	{
-		this.attr('disabled', val);
+		this.addAttr('disabled', val);
 		return this;
 	}
 	hidden(val: boolValType)
 	{
-		this.attr('hidden', val);
+		this.addAttr('hidden', val);
 		return this;
 	}
 	children(items: childValType)
@@ -152,13 +157,13 @@ export class tswElement
 		return this;
 	}
 
-	private addAttr(name: string, val: attrValType | multiStringValType | tswStyleRule): void
+	protected addAttr(name: string, val: attrValTypeInternal, conv?: (v: string | object) => string): void
 	{
 		if (!this._tagName) throw new Error("Can not set attributes on document fragment");
 
 		this._attrs = this._attrs ?? [];
 
-		this._attrs.push({ attrName: name, attrValue: val });
+		this._attrs.push({ attrName: name, attrValue: val, conv: conv });
 	}
 
 	// implementation

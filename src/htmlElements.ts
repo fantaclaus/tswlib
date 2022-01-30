@@ -17,7 +17,7 @@ export class tswElementButton extends tswElement
 	}
 	type(val: singleStringValType)
 	{
-		this.attr('type', val);
+		this.addAttr('type', val);
 
 		return this;
 	}
@@ -31,7 +31,7 @@ export class tswElementA extends tswElement
 	}
 	href(val: singleStringValType)
 	{
-		this.attr('href', val);
+		this.addAttr('href', val);
 
 		return this;
 	}
@@ -44,7 +44,7 @@ export class tswElementImg extends tswElement
 	}
 	src(val: singleStringValType)
 	{
-		this.attr('src', val);
+		this.addAttr('src', val);
 
 		return this;
 	}
@@ -99,7 +99,7 @@ export class tswElementInput<T extends elmValue> extends tswElementWithValue<T>
 	{
 		super('input', propName);
 
-		this.attr('type', type);
+		this.addAttr('type', type);
 	}
 }
 export class tswElementInputText extends tswElementInput<string>
@@ -112,13 +112,13 @@ export class tswElementInputText extends tswElementInput<string>
 
 	placeholder(v: singleStringValType)
 	{
-		this.attr('placeholder', v);
+		this.addAttr('placeholder', v);
 
 		return this;
 	}
 	autocomplete(v: singleStringValType)
 	{
-		this.attr('autocomplete', v);
+		this.addAttr('autocomplete', v);
 
 		return this;
 	}
@@ -152,7 +152,7 @@ export class tswElementTextArea extends tswElementWithValue<string>
 	}
 	placeholder(v: singleStringValType)
 	{
-		this.attr('placeholder', v);
+		this.addAttr('placeholder', v);
 
 		return this;
 	}
@@ -201,13 +201,13 @@ export class tswElementOption extends tswElement
 	}
 	value(val: singleStringValType)
 	{
-		this.attr('value', val);
+		this.addAttr('value', val);
 
 		return this;
 	}
 	selected(val: boolValType)
 	{
-		this.attr('selected', val);
+		this.addAttr('selected', val);
 
 		return this;
 	}
@@ -222,7 +222,7 @@ export class tswElementLabel extends tswElement
 	// "for" is a keyword. it can not be used as a property name in IE before version 9. so we use name "forRef" instead.
 	forId(id: singleStringValType)
 	{
-		this.attr('for', id);
+		this.addAttr('for', id);
 
 		return this;
 	}
@@ -237,13 +237,13 @@ export class tswElementTD extends tswElement
 {
 	colSpan(val: number)
 	{
-		this.attr('colSpan', val);
+		this.addAttr('colSpan', val);
 
 		return this;
 	}
 	rowSpan(val: number)
 	{
-		this.attr('rowSpan', val);
+		this.addAttr('rowSpan', val);
 
 		return this;
 	}

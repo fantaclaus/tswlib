@@ -18,9 +18,9 @@ export class tswElementSVG extends tswElement
 	{
 		super(tagName, svgNS, true); // NOTE: svg tag and attribute names are case-sensitive!
 	}
-	stroke(v: singleStringValType) { this.attr('stroke', v); return this; }
-	strokeWidth(v: numberValType) { this.attr('stroke-width', v); return this; }
-	fill(v: singleStringValType) { this.attr('fill', v); return this; }
+	stroke(v: singleStringValType) { this.addAttr('stroke', v); return this; }
+	strokeWidth(v: numberValType) { this.addAttr('stroke-width', v); return this; }
+	fill(v: singleStringValType) { this.addAttr('fill', v); return this; }
 }
 
 export class tswElementSVG_SVG extends tswElementSVG
@@ -29,9 +29,9 @@ export class tswElementSVG_SVG extends tswElementSVG
 	{
 		super('svg');
 	}
-	width(v: numberValType) { this.attr('width', v); return this; }
-	height(v: numberValType) { this.attr('height', v); return this; }
-	viewBox(v: singleStringValType) { this.attr('viewBox', v); return this; }
+	width(v: numberValType) { this.addAttr('width', v); return this; }
+	height(v: numberValType) { this.addAttr('height', v); return this; }
+	viewBox(v: singleStringValType) { this.addAttr('viewBox', v); return this; }
 }
 
 export class tswElementSVG_Circle extends tswElementSVG
@@ -40,9 +40,9 @@ export class tswElementSVG_Circle extends tswElementSVG
 	{
 		super('circle');
 	}
-	cx(v: numberValType) { this.attr('cx', v); return this; }
-	cy(v: numberValType) { this.attr('cy', v); return this; }
-	r(v: numberValType) { this.attr('r', v); return this; }
+	cx(v: numberValType) { this.addAttr('cx', v); return this; }
+	cy(v: numberValType) { this.addAttr('cy', v); return this; }
+	r(v: numberValType) { this.addAttr('r', v); return this; }
 }
 
 export class tswElementSVG_Rect extends tswElementSVG
@@ -51,10 +51,10 @@ export class tswElementSVG_Rect extends tswElementSVG
 	{
 		super('rect');
 	}
-	x(v: numberValType) { this.attr('x', v); return this; }
-	y(v: numberValType) { this.attr('y', v); return this; }
-	width(v: numberValType) { this.attr('width', v); return this; }
-	height(v: numberValType) { this.attr('height', v); return this; }
+	x(v: numberValType) { this.addAttr('x', v); return this; }
+	y(v: numberValType) { this.addAttr('y', v); return this; }
+	width(v: numberValType) { this.addAttr('width', v); return this; }
+	height(v: numberValType) { this.addAttr('height', v); return this; }
 }
 
 export class tswElementSVG_Path extends tswElementSVG
@@ -63,5 +63,5 @@ export class tswElementSVG_Path extends tswElementSVG
 	{
 		super('path');
 	}
-	d(v: singleStringValType) { this.attr('d', v); return this; }
+	d(v: singleStringValType) { this.addAttr('d', v); return this; }
 }
