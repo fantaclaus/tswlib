@@ -54,22 +54,34 @@ export type elmValue = string | number | boolean | null;
 
 export abstract class tswElementWithValueBase extends tswElement
 {
+	protected onChange: ValueChangeHandler | nothing;
+
+	onValueChanged(onChange: ValueChangeHandler | nothing)
+	{
+		this.onChange = onChange;
+
+		return this;
+	}
+
+	[privates.ElementWithValueBase.getOnValueChanged](): ValueChangeHandler | nothing
+	{
+		return this.onChange;
+	}
+
 	abstract [privates.ElementWithValueBase.getValueInfos](): ElementValueInfo | ElementValueInfo[] | nothing;
 }
 
 export abstract class tswElementWithValue<T extends elmValue> extends tswElementWithValueBase
 {
-	protected propDef?: PropDef<T>;
-	protected onChange?: ValueChangeHandler;
+	protected propDef: PropDef<T> | undefined;
 
 	constructor(tagName: string, private propName: string)
 	{
 		super(tagName);
 	}
-	value(propDef: PropDef<T>, onChange?: ValueChangeHandler<T>)
+	value(propDef: PropDef<T>)
 	{
 		this.propDef = propDef;
-		this.onChange = onChange;
 
 		return this;
 	}
@@ -78,7 +90,6 @@ export abstract class tswElementWithValue<T extends elmValue> extends tswElement
 		return this.propDef == null ? null : cast<ElementValueInfo>({
 			propName: this.propName,
 			propVal: this.propDef,
-			onChange: this.onChange,
 		});
 	}
 }
@@ -155,26 +166,24 @@ export class tswElementSelect extends tswElementWithValueBase
 		super('select')
 	}
 
-	value(propDef: PropDef<string>, onChange?: ValueChangeHandler<string>)
+	value(propDef: PropDef<string>)
 	{
 		if (this.propInfos == null) this.propInfos = [];
 
 		this.propInfos.push(cast<ElementValueInfo>({
 			propVal: propDef,
 			propName: 'value',
-			onChange: onChange,
 		}));
 
 		return this;
 	}
-	selectedIndex(propDef: PropDef<number>, onChange?: ValueChangeHandler<number>)
+	selectedIndex(propDef: PropDef<number>)
 	{
 		if (this.propInfos == null) this.propInfos = [];
 
 		this.propInfos.push(cast<ElementValueInfo>({
 			propVal: propDef,
 			propName: 'selectedIndex',
-			onChange: onChange,
 		}));
 
 		return this;

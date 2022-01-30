@@ -1,4 +1,4 @@
-import { tswRawHtml } from "./htmlElements";
+﻿import { tswRawHtml } from "./htmlElements";
 import { tswElement, tswStyleRule } from "./elm";
 import { tswRef } from "./ref";
 
@@ -118,11 +118,10 @@ export interface ElmEventMapItem
 	handleEvent: EventHandler<any>;
 }
 
-export type ValueChangeHandler<T = any> = (newValue: T) => void;
+export type ValueChangeHandler = () => void;
 
 export interface ElementValueInfo
 {
 	propName: string;
 	propVal: PropDef<any>;
-	onChange?: ValueChangeHandler;
 }

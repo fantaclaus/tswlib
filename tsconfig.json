@@ -4,7 +4,6 @@
 		"module": "esnext",
 		"moduleResolution": "Node",
 		"strict": true,
-		"removeComments": true,
 		"outDir": "out",
 		"declaration": true,
 		"noImplicitOverride": true

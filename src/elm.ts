@@ -17,6 +17,7 @@ export namespace privates
 	export namespace ElementWithValueBase
 	{
 		export const getValueInfos = Symbol('ElementGeneric_getValueInfos');
+		export const getOnValueChanged = Symbol('ElementGeneric_getOnValueChanged');
 	}
 }
 
@@ -110,7 +111,7 @@ export class tswElement
 		return this.onEvent('click', handler);
 	}
 	onEvent<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | nothing): this;
-	onEvent(eventName: string, handler: EventHandler<Event> | nothing): this; // without this overload only the first one is recognized
+	onEvent(eventName: string, handler: EventHandler<Event> | nothing): this;
 	onEvent(eventName: string, handler: EventHandler<Event> | nothing)
 	{
 		if (eventName && handler instanceof Function)
@@ -121,6 +122,7 @@ export class tswElement
 		return this;
 	}
 	onEventDirect<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | nothing): this;
+	onEventDirect(eventName: string, handler: EventHandler<Event> | nothing): this;
 	onEventDirect(eventName: string, handler: EventHandler<Event> | nothing)
 	{
 		if (eventName && handler instanceof Function)

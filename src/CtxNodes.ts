@@ -1,7 +1,6 @@
-import { tswCtx, NodeKind, isNotEmptySet } from './Ctx';
+﻿import { tswCtx, NodeKind, isNotEmptySet } from './Ctx';
 import { g_CurrentContext } from './Scope';
-import { childValType, childValTypePropDefReadable, tswRenderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld } from './types';
-// import { log, logCtx, logPV, logcolor } from 'lib/dbgutils';
+import { childValType, childValTypePropDefReadable, tswRenderer, attrValTypeInternal2, attrValTypeInternal, AttrNameValue, ElementValueInfo, childValTypeFn, ElmEventMapItem, EventKind, ICtxRoot, DomChangeEventListener, DomChangeEventListenerOld, ValueChangeHandler, nothing } from './types';
 import { privates, tswElement } from './elm';
 import { tswRawHtml, tswElementWithValueBase } from './htmlElements';
 import { tswCtxAttr } from './CtxAttr';
@@ -262,20 +261,24 @@ export abstract class tswCtxNodeBase extends tswCtx
 			}
 		}
 
+		// direct events handled before onValueChanged
+		// bubbled events handled after onValueChanged
+		const events = item[privates.ElementGeneric.events]();
+		if (events)
+		{
+			this.addEventListeners(events, el);
+		}
+
 		if (item instanceof tswElementWithValueBase)
 		{
 			const valInfos = item[privates.ElementWithValueBase.getValueInfos]();
 			if (valInfos)
 			{
-				this.addValueContext(el, valInfos);
-				this.addValueEventHandlers(el, valInfos);
-			}
-		}
+				const onValChanged = item[privates.ElementWithValueBase.getOnValueChanged]();
 
-		const events = item[privates.ElementGeneric.events]();
-		if (events)
-		{
-			this.addEventListeners(events, el);
+				this.addValueContext(el, valInfos);
+				this.addValueEventHandlers(el, valInfos, onValChanged);
+			}
 		}
 	}
 	private addEventListeners(events: ElmEventMapItem[], el: Element)
@@ -294,7 +297,7 @@ export abstract class tswCtxNodeBase extends tswCtx
 							if (preventDefault) e.preventDefault();
 							handler.call(this, e, this);
 						});
-				}
+					}
 					break;
 
 				case EventKind.onRoot:
@@ -323,39 +326,37 @@ export abstract class tswCtxNodeBase extends tswCtx
 			ctx.setup(this);
 		}
 	}
-	private addValueEventHandlers(el: Element, valInfos: ElementValueInfo | ElementValueInfo[])
+	private addValueEventHandlers(el: Element, valInfos: ElementValueInfo | ElementValueInfo[], onValueChanged: ValueChangeHandler | nothing)
 	{
 		el.addEventListener('input', inputHandler);
 		el.addEventListener('change', inputHandler);
 
 		function inputHandler(this: Element, e: Event)
 		{
-			handleValueEvent(valInfos);
+			let valueChanged = false;
 
-			function handleValueEvent(valInfos: ElementValueInfo | ElementValueInfo[])
+			if (valInfos instanceof Array)
 			{
-				if (valInfos instanceof Array)
+				for (const valInfo of valInfos)
 				{
-					for (const valInfo of valInfos)
-					{
-						handleValueEvent(valInfo);
-					}
-				}
-				else
-				{
-					const value = (<any>el)[valInfos.propName];
-
-					// log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
-
-					if (valInfos.propVal.set(value))
-					{
-						if (valInfos.onChange)
-						{
-							valInfos.onChange(value);
-						}
-					}
+					if (handleValueEvent(valInfo)) valueChanged = true;
 				}
 			}
+			else
+			{
+				valueChanged = handleValueEvent(valInfos);
+			}
+
+			function handleValueEvent(valInfo: ElementValueInfo)
+			{
+				const value = (<any>el)[valInfo.propName];
+
+				// log(console.debug, logcolor("green"), 'EVENT: ', e.type, ' propName=[', valInfos.propName, '] ', logPV(<any>valInfos.propVal));
+
+				return valInfo.propVal.set(value);
+			}
+
+			if (valueChanged) onValueChanged?.();
 		}
 	}
 	private createAttrs(el: Element, elm: tswElement)

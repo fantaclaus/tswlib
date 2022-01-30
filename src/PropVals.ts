@@ -10,7 +10,7 @@ export class tswPropVal<T> implements PropDef<T>, IPropVal
 	dbg_name?: string;
 	val: T;
 
-	/** @deprecated Use 'onChange' callback in value() of element */
+	/** @deprecated Use 'onValueChanged' of tswElement */
 	onChanged?: () => void;
 
 	constructor(initialValue: T, name?: string)
