@@ -1,5 +1,5 @@
 ﻿import { tswRef } from './ref';
-import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, WindowEventMap2, EventKind, nothing, attrValTypeInternal, attrValTypeEx } from "./types";
+import { attrValType, childValType, boolValType, multiStringValType, singleStringValType, AttrNameValue, ElmEventMapItem, EventHandler, EventKind, nothing, attrValTypeInternal, attrValTypeEx } from "./types";
 
 export namespace privates
 {
@@ -115,7 +115,7 @@ export class tswElement
 	{
 		return this.onEvent('click', handler);
 	}
-	onEvent<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | nothing): this;
+	onEvent<K extends keyof WindowEventMap>(eventName: K, handler: EventHandler<WindowEventMap[K]> | nothing): this;
 	onEvent(eventName: string, handler: EventHandler<Event> | nothing): this;
 	onEvent(eventName: string, handler: EventHandler<Event> | nothing)
 	{
@@ -126,7 +126,7 @@ export class tswElement
 
 		return this;
 	}
-	onEventDirect<K extends keyof WindowEventMap2>(eventName: K, handler: EventHandler<WindowEventMap2[K]> | nothing): this;
+	onEventDirect<K extends keyof WindowEventMap>(eventName: K, handler: EventHandler<WindowEventMap[K]> | nothing): this;
 	onEventDirect(eventName: string, handler: EventHandler<Event> | nothing): this;
 	onEventDirect(eventName: string, handler: EventHandler<Event> | nothing)
 	{

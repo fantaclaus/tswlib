@@ -93,11 +93,6 @@ export interface AttrNameValue
 	conv?: (v: string | object) => string;
 }
 
-export interface WindowEventMap2 extends WindowEventMap
-{
-	"input": InputEvent;
-}
-
 export interface EventHandler<T>
 {
 	(e: T, el: Element): void;
